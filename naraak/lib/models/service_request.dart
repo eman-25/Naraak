@@ -7,6 +7,7 @@ class ServiceRequest {
   final String status; // 'submitted' | 'processing' | 'approved' | 'rejected' | 'ready'
   final DateTime submittedAt;
   final String? note;
+  final String? attachmentName;
 
   const ServiceRequest({
     required this.id,
@@ -14,7 +15,17 @@ class ServiceRequest {
     required this.status,
     required this.submittedAt,
     this.note,
+    this.attachmentName,
   });
+
+  /// 'rejected' requests, and 'submitted' requests carrying a note that
+  /// explains what's missing, surface under the "Action Needed" filter on
+  /// the Pending Requests screen (Phase 6 §5, request tracking statuses).
+  bool get requiresAction => status == 'rejected';
+
+  bool get isOpen => status == 'submitted' || status == 'processing';
+
+  bool get isCompleted => status == 'approved' || status == 'ready';
 
   factory ServiceRequest.fromJson(Map<String, dynamic> json) {
     return ServiceRequest(
@@ -23,6 +34,7 @@ class ServiceRequest {
       status: json['status'] as String,
       submittedAt: DateTime.parse(json['submittedAt'] as String),
       note: json['note'] as String?,
+      attachmentName: json['attachmentName'] as String?,
     );
   }
 
@@ -32,5 +44,6 @@ class ServiceRequest {
         'status': status,
         'submittedAt': submittedAt.toIso8601String(),
         'note': note,
+        'attachmentName': attachmentName,
       };
 }

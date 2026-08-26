@@ -1,11 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_text_styles.dart';
+import '../../widgets/external_api_service_view.dart';
 
-/// STUB — screen scaffold only. Wire up a Mock*Service + Provider here
-/// following the pattern in booking_appointment_screen.dart /
-/// vaccination_records_screen.dart once this service's mock data is ready
-/// (Phase 6 §5.2 Mock Data Coverage table).
 class TeleAppointmentScreen extends StatelessWidget {
   const TeleAppointmentScreen({super.key});
 
@@ -13,25 +8,8 @@ class TeleAppointmentScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Tele-Appointment Instructions')),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.construction, size: 48, color: AppColors.neutralGray),
-              const SizedBox(height: 16),
-              Text('Tele-Appointment Instructions', style: AppTextStyles.h3, textAlign: TextAlign.center),
-              const SizedBox(height: 8),
-              Text(
-                'Screen scaffold ready — mock service pending.',
-                style: AppTextStyles.bodySecondary,
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      ),
+      body: const ExternalApiServiceView(
+          title: 'Tele-Appointment Instructions', icon: Icons.videocam),
     );
   }
 }

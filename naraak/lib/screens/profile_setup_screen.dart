@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/user_profile_provider.dart';
-import '../../models/user_profile.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_text_styles.dart';
-import '../../widgets/app_button.dart';
+import '../providers/user_profile_provider.dart';
+import '../models/user_profile.dart';
+import '../theme/app_text_styles.dart';
+import '../widgets/app_button.dart';
 
 /// Shown once after login — collects the fields the rest of the app
 /// displays (Home dashboard, Profile tab). Kept separate from login so
@@ -56,7 +55,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     );
     provider.completeProfile(profile);
 
-    Navigator.pushReplacementNamed(context, '/');
+    Navigator.pushReplacementNamed(context, '/home');
   }
 
   @override
@@ -81,14 +80,17 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             TextFormField(
               initialValue: cpr,
               enabled: false,
-              decoration: const InputDecoration(labelText: 'CPR Number (from login)'),
+              decoration:
+                  const InputDecoration(labelText: 'CPR Number (from login)'),
             ),
             const SizedBox(height: 16),
 
             TextFormField(
               controller: _nameController,
               decoration: const InputDecoration(labelText: 'Full Name'),
-              validator: (v) => (v == null || v.trim().isEmpty) ? 'Enter your full name' : null,
+              validator: (v) => (v == null || v.trim().isEmpty)
+                  ? 'Enter your full name'
+                  : null,
             ),
             const SizedBox(height: 16),
 
@@ -101,7 +103,8 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                     decoration: const InputDecoration(labelText: 'Age'),
                     validator: (v) {
                       final n = int.tryParse(v ?? '');
-                      if (n == null || n <= 0 || n > 120) return 'Enter a valid age';
+                      if (n == null || n <= 0 || n > 120)
+                        return 'Enter a valid age';
                       return null;
                     },
                   ),
@@ -129,17 +132,21 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                 labelText: 'Mobile Number',
                 hintText: '+973 3XXX XXXX',
               ),
-              validator: (v) => (v == null || v.trim().isEmpty) ? 'Enter your mobile number' : null,
+              validator: (v) => (v == null || v.trim().isEmpty)
+                  ? 'Enter your mobile number'
+                  : null,
             ),
             const SizedBox(height: 16),
 
             DropdownButtonFormField<String>(
               initialValue: _healthCenter,
-              decoration: const InputDecoration(labelText: 'Assigned Health Center'),
+              decoration:
+                  const InputDecoration(labelText: 'Assigned Health Center'),
               items: _healthCenters
                   .map((c) => DropdownMenuItem(value: c, child: Text(c)))
                   .toList(),
-              onChanged: (v) => setState(() => _healthCenter = v ?? _healthCenter),
+              onChanged: (v) =>
+                  setState(() => _healthCenter = v ?? _healthCenter),
             ),
             const SizedBox(height: 32),
 

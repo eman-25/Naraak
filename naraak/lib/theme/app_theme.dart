@@ -34,20 +34,22 @@ class AppTheme {
         elevation: 0,
         margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18), // Phase 4 Section 2.3: 16-18px
+          borderRadius:
+              BorderRadius.circular(18), // Phase 4 Section 2.3: 16-18px
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primaryTeal,
           foregroundColor: Colors.white,
-          disabledBackgroundColor: AppColors.neutralGray.withOpacity(0.4),
+          disabledBackgroundColor: AppColors.neutralGray.withValues(alpha: 0.4),
           padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
           textStyle: AppTextStyles.buttonLabel,
-          minimumSize: const Size.fromHeight(48), // >=44px tap target, Phase 3 Section 6
+          minimumSize:
+              const Size.fromHeight(48), // >=44px tap target, Phase 3 Section 6
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
@@ -72,7 +74,8 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.bahrainAccent),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: Colors.white,
@@ -88,7 +91,36 @@ class AppTheme {
         bodyLarge: AppTextStyles.body,
         bodyMedium: AppTextStyles.bodySecondary,
         labelSmall: AppTextStyles.caption,
-      ),
+      )
+          .apply(
+              bodyColor: AppColors.neutralDark,
+              displayColor: AppColors.neutralDark)
+          .copyWith(
+            bodyMedium: AppTextStyles.bodySecondary
+                .copyWith(color: AppColors.neutralGray),
+            labelSmall:
+                AppTextStyles.caption.copyWith(color: AppColors.neutralGray),
+          ),
     );
   }
+
+  static ThemeData get dark => light.copyWith(
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: AppColors.darkBackground,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: AppColors.primaryTeal,
+          brightness: Brightness.dark,
+          surface: AppColors.darkSurface,
+        ),
+        appBarTheme:
+            light.appBarTheme.copyWith(backgroundColor: AppColors.darkSurface),
+        cardTheme: light.cardTheme.copyWith(color: AppColors.darkSurface),
+        inputDecorationTheme: light.inputDecorationTheme
+            .copyWith(fillColor: AppColors.darkSurface),
+        bottomNavigationBarTheme: light.bottomNavigationBarTheme.copyWith(
+          backgroundColor: AppColors.darkSurface,
+        ),
+        textTheme: light.textTheme
+            .apply(bodyColor: Colors.white, displayColor: Colors.white),
+      );
 }
