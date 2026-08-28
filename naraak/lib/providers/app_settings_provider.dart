@@ -21,7 +21,8 @@ class AppSettingsProvider extends ChangeNotifier {
   int get textScalePercent => (_textScale * 100).round();
 
   void toggleTheme() {
-    _themeMode = _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+    _themeMode =
+        _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
     notifyListeners();
   }
 
@@ -47,6 +48,11 @@ class AppSettingsProvider extends ChangeNotifier {
 
   void resetTextSize() {
     _textScale = 1.0;
+    notifyListeners();
+  }
+
+  void setTextSize(double value) {
+    _textScale = value.clamp(minScale, maxScale);
     notifyListeners();
   }
 }

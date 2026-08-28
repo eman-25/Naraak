@@ -49,6 +49,13 @@ class AppointmentProvider extends ChangeNotifier {
     }
   }
 
+  Future<Appointment> bookTeleAppointment() async {
+    final booked = await _service.bookTeleAppointment();
+    _myAppointments = [..._myAppointments, booked];
+    notifyListeners();
+    return booked;
+  }
+
   Future<void> loadMyAppointments() async {
     _myAppointments = await _service.getMyAppointments();
     notifyListeners();

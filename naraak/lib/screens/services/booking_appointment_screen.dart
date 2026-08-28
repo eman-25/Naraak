@@ -9,8 +9,6 @@ import '../../widgets/app_card.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_top_bar.dart';
 
-enum AppointmentType { inPerson, teleConsultation }
-
 enum BookingMethod { byDateAndDoctor, availableToday, closestSlot }
 
 class BookingAppointmentScreen extends StatefulWidget {
@@ -26,7 +24,6 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
   // 0: Selection Menu, 1: Slots List, 2: Review/Confirm, 3: Success Pass
   int _currentFlowStep = 0;
 
-  AppointmentType _selectedType = AppointmentType.inPerson;
   BookingMethod _bookingMethod = BookingMethod.byDateAndDoctor;
   DateTime? _selectedDate;
   Appointment? _selectedSlot;
@@ -54,8 +51,14 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
     return Scaffold(
       appBar: AppTopBar(
         title: _getAppBarTitle(),
-        showBackButton: _currentFlowStep > 0 && _currentFlowStep != 3,
-        onBack: () => setState(() => _currentFlowStep--),
+        showBackButton: _currentFlowStep != 3,
+        onBack: () {
+          if (_currentFlowStep > 0) {
+            setState(() => _currentFlowStep--);
+          } else {
+            Navigator.of(context).pop();
+          }
+        },
       ),
       body: SafeArea(
         child: Column(
@@ -92,29 +95,6 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
                 ),
               ),
 
-              // In-Person vs Tele-Consultation Toggle Header
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: AppColors.secondaryIce,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                          child: _buildTypeSegment(AppointmentType.inPerson,
-                              'In-Person', Icons.medical_services_outlined)),
-                      Expanded(
-                          child: _buildTypeSegment(
-                              AppointmentType.teleConsultation,
-                              'Tele Visit',
-                              Icons.video_call_outlined)),
-                    ],
-                  ),
-                ),
-              ),
               const SizedBox(height: 16),
             ],
 
@@ -298,10 +278,8 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
                       CircleAvatar(
                         radius: 24,
                         backgroundColor: AppColors.secondaryIce,
-                        child: Icon(
-                          _selectedType == AppointmentType.teleConsultation
-                              ? Icons.video_call
-                              : Icons.person,
+                        child: const Icon(
+                          Icons.person,
                           color: AppColors.primaryTeal,
                         ),
                       ),
@@ -381,10 +359,8 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
                     CircleAvatar(
                       radius: 24,
                       backgroundColor: AppColors.secondaryIce,
-                      child: Icon(
-                        _selectedType == AppointmentType.teleConsultation
-                            ? Icons.video_call
-                            : Icons.person_outline,
+                      child: const Icon(
+                        Icons.person_outline,
                         color: AppColors.primaryTeal,
                       ),
                     ),
@@ -413,9 +389,7 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
                   title: MaterialLocalizations.of(context).formatMediumDate(
                     _selectedSlot!.slotDateTime,
                   ),
-                  subtitle: _selectedType == AppointmentType.teleConsultation
-                      ? 'Join link will be active 5 mins before slot'
-                      : 'Arrive 15 minutes before your slot',
+                  subtitle: 'Arrive 15 minutes before your slot',
                 ),
                 const SizedBox(height: 12),
                 _buildReviewDetailRow(
@@ -618,37 +592,6 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
         ),
       );
     }
-  }
-
-  Widget _buildTypeSegment(AppointmentType type, String title, IconData icon) {
-    final isSelected = _selectedType == type;
-    return GestureDetector(
-      onTap: () => setState(() => _selectedType = type),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primaryTeal : Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon,
-                size: 16,
-                color: isSelected ? Colors.white : AppColors.primaryTeal),
-            const SizedBox(width: 6),
-            Text(
-              title,
-              style: TextStyle(
-                color: isSelected ? Colors.white : AppColors.primaryTeal,
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   Widget _buildMenuOptionCard({

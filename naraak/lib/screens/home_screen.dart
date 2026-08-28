@@ -12,6 +12,7 @@ import '../providers/service_request_provider.dart';
 import '../providers/appointment_provider.dart';
 import '../providers/auth_provider.dart';
 import '../localization/app_localizations.dart';
+import '../main.dart' show ShellNavigation;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -210,13 +211,7 @@ class _HeroHeader extends StatelessWidget {
               ),
               const SizedBox(height: 18),
               Text(
-                '${strings.text('welcome') == 'Welcome back' ? 'Good Morning' : strings.text('welcome')},',
-                style: AppTextStyles.bodySecondary.copyWith(
-                  color: Colors.white70,
-                ),
-              ),
-              Text(
-                name ?? strings.text('guest'),
+                '${strings.text('welcome') == 'Welcome back' ? 'Good Morning' : strings.text('welcome')}, ${name ?? strings.text('guest')}',
                 style: AppTextStyles.h1.copyWith(
                   color: Colors.white,
                   fontSize: 26,
@@ -720,8 +715,7 @@ class _TopServicesGrid extends StatelessWidget {
         return AppCard(
           onTap: () {
             if (t.route == '/services-tab') {
-              DefaultTabController.maybeOf(context);
-              Navigator.of(context).popUntil((r) => r.isFirst);
+              ShellNavigation.of(context)?.selectTab(2);
             } else {
               Navigator.pushNamed(context, t.route);
             }

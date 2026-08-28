@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../screens/services/booking_appointment_screen.dart';
+import '../screens/services/booking_entry_screen.dart';
 import '../screens/services/vaccination_records_screen.dart';
 import '../screens/services/address_update_screen.dart';
 import '../screens/services/change_family_doctor_screen.dart';
@@ -24,7 +24,7 @@ class AppRouter {
 
   static Map<String, WidgetBuilder> get routes => {
         appointments: (_) => const AppointmentsScreen(),
-        '/services/booking': (_) => const BookingAppointmentScreen(),
+        '/services/booking': (_) => const BookingEntryScreen(),
         '/services/vaccinations': (_) => const VaccinationRecordsScreen(),
         '/services/address-update': (_) => const AddressUpdateScreen(),
         '/services/change-doctor': (_) => const ChangeFamilyDoctorScreen(),

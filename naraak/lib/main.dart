@@ -21,7 +21,6 @@ import 'screens/appointments_screen.dart';
 import 'screens/pending_requests_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/profile_setup_screen.dart';
-import 'screens/appearance_settings_screen.dart';
 import 'screens/family_members_screen.dart';
 import 'screens/personal_info_screen.dart';
 import 'screens/notifications_screen.dart';
@@ -62,16 +61,16 @@ class NaraakApp extends StatelessWidget {
             child: child!,
           ),
           home: const LoginScreen(),
+          // Only pre-shell routes live here. Everything reachable once
+          // inside the app (services, pending requests, notifications,
+          // profile sub-pages) is registered on RootShell's own nested
+          // Navigator below, so the bottom nav — and a working back
+          // button — stay visible on every one of those screens, per the
+          // Phase 3 wireframes (every mockup screen keeps the 4-tab bar).
           routes: {
             '/login': (_) => const LoginScreen(),
             '/profile-setup': (_) => const ProfileSetupScreen(),
             '/home': (_) => const RootShell(),
-            '/pending-requests': (_) => const PendingRequestsScreen(),
-            '/profile/appearance': (_) => const AppearanceSettingsScreen(),
-            '/profile/family': (_) => const FamilyMembersScreen(),
-            '/profile/personal-info': (_) => const PersonalInfoScreen(),
-            '/notifications': (_) => const NotificationsScreen(),
-            ...AppRouter.routes,
           },
           onGenerateRoute: (settings) => settings.name == '/'
               ? MaterialPageRoute(builder: (_) => const RootShell())
@@ -82,6 +81,22 @@ class NaraakApp extends StatelessWidget {
   }
 }
 
+/// Lets any screen nested inside [RootShell] switch bottom-nav tabs
+/// (e.g. the Home tab's "All Services" tile jumping to the Services tab)
+/// without needing a route name for something that isn't a route.
+class ShellNavigation extends InheritedWidget {
+  final ValueChanged<int> selectTab;
+
+  const ShellNavigation(
+      {super.key, required this.selectTab, required super.child});
+
+  static ShellNavigation? of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<ShellNavigation>();
+
+  @override
+  bool updateShouldNotify(ShellNavigation oldWidget) => false;
+}
+
 class RootShell extends StatefulWidget {
   const RootShell({super.key});
   @override
@@ -89,39 +104,87 @@ class RootShell extends StatefulWidget {
 }
 
 class _RootShellState extends State<RootShell> {
-  int _index = 0;
+  final _navigatorKey = GlobalKey<NavigatorState>();
+  final _tabIndex = ValueNotifier<int>(0);
+
   static const _screens = [
     HomeScreen(),
-    ServicesScreen(),
     AppointmentsScreen(),
-    ProfileScreen()
+    ServicesScreen(),
+    ProfileScreen(),
   ];
+
+  static final Map<String, WidgetBuilder> _shellRoutes = {
+    '/pending-requests': (_) => const PendingRequestsScreen(),
+    '/profile/family': (_) => const FamilyMembersScreen(),
+    '/profile/personal-info': (_) => const PersonalInfoScreen(),
+    '/notifications': (_) => const NotificationsScreen(),
+    ...AppRouter.routes,
+  };
+
+  void _selectTab(int index) {
+    // Tapping a tab returns to that tab's root, matching how the bottom
+    // nav behaves in the wireframes (it's always the 4-tab entry points).
+    _navigatorKey.currentState?.popUntil((route) => route.isFirst);
+    _tabIndex.value = index;
+    setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _tabIndex.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(index: _index, children: _screens),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _index,
-        onTap: (i) => setState(() => _index = i),
-        items: const [
-          BottomNavigationBarItem(
-              icon: Icon(Icons.home_outlined),
-              activeIcon: Icon(Icons.home),
-              label: 'Home'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.grid_view_outlined),
-              activeIcon: Icon(Icons.grid_view),
-              label: 'Services'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.event_note_outlined),
-              activeIcon: Icon(Icons.event_note),
-              label: 'Appointments'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline),
-              activeIcon: Icon(Icons.person),
-              label: 'Profile'),
-        ],
+      body: ShellNavigation(
+        selectTab: _selectTab,
+        child: Navigator(
+          key: _navigatorKey,
+          onGenerateRoute: (settings) {
+            if (settings.name == '/' || settings.name == null) {
+              return MaterialPageRoute(
+                builder: (_) => ValueListenableBuilder<int>(
+                  valueListenable: _tabIndex,
+                  builder: (_, index, __) =>
+                      IndexedStack(index: index, children: _screens),
+                ),
+              );
+            }
+            final builder = _shellRoutes[settings.name];
+            if (builder != null) {
+              return MaterialPageRoute(builder: builder, settings: settings);
+            }
+            return null;
+          },
+        ),
+      ),
+      bottomNavigationBar: ValueListenableBuilder<int>(
+        valueListenable: _tabIndex,
+        builder: (_, index, __) => BottomNavigationBar(
+          currentIndex: index,
+          onTap: _selectTab,
+          items: const [
+            BottomNavigationBarItem(
+                icon: Icon(Icons.home_outlined),
+                activeIcon: Icon(Icons.home),
+                label: 'Home'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.event_note_outlined),
+                activeIcon: Icon(Icons.event_note),
+                label: 'Appointments'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.grid_view_outlined),
+                activeIcon: Icon(Icons.grid_view),
+                label: 'Services'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.person_outline),
+                activeIcon: Icon(Icons.person),
+                label: 'Profile'),
+          ],
+        ),
       ),
     );
   }

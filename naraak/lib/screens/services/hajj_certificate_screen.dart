@@ -5,15 +5,17 @@ import '../../providers/hajj_certificate_provider.dart';
 import '../../providers/appointment_provider.dart' show LoadState;
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
+import '../../theme/app_theme.dart';
 import '../../widgets/app_button.dart';
-import '../../widgets/app_card.dart';
 import '../../widgets/empty_state.dart';
-import '../../widgets/external_api_notice.dart';
-import '../../widgets/review_row.dart';
-import '../../widgets/status_badge.dart';
-import '../../widgets/step_header.dart';
 import '../../widgets/app_top_bar.dart';
 
+/// Electronic Hajj Certificate — Phase 3 §3.6/§4.5: a read-only check
+/// against a doctor visit logged in the MOH DB, not a form the user fills
+/// in. "I've requested it from my doctor" self-reports that in-person visit
+/// so the request can be tracked through the same Pending Requests
+/// lifecycle as every other service (Requested → Processing → Ready →
+/// Downloaded).
 class HajjCertificateScreen extends StatefulWidget {
   const HajjCertificateScreen({super.key});
 
@@ -22,10 +24,7 @@ class HajjCertificateScreen extends StatefulWidget {
 }
 
 class _HajjCertificateScreenState extends State<HajjCertificateScreen> {
-  static const _stepLabels = ['Find Your Trip', 'Confirm Details', 'Review'];
-
-  int _step = 0;
-  final _yearController = TextEditingController();
+  bool _downloaded = false;
 
   @override
   void initState() {
@@ -33,66 +32,6 @@ class _HajjCertificateScreenState extends State<HajjCertificateScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<HajjCertificateProvider>().checkExistingRequest();
     });
-  }
-
-  @override
-  void dispose() {
-    _yearController.dispose();
-    super.dispose();
-  }
-
-  void _handleLookup(HajjCertificateProvider provider) {
-    final year = int.tryParse(_yearController.text.trim());
-    if (year == null) return;
-    provider.lookupTrip(year);
-  }
-
-  Future<void> _handleSubmit(HajjCertificateProvider provider) async {
-    final confirmed = await showExternalApiNotice(
-      context,
-      serviceName: 'Electronic Hajj Certificate',
-      integrationName: 'the Ministry of Hajj & Umrah Affairs system',
-    );
-    if (!confirmed || !mounted) return;
-
-    final request = await provider.submit();
-    if (!mounted) return;
-
-    if (request != null) {
-      _showSuccessDialog();
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text(
-                provider.errorMessage ?? 'Submission failed, please retry.')),
-      );
-    }
-  }
-
-  void _showSuccessDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) => AlertDialog(
-        icon:
-            const Icon(Icons.check_circle, color: AppColors.success, size: 48),
-        title: const Text('Request Submitted'),
-        content: const Text(
-          'Your Electronic Hajj Certificate request has been submitted. Certificate generation '
-          'is tracked under Pending Requests and may take a few business days.',
-        ),
-        actions: [
-          FilledButton(
-            onPressed: () {
-              Navigator.pop(dialogContext);
-              Navigator.pop(context);
-              Navigator.pushNamed(context, '/pending-requests');
-            },
-            child: const Text('View Pending Requests'),
-          ),
-        ],
-      ),
-    );
   }
 
   @override
@@ -104,7 +43,7 @@ class _HajjCertificateScreenState extends State<HajjCertificateScreen> {
           if (provider.initState == LoadState.loading ||
               provider.initState == LoadState.idle) {
             return const Center(
-                child: CircularProgressIndicator(color: AppColors.primaryTeal));
+                child: CircularProgressIndicator(color: AppColors.primary));
           }
 
           if (provider.initState == LoadState.error) {
@@ -118,225 +57,269 @@ class _HajjCertificateScreenState extends State<HajjCertificateScreen> {
             );
           }
 
-          final existing = provider.existingRequest;
+          final request = provider.existingRequest;
 
-          if (existing != null && existing.isCompleted) {
-            return Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  AppCard(
-                    child: Column(
-                      children: [
-                        const Icon(Icons.workspace_premium,
-                            color: AppColors.success, size: 48),
-                        const SizedBox(height: 12),
-                        Text('Certificate Already Issued',
-                            style: AppTextStyles.h3,
-                            textAlign: TextAlign.center),
-                        const SizedBox(height: 8),
-                        Text(
-                          existing.note ??
-                              'Your Electronic Hajj Certificate is ready.',
-                          style: AppTextStyles.bodySecondary,
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 8),
-                        const StatusBadge(status: AppStatus.approved),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  AppButton(
-                    label: 'Download Certificate (Demo)',
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text(
-                                'Certificate download requires backend connectivity.')),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            );
-          }
-
-          if (existing != null && existing.isOpen) {
-            return EmptyStateView(
-              icon: Icons.hourglass_top,
-              title: 'You already have a pending request',
-              message: existing.note ??
-                  'Your certificate request is already being processed.',
-              actionLabel: 'View Pending Requests',
-              onAction: () =>
-                  Navigator.pushReplacementNamed(context, '/pending-requests'),
-            );
-          }
-
-          return Column(
+          return ListView(
+            padding: const EdgeInsets.all(20),
             children: [
-              StepHeader(currentStep: _step, stepLabels: _stepLabels),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: _buildStepContent(provider),
+              const _PrerequisiteBanner(),
+              const SizedBox(height: 20),
+              if (request == null)
+                _NoRequestSection(
+                  isSubmitting: provider.isSubmitting,
+                  onRequest: () => provider.requestCertificate(),
+                )
+              else
+                _StatusSection(
+                  status: request.status,
+                  downloaded: _downloaded,
+                  onDownload: () {
+                    setState(() => _downloaded = true);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text(
+                              'Certificate download requires backend connectivity.')),
+                    );
+                  },
                 ),
-              ),
-              _buildNavBar(provider),
             ],
           );
         },
       ),
     );
   }
+}
 
-  Widget _buildStepContent(HajjCertificateProvider provider) {
-    switch (_step) {
-      case 0:
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Hijri Year of Travel',
-                style:
-                    AppTextStyles.body.copyWith(fontWeight: FontWeight.w600)),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: _yearController,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(hintText: 'e.g. 1445'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                AppButton(
-                  label: 'Look Up',
-                  isLoading: provider.lookupState == LoadState.loading,
-                  onPressed: provider.lookupState == LoadState.loading
-                      ? null
-                      : () => _handleLookup(provider),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            if (provider.lookupState == LoadState.empty)
-              const EmptyStateView(
-                icon: Icons.search_off,
-                title: 'No records found',
-                message:
-                    'We couldn\'t find a completed Hajj trip on file for that year. '
-                    'Verify the year with your registered Hajj operator, or try another year.',
-              )
-            else if (provider.lookupState == LoadState.success &&
-                provider.foundTrip != null)
-              AppCard(
-                child: Row(
-                  children: [
-                    const Icon(Icons.check_circle, color: AppColors.success),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Trip found', style: AppTextStyles.h3),
-                          Text(provider.foundTrip!.operatorName,
-                              style: AppTextStyles.bodySecondary),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-          ],
-        );
-      case 1:
-        final trip = provider.foundTrip;
-        if (trip == null) return const SizedBox.shrink();
-        return AppCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Confirm Trip Details', style: AppTextStyles.h3),
-              const Divider(height: 24),
-              ReviewRow(label: 'Hijri Year', value: '${trip.hijriYear}'),
-              ReviewRow(label: 'Operator', value: trip.operatorName),
-              ReviewRow(label: 'Group Number', value: trip.groupNumber),
-            ],
-          ),
-        );
-      default:
-        final trip = provider.foundTrip;
-        if (trip == null) return const SizedBox.shrink();
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            AppCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Review Your Request', style: AppTextStyles.h3),
-                  const Divider(height: 24),
-                  ReviewRow(label: 'Hijri Year', value: '${trip.hijriYear}'),
-                  ReviewRow(label: 'Operator', value: trip.operatorName),
-                  ReviewRow(label: 'Group Number', value: trip.groupNumber),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Once submitted, certificate generation will appear under Pending Requests.',
-              style: AppTextStyles.caption,
-            ),
-          ],
-        );
-    }
-  }
+class _PrerequisiteBanner extends StatelessWidget {
+  const _PrerequisiteBanner();
 
-  Widget _buildNavBar(HajjCertificateProvider provider) {
-    final canGoNext = switch (_step) {
-      0 =>
-        provider.lookupState == LoadState.success && provider.foundTrip != null,
-      _ => true,
-    };
-
-    return Padding(
-      padding: const EdgeInsets.all(20),
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.primarySurface,
+        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+        border: Border(left: BorderSide(color: AppColors.primary, width: 3)),
+      ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (_step > 0)
-            Expanded(
-              child: AppButton(
-                label: 'Back',
-                isSecondary: true,
-                onPressed: provider.isSubmitting
-                    ? null
-                    : () => setState(() => _step -= 1),
-              ),
-            ),
-          if (_step > 0) const SizedBox(width: 12),
+          const Icon(Icons.info_outline, color: AppColors.primary, size: 20),
+          const SizedBox(width: 12),
           Expanded(
-            child: AppButton(
-              label:
-                  _step == _stepLabels.length - 1 ? 'Submit Request' : 'Next',
-              isLoading: provider.isSubmitting,
-              onPressed: !canGoNext
-                  ? null
-                  : provider.isSubmitting
-                      ? null
-                      : () {
-                          if (_step == _stepLabels.length - 1) {
-                            _handleSubmit(provider);
-                          } else {
-                            setState(() => _step += 1);
-                          }
-                        },
+            child: Text(
+              'Before downloading your electronic Hajj certificate, you must '
+              'first visit your assigned health centre and request it from '
+              'your doctor in person.',
+              style: AppTextStyles.body,
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+class _NoRequestSection extends StatelessWidget {
+  final bool isSubmitting;
+  final VoidCallback onRequest;
+  const _NoRequestSection(
+      {required this.isSubmitting, required this.onRequest});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        const EmptyStateView(
+          icon: Icons.workspace_premium_outlined,
+          title: 'No download available yet',
+          message:
+              'You haven\'t requested your certificate from your doctor yet. '
+              'Once you have, confirm it below to start tracking it here.',
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          child: AppButton(
+            label: 'I\'ve Requested It From My Doctor',
+            isLoading: isSubmitting,
+            onPressed: isSubmitting ? null : onRequest,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _StatusSection extends StatelessWidget {
+  final String status; // 'processing' | 'ready' | 'approved'
+  final bool downloaded;
+  final VoidCallback onDownload;
+
+  const _StatusSection({
+    required this.status,
+    required this.downloaded,
+    required this.onDownload,
+  });
+
+  bool get _isReady => status == 'ready' || status == 'approved';
+
+  /// 0 = Requested, 1 = Processing, 2 = Ready, 3 = Downloaded.
+  int get _currentStep {
+    if (downloaded) return 3;
+    if (_isReady) return 2;
+    return 1;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('CURRENT REQUEST STATUS', style: AppTextStyles.overline),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color:
+                _isReady ? AppColors.successSurface : AppColors.warningSurface,
+            borderRadius: BorderRadius.circular(30),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 7,
+                height: 7,
+                decoration: BoxDecoration(
+                  color: _isReady ? AppColors.success : AppColors.warning,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                _isReady ? 'Ready' : 'Processing',
+                style: AppTextStyles.caption.copyWith(
+                  color: _isReady ? AppColors.success : AppColors.warning,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          _isReady
+              ? 'Your certificate is ready to download.'
+              : 'Your certificate request is being reviewed by your doctor.',
+          style: AppTextStyles.bodySecondary,
+        ),
+        const SizedBox(height: 24),
+        Text('APPLICATION PROGRESS', style: AppTextStyles.overline),
+        const SizedBox(height: 14),
+        _ProgressTracker(currentStep: _currentStep),
+        const SizedBox(height: 28),
+        SizedBox(
+          width: double.infinity,
+          child: AppButton(
+            label: 'Find my health centre',
+            variant: AppButtonVariant.secondary,
+            onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Not available in this demo.')),
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          child: AppButton(
+            label: 'Download certificate',
+            icon: Icons.download_outlined,
+            onPressed: _isReady ? onDownload : null,
+          ),
+        ),
+        if (!_isReady) ...[
+          const SizedBox(height: 8),
+          Text(
+            'Available once your request is ready.',
+            textAlign: TextAlign.center,
+            style: AppTextStyles.caption.copyWith(color: AppColors.ink500),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _ProgressTracker extends StatelessWidget {
+  final int currentStep;
+  const _ProgressTracker({required this.currentStep});
+
+  static const _labels = ['Requested', 'Processing', 'Ready', 'Downloaded'];
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: List.generate(_labels.length * 2 - 1, (i) {
+        if (i.isOdd) {
+          final segmentDone = (i - 1) ~/ 2 < currentStep;
+          return Expanded(
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 22),
+              height: 2,
+              color: segmentDone ? AppColors.primary : AppColors.ink100,
+            ),
+          );
+        }
+        final stepIndex = i ~/ 2;
+        final done = stepIndex < currentStep;
+        final active = stepIndex == currentStep;
+        return SizedBox(
+          width: 76,
+          child: Column(
+            children: [
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: done ? AppColors.primary : AppColors.surface,
+                  border: Border.all(
+                    color:
+                        done || active ? AppColors.primary : AppColors.ink100,
+                    width: active ? 2 : 1,
+                  ),
+                ),
+                child: Center(
+                  child: done
+                      ? const Icon(Icons.check, size: 15, color: Colors.white)
+                      : Text(
+                          '${stepIndex + 1}',
+                          style: AppTextStyles.caption.copyWith(
+                            color:
+                                active ? AppColors.primary : AppColors.ink300,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                _labels[stepIndex],
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                style: AppTextStyles.caption.copyWith(
+                  fontSize: 11,
+                  color: done || active ? AppColors.ink900 : AppColors.ink500,
+                  fontWeight: active ? FontWeight.w700 : FontWeight.normal,
+                ),
+              ),
+            ],
+          ),
+        );
+      }),
     );
   }
 }
