@@ -24,7 +24,7 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
   });
 
   @override
-  Size get preferredSize => const Size.fromHeight(190);
+  Size get preferredSize => const Size.fromHeight(130);
 
   @override
   Widget build(BuildContext context) {
@@ -35,13 +35,15 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
         context.watch<AppointmentProvider>().myAppointments.isNotEmpty ||
             context.watch<ServiceRequestProvider>().requests.isNotEmpty;
 
-    return Container(
-      color: palette.primary,
-      child: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            Padding(
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Top Primary Header (Logo, Notifications, Profile)
+        Container(
+          color: palette.primary,
+          child: SafeArea(
+            bottom: false,
+            child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -212,31 +214,30 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
                 ],
               ),
             ),
-
-            // Sub-bar with title and navigation back action
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              color: AppColors.surfaceMuted,
-              child: Row(
-                children: [
-                  if (showBackButton && Navigator.canPop(context)) ...[
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                          size: 18),
-                      onPressed: onBack ?? () => Navigator.pop(context),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                    ),
-                    const SizedBox(width: 12),
-                  ],
-                  Text(title, style: AppTextStyles.h2),
-                ],
-              ),
-            ),
-          ],
+          ),
         ),
-      ),
+
+        // External Title Section (Below Top Bar)
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          color: Theme.of(context).scaffoldBackgroundColor,
+          child: Row(
+            children: [
+              if (showBackButton && Navigator.canPop(context)) ...[
+                IconButton(
+                  icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+                  onPressed: onBack ?? () => Navigator.pop(context),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+                const SizedBox(width: 12),
+              ],
+              Text(title, style: AppTextStyles.h2),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

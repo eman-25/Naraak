@@ -1,17 +1,23 @@
+// lib/screens/booking/booking_appointment_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/appointment_provider.dart';
 import '../../providers/user_profile_provider.dart';
+import '../../providers/app_settings_provider.dart';
 import '../../models/appointment.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
-import '../../widgets/app_card.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_top_bar.dart';
 
-enum AppointmentType { inPerson, teleConsultation }
-
-enum BookingMethod { byDateAndDoctor, availableToday, closestSlot }
+enum BookingView {
+  chooseMethod,
+  bookByDateDoctor,
+  availableToday,
+  closestSlot,
+  reviewDetails,
+  bookingSuccess,
+}
 
 class BookingAppointmentScreen extends StatefulWidget {
   const BookingAppointmentScreen({super.key});
@@ -22,16 +28,36 @@ class BookingAppointmentScreen extends StatefulWidget {
 }
 
 class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
-  // Navigation Flow States:
-  // 0: Selection Menu, 1: Slots List, 2: Review/Confirm, 3: Success Pass
-  int _currentFlowStep = 0;
+  BookingView _currentView = BookingView.chooseMethod;
 
-  AppointmentType _selectedType = AppointmentType.inPerson;
-  BookingMethod _bookingMethod = BookingMethod.byDateAndDoctor;
-  DateTime? _selectedDate;
-  Appointment? _selectedSlot;
-  bool _isBooking = false;
+  // Form State for "Book by Date & Doctor"
+  String? _selectedDoctor;
+  DateTime _selectedDate = DateTime.now();
+  String? _selectedTimeSlot;
+
+  // Search & Filter state for Available Today / Closest Slot
   final TextEditingController _searchController = TextEditingController();
+  String _selectedGenderFilter = 'All';
+  String _selectedSortTime = 'Ascending';
+  Appointment? _confirmedAppointment;
+  bool _isBooking = false;
+
+  final List<String> _mockDoctors = [
+    'Dr. Fatima Al-Dosari',
+    'Dr. Khalid Al-Mansoori',
+    'Dr. Hind Al-Zayani',
+    'Dr. Mohamed Al-Ansari',
+    'Dr. Sara Al-Rumaihi',
+  ];
+
+  final List<String> _mockTimeSlots = [
+    '08:00',
+    '08:30',
+    '09:00',
+    '09:30',
+    '10:00',
+    '11:00',
+  ];
 
   @override
   void initState() {
@@ -47,88 +73,187 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
     super.dispose();
   }
 
+  void _handleBack() {
+    setState(() {
+      if (_currentView == BookingView.reviewDetails) {
+        _currentView = BookingView.bookByDateDoctor;
+      } else if (_currentView != BookingView.chooseMethod &&
+          _currentView != BookingView.bookingSuccess) {
+        _currentView = BookingView.chooseMethod;
+      }
+    });
+  }
+
+  String _getAppBarTitle() {
+    switch (_currentView) {
+      case BookingView.chooseMethod:
+        return 'Choose Booking Method';
+      case BookingView.bookByDateDoctor:
+        return 'Book by Date & Doctor';
+      case BookingView.availableToday:
+        return 'Available Today';
+      case BookingView.closestSlot:
+        return 'Closest Available Slot';
+      case BookingView.reviewDetails:
+        return 'Confirm Booking';
+      case BookingView.bookingSuccess:
+        return 'Booking Success';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final profile = context.watch<UserProfileProvider>().profile;
+    final themeColor = context.watch<AppSettingsProvider>().palette.primary;
+    final userProfile = context.watch<UserProfileProvider>().profile;
 
     return Scaffold(
       appBar: AppTopBar(
         title: _getAppBarTitle(),
-        showBackButton: _currentFlowStep > 0 && _currentFlowStep != 3,
-        onBack: () => setState(() => _currentFlowStep--),
+        showBackButton: _currentView != BookingView.chooseMethod &&
+            _currentView != BookingView.bookingSuccess,
+        onBack: _handleBack,
       ),
       body: SafeArea(
-        child: Column(
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 250),
+          child: _buildCurrentScreenView(themeColor, userProfile),
+        ),
+      ),
+      bottomNavigationBar: _buildGlobalBottomNav(themeColor),
+    );
+  }
+
+  Widget _buildCurrentScreenView(Color themeColor, dynamic profile) {
+    switch (_currentView) {
+      case BookingView.chooseMethod:
+        return _buildScreen1ChooseMethod(themeColor);
+      case BookingView.bookByDateDoctor:
+        return _buildScreen2BookByDateDoctor(themeColor, profile);
+      case BookingView.availableToday:
+        return _buildScreen3AvailableToday(themeColor);
+      case BookingView.closestSlot:
+        return _buildScreen4ClosestSlot(themeColor);
+      case BookingView.reviewDetails:
+        return _buildReviewDetailsView(themeColor, profile);
+      case BookingView.bookingSuccess:
+        return _buildSuccessPassView(themeColor);
+    }
+  }
+
+  // ==========================================
+  // SCREEN 1: CHOOSE BOOKING METHOD
+  // ==========================================
+  Widget _buildScreen1ChooseMethod(Color themeColor) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Text(
+              'How would you like to book?',
+              style: AppTextStyles.bodySecondary.copyWith(
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          _buildMethodCard(
+            themeColor: themeColor,
+            icon: Icons.calendar_month_outlined,
+            title: 'By date & doctor',
+            description: 'Choose a specific doctor and date',
+            onTap: () {
+              setState(() => _currentView = BookingView.bookByDateDoctor);
+            },
+          ),
+          const SizedBox(height: 16),
+          _buildMethodCard(
+            themeColor: themeColor,
+            icon: Icons.access_time_rounded,
+            title: 'Available today',
+            description: 'See who can see you today',
+            onTap: () {
+              setState(() => _currentView = BookingView.availableToday);
+            },
+          ),
+          const SizedBox(height: 16),
+          _buildMethodCard(
+            themeColor: themeColor,
+            icon: Icons.bolt_outlined,
+            title: 'Closest Available Slot',
+            description: 'Soonest available appointment anywhere',
+            onTap: () {
+              setState(() => _currentView = BookingView.closestSlot);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMethodCard({
+    required Color themeColor,
+    required IconData icon,
+    required String title,
+    required String description,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.ink100, width: 1.2),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
           children: [
-            if (_currentFlowStep == 1) ...[
-              // Search Input
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: TextField(
-                  controller: _searchController,
-                  decoration: InputDecoration(
-                    hintText: 'Search Doctor or Center...',
-                    prefixIcon:
-                        const Icon(Icons.search, color: AppColors.primaryTeal),
-                    suffixIcon: _searchController.text.isEmpty
-                        ? null
-                        : IconButton(
-                            icon: const Icon(Icons.clear,
-                                color: AppColors.primaryTeal),
-                            onPressed: () {
-                              _searchController.clear();
-                              setState(() {});
-                            },
-                          ),
-                    filled: true,
-                    fillColor: Colors.grey.shade100,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 0),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: themeColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: themeColor, size: 24),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: AppTextStyles.h3.copyWith(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-                  onChanged: (_) => setState(() {}),
-                ),
-              ),
-
-              // In-Person vs Tele-Consultation Toggle Header
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: AppColors.secondaryIce,
-                    borderRadius: BorderRadius.circular(12),
+                  const SizedBox(height: 4),
+                  Text(
+                    description,
+                    style: AppTextStyles.caption.copyWith(
+                      color: AppColors.ink500,
+                      fontSize: 13,
+                    ),
                   ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                          child: _buildTypeSegment(AppointmentType.inPerson,
-                              'In-Person', Icons.medical_services_outlined)),
-                      Expanded(
-                          child: _buildTypeSegment(
-                              AppointmentType.teleConsultation,
-                              'Tele Visit',
-                              Icons.video_call_outlined)),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
-
-            // Active Flow Screen Body
-            Expanded(
-              child: IndexedStack(
-                index: _currentFlowStep,
-                children: [
-                  _buildBookingMenuSection(),
-                  _buildAvailableSlotsSection(),
-                  _buildReviewDetailsSection(profile),
-                  _buildBookingSuccessPassSection(),
                 ],
               ),
+            ),
+            Icon(
+              Icons.chevron_right_rounded,
+              color: themeColor.withValues(alpha: 0.7),
             ),
           ],
         ),
@@ -136,563 +261,668 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
     );
   }
 
-  String _getAppBarTitle() {
-    switch (_currentFlowStep) {
-      case 1:
-        return 'Available Slots';
-      case 2:
-      case 3:
-        return 'Book Appointment';
-      default:
-        return 'Book Appointment';
-    }
-  }
+  // ==========================================
+  // SCREEN 2: BOOK BY DATE & DOCTOR
+  // ==========================================
+  Widget _buildScreen2BookByDateDoctor(Color themeColor, dynamic profile) {
+    final healthCenter = profile?.assignedHealthCenter ?? 'Naim Health Center';
 
-  // --- Step 0: Initial Options Menu ---
-  Widget _buildBookingMenuSection() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Book Appointment By:', style: AppTextStyles.h3),
-          const SizedBox(height: 16),
-          _buildMenuOptionCard(
-            icon: Icons.calendar_today_outlined,
-            title: 'Depending on date and the doctor',
-            onTap: () => _startBooking(BookingMethod.byDateAndDoctor),
+          // Health Center Label & Field
+          Text('Health Center', style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 6),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: AppColors.ink100.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.ink050),
+            ),
+            child: Text(
+              '$healthCenter (auto-filled)',
+              style: AppTextStyles.body.copyWith(color: AppColors.ink500),
+            ),
           ),
-          const SizedBox(height: 12),
-          _buildMenuOptionCard(
-            icon: Icons.access_time,
-            title: 'Closest appointment',
-            onTap: () => _startBooking(BookingMethod.closestSlot),
-          ),
-          const SizedBox(height: 12),
-          _buildMenuOptionCard(
-            icon: Icons.person_outline,
-            title: 'Available Slots',
-            onTap: () => _startBooking(BookingMethod.availableToday),
-          ),
-        ],
-      ),
-    );
-  }
+          const SizedBox(height: 20),
 
-  Future<void> _startBooking(BookingMethod method) async {
-    DateTime? date;
-    if (method == BookingMethod.byDateAndDoctor) {
-      date = await showDatePicker(
-        context: context,
-        firstDate: DateTime.now(),
-        lastDate: DateTime.now().add(const Duration(days: 90)),
-        initialDate: DateTime.now(),
-      );
-      if (!mounted || date == null) return;
-    }
-
-    setState(() {
-      _bookingMethod = method;
-      _selectedDate = date;
-      _searchController.clear();
-      _currentFlowStep = 1;
-    });
-  }
-
-  // --- Step 1: Available Slots / No Slots Exception View ---
-  Widget _buildAvailableSlotsSection() {
-    return Consumer<AppointmentProvider>(
-      builder: (context, provider, _) {
-        final query = _searchController.text.trim().toLowerCase();
-        final now = DateTime.now();
-        final slots = provider.availableSlots.where((slot) {
-          final matchesMethod = switch (_bookingMethod) {
-            BookingMethod.byDateAndDoctor => _selectedDate == null ||
-                _isSameDate(slot.slotDateTime, _selectedDate!),
-            BookingMethod.availableToday => _isSameDate(slot.slotDateTime, now),
-            BookingMethod.closestSlot => true,
-          };
-          return matchesMethod &&
-              (query.isEmpty ||
-                  slot.doctorName.toLowerCase().contains(query) ||
-                  slot.centerName.toLowerCase().contains(query));
-        }).toList();
-        if (_bookingMethod == BookingMethod.closestSlot) {
-          slots.sort((first, second) =>
-              first.slotDateTime.compareTo(second.slotDateTime));
-        }
-
-        if (provider.slotsState == LoadState.loading) {
-          return const Center(
-              child: CircularProgressIndicator(color: AppColors.primaryTeal));
-        }
-
-        // EXCEPTION HANDLER: "No Available Slots" UI
-        if (provider.slotsState == LoadState.empty || slots.isEmpty) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AppColors.secondaryIce.withValues(alpha: 0.5),
-                    ),
-                    child: Center(
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                              color: AppColors.primaryTeal, width: 2),
-                        ),
-                        child: const Icon(
-                          Icons.calendar_month_outlined,
-                          size: 44,
-                          color: AppColors.primaryTeal,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  const Text('No Available Slots', style: AppTextStyles.h2),
-                  const SizedBox(height: 8),
-                  Text(
-                    _bookingMethod == BookingMethod.availableToday
-                        ? 'No appointments are available today. Please try another booking method.'
-                        : 'No appointments match your selected date or search.',
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.bodySecondary,
-                  ),
-                ],
+          // Doctor Selection Dropdown
+          Text('Doctor', style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 6),
+          DropdownButtonFormField<String>(
+            value: _selectedDoctor,
+            hint: const Text('[Select doctor]'),
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: Colors.white,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppColors.ink050),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppColors.ink050),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: themeColor, width: 2),
               ),
             ),
-          );
-        }
+            items: _mockDoctors.map((doc) {
+              return DropdownMenuItem(value: doc, child: Text(doc));
+            }).toList(),
+            onChanged: (val) => setState(() => _selectedDoctor = val),
+          ),
+          const SizedBox(height: 20),
 
-        // Slots Found List UI
-        return ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          children: [
-            Text(
-              '${slots.length} Slots Found',
-              style: AppTextStyles.caption,
+          // Date Selection Calendar
+          Text('SELECT DATE', style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.bold, letterSpacing: 0.8)),
+          const SizedBox(height: 8),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.ink100),
             ),
-            const SizedBox(height: 12),
-            ...slots.map((slot) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: AppCard(
-                  onTap: () {
-                    setState(() {
-                      _selectedSlot = slot;
-                      _currentFlowStep = 2;
-                    });
-                  },
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 24,
-                        backgroundColor: AppColors.secondaryIce,
-                        child: Icon(
-                          _selectedType == AppointmentType.teleConsultation
-                              ? Icons.video_call
-                              : Icons.person,
-                          color: AppColors.primaryTeal,
-                        ),
+            child: CalendarDatePicker(
+              initialDate: _selectedDate,
+              firstDate: DateTime.now(),
+              lastDate: DateTime.now().add(const Duration(days: 90)),
+              onDateChanged: (date) => setState(() => _selectedDate = date),
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Available Time Slots Section
+          Text('AVAILABLE TIME SLOTS', style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.bold, letterSpacing: 0.8)),
+          const SizedBox(height: 12),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              mainAxisSpacing: 10,
+              crossAxisSpacing: 10,
+              childAspectRatio: 2.3,
+            ),
+            itemCount: _mockTimeSlots.length,
+            itemBuilder: (context, idx) {
+              final slot = _mockTimeSlots[idx];
+              final isSelected = _selectedTimeSlot == slot;
+
+              return InkWell(
+                onTap: () => setState(() => _selectedTimeSlot = slot),
+                borderRadius: BorderRadius.circular(10),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  decoration: BoxDecoration(
+                    color: isSelected ? themeColor : Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: isSelected ? themeColor : AppColors.ink050,
+                      width: isSelected ? 2 : 1,
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      slot,
+                      style: AppTextStyles.body.copyWith(
+                        color: isSelected ? Colors.white : AppColors.neutralDark,
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(slot.doctorName, style: AppTextStyles.h3),
-                            const Text('General Medicine',
-                                style: AppTextStyles.caption),
-                            const SizedBox(height: 2),
-                            Text(slot.centerName,
-                                style: AppTextStyles.bodySecondary),
-                            const SizedBox(height: 8),
-                            Wrap(
-                              spacing: 8,
-                              children: [
-                                Text(
-                                  MaterialLocalizations.of(context)
-                                      .formatMediumDate(slot.slotDateTime),
-                                  style: AppTextStyles.caption,
-                                ),
-                                Text(
-                                  MaterialLocalizations.of(context)
-                                      .formatTimeOfDay(
-                                    TimeOfDay.fromDateTime(slot.slotDateTime),
-                                  ),
-                                  style: AppTextStyles.caption.copyWith(
-                                      color: AppColors.primaryTeal,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      const Icon(Icons.chevron_right,
-                          color: AppColors.primaryTeal),
-                    ],
+                    ),
                   ),
                 ),
               );
-            }),
-          ],
-        );
-      },
+            },
+          ),
+          const SizedBox(height: 28),
+
+          // Continue Button
+          AppButton(
+            label: 'Continue',
+            onPressed: (_selectedDoctor != null && _selectedTimeSlot != null)
+                ? () {
+                    setState(() {
+                      _currentView = BookingView.reviewDetails;
+                    });
+                  }
+                : null,
+          ),
+          const SizedBox(height: 20),
+        ],
+      ),
     );
   }
 
-  bool _isSameDate(DateTime first, DateTime second) {
-    return first.year == second.year &&
-        first.month == second.month &&
-        first.day == second.day;
+  // ==========================================
+  // SCREEN 3: AVAILABLE TODAY
+  // ==========================================
+  Widget _buildScreen3AvailableToday(Color themeColor) {
+    return Column(
+      children: [
+        // Search & Filter Header Section
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+          child: Column(
+            children: [
+              TextField(
+                controller: _searchController,
+                onChanged: (_) => setState(() {}),
+                decoration: InputDecoration(
+                  hintText: 'Search by name...',
+                  prefixIcon: Icon(Icons.search_rounded, color: themeColor),
+                  filled: true,
+                  fillColor: AppColors.ink100.withValues(alpha: 0.5),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  _buildFilterChip('Gender', themeColor, () {
+                    _showGenderFilterModal(themeColor);
+                  }),
+                  const SizedBox(width: 8),
+                  _buildFilterChip('Time', themeColor, () {
+                    _showTimeSortModal(themeColor);
+                  }),
+                ],
+              ),
+            ],
+          ),
+        ),
+
+        // Doctors Cards List
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            children: [
+              _buildDoctorTodayCard(
+                doctorName: 'Dr. Fatima Al-Dosari',
+                themeColor: themeColor,
+                slots: ['10:00', '10:30', '11:00'],
+              ),
+              const SizedBox(height: 16),
+              _buildDoctorTodayCard(
+                doctorName: 'Dr. Khalid Al-Mansoori',
+                themeColor: themeColor,
+                slots: ['11:00', '11:30'],
+              ),
+              const SizedBox(height: 16),
+              _buildDoctorTodayCard(
+                doctorName: 'Dr. Hind Al-Zayani',
+                themeColor: themeColor,
+                slots: ['14:00'],
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 
-  // --- Step 2: Details Review & Confirmation ---
-  Widget _buildReviewDetailsSection(dynamic profile) {
-    if (_selectedSlot == null) return const SizedBox.shrink();
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+  Widget _buildDoctorTodayCard({
+    required String doctorName,
+    required Color themeColor,
+    required List<String> slots,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.ink100),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Please review the booking details below for your primary healthcare center appointment.',
-            style: AppTextStyles.bodySecondary,
-          ),
-          const SizedBox(height: 16),
-          AppCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 24,
-                      backgroundColor: AppColors.secondaryIce,
-                      child: Icon(
-                        _selectedType == AppointmentType.teleConsultation
-                            ? Icons.video_call
-                            : Icons.person_outline,
-                        color: AppColors.primaryTeal,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(_selectedSlot!.doctorName,
-                            style: AppTextStyles.h3),
-                        const Text('Specialist - General Medicine',
-                            style: AppTextStyles.caption),
-                      ],
-                    ),
-                  ],
-                ),
-                const Divider(height: 24),
-                _buildReviewDetailRow(
-                  icon: Icons.location_on_outlined,
-                  title: _selectedSlot!.centerName,
-                  subtitle:
-                      'Building 95, Lulu Road, Block 303, Manama, Bahrain',
-                ),
-                const SizedBox(height: 12),
-                _buildReviewDetailRow(
-                  icon: Icons.calendar_today_outlined,
-                  title: MaterialLocalizations.of(context).formatMediumDate(
-                    _selectedSlot!.slotDateTime,
+          Text(doctorName, style: AppTextStyles.h3.copyWith(fontSize: 16)),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 10,
+            runSpacing: 8,
+            children: slots.map((slot) {
+              final isSelected = _selectedDoctor == doctorName && _selectedTimeSlot == slot;
+              return InkWell(
+                onTap: () {
+                  setState(() {
+                    _selectedDoctor = doctorName;
+                    _selectedTimeSlot = slot;
+                    _selectedDate = DateTime.now();
+                    _currentView = BookingView.reviewDetails;
+                  });
+                },
+                borderRadius: BorderRadius.circular(8),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: isSelected ? themeColor : Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: isSelected ? themeColor : AppColors.ink500),
                   ),
-                  subtitle: _selectedType == AppointmentType.teleConsultation
-                      ? 'Join link will be active 5 mins before slot'
-                      : 'Arrive 15 minutes before your slot',
-                ),
-                const SizedBox(height: 12),
-                _buildReviewDetailRow(
-                  icon: Icons.access_time,
-                  title: MaterialLocalizations.of(context).formatTimeOfDay(
-                    TimeOfDay.fromDateTime(_selectedSlot!.slotDateTime),
+                  child: Text(
+                    slot,
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : AppColors.neutralDark,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                  subtitle: 'Estimated duration: 15-20 mins',
                 ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // Patient Information Card
-          AppCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('PATIENT DETAILS', style: AppTextStyles.caption),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('Name', style: AppTextStyles.bodySecondary),
-                    Text(profile?.fullName ?? 'Eman Al-Khalifa',
-                        style: AppTextStyles.body
-                            .copyWith(fontWeight: FontWeight.bold)),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('CPR Number',
-                        style: AppTextStyles.bodySecondary),
-                    Text(profile?.cpr ?? '990422345',
-                        style: AppTextStyles.body
-                            .copyWith(fontWeight: FontWeight.bold)),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          // Confirm and Cancel Actions
-          AppButton(
-            label: 'Confirm Booking',
-            isLoading: _isBooking,
-            onPressed: _isBooking ? null : _confirmBooking,
-          ),
-          const SizedBox(height: 8),
-          SizedBox(
-            width: double.infinity,
-            child: AppButton(
-              label: 'Cancel',
-              isOutlined: true,
-              onPressed: () => setState(() => _currentFlowStep = 0),
-            ),
+              );
+            }).toList(),
           ),
         ],
       ),
     );
   }
 
-  // --- Step 3: Confirmation Ticket Pass ---
-  Widget _buildBookingSuccessPassSection() {
+  // ==========================================
+  // SCREEN 4: CLOSEST AVAILABLE SLOT
+  // ==========================================
+  Widget _buildScreen4ClosestSlot(Color themeColor) {
+    final closestSlots = [
+      {'doctor': 'Dr. Hind Al-Zayani', 'time': '10:00 AM — Today'},
+      {'doctor': 'Dr. Khalid Al-Mansoori', 'time': '10:30 AM — Today'},
+      {'doctor': 'Dr. Fatima Al-Dosari', 'time': '11:00 AM — Today'},
+      {'doctor': 'Dr. Mohamed Al-Ansari', 'time': '11:00 AM — Today'},
+      {'doctor': 'Dr. Sara Al-Rumaihi', 'time': '02:00 PM — Today'},
+    ];
+
+    return Column(
+      children: [
+        // Sorting Header Options
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+          child: Row(
+            children: [
+              _buildFilterChip('Name', themeColor, () {}),
+              const SizedBox(width: 8),
+              _buildFilterChip('Gender', themeColor, () {}),
+              const SizedBox(width: 8),
+              _buildFilterChip('Time', themeColor, () {}),
+            ],
+          ),
+        ),
+
+        // List of Closest Available Doctor Slots
+        Expanded(
+          child: ListView.separated(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            itemCount: closestSlots.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 12),
+            itemBuilder: (context, idx) {
+              final item = closestSlots[idx];
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.ink100),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.02),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            item['doctor']!,
+                            style: AppTextStyles.h3.copyWith(fontSize: 15),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            item['time']!,
+                            style: AppTextStyles.caption.copyWith(
+                              color: themeColor,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    OutlinedButton(
+                      onPressed: () {
+                        setState(() {
+                          _selectedDoctor = item['doctor'];
+                          _selectedTimeSlot = item['time']!.split(' ')[0];
+                          _selectedDate = DateTime.now();
+                          _currentView = BookingView.reviewDetails;
+                        });
+                      },
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: themeColor, width: 1.5),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                      ),
+                      child: Text(
+                        'Select',
+                        style: TextStyle(
+                          color: themeColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ==========================================
+  // REVIEW DETAILS SECTION
+  // ==========================================
+  Widget _buildReviewDetailsView(Color themeColor, dynamic profile) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Confirm Appointment Details',
+            style: AppTextStyles.h2.copyWith(fontSize: 20),
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.ink100),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildSummaryRow(Icons.person_outline, 'Doctor', _selectedDoctor ?? 'Dr. Fatima Al-Dosari', themeColor),
+                const Divider(height: 24),
+                _buildSummaryRow(Icons.location_on_outlined, 'Health Center', profile?.assignedHealthCenter ?? 'Naim Health Center', themeColor),
+                const Divider(height: 24),
+                _buildSummaryRow(
+                  Icons.calendar_today_rounded,
+                  'Date & Time',
+                  '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year} at ${_selectedTimeSlot ?? '09:30 AM'}',
+                  themeColor,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 28),
+          AppButton(
+            label: 'Confirm Booking',
+            isLoading: _isBooking,
+            onPressed: () async {
+              setState(() => _isBooking = true);
+              final provider = context.read<AppointmentProvider>();
+              final success = await provider.bookSlot(provider.availableSlots.isNotEmpty ? provider.availableSlots.first.id : 'slot_today');
+              setState(() => _isBooking = false);
+              if (success) {
+                setState(() {
+                  _confirmedAppointment = provider.myAppointments.last;
+                  _currentView = BookingView.bookingSuccess;
+                });
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ==========================================
+  // SUCCESS PASS TICKET SECTION
+  // ==========================================
+  Widget _buildSuccessPassView(Color themeColor) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(16),
             decoration: const BoxDecoration(
-                color: AppColors.success, shape: BoxShape.circle),
-            child: const Icon(Icons.check, size: 40, color: Colors.white),
+              color: AppColors.success,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.check_rounded, size: 48, color: Colors.white),
           ),
           const SizedBox(height: 16),
-          const Text('Booking Confirmed!', style: AppTextStyles.h2),
-          const SizedBox(height: 20),
-
-          // Appointment Pass Ticket
-          AppCard(
+          Text('Booking Confirmed!', style: AppTextStyles.h2),
+          const SizedBox(height: 24),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: themeColor.withValues(alpha: 0.3)),
+              boxShadow: [
+                BoxShadow(
+                  color: themeColor.withValues(alpha: 0.08),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: const [
-                    Text('APPOINTMENT PASS', style: AppTextStyles.caption),
-                    Text('APPROVED',
-                        style: TextStyle(
-                            color: AppColors.success,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12)),
+                  children: [
+                    const Text('APPOINTMENT PASS', style: AppTextStyles.caption),
+                    Text(
+                      'APPROVED',
+                      style: TextStyle(
+                        color: themeColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
                   ],
                 ),
-                const SizedBox(height: 8),
-                Text(_selectedSlot?.doctorName ?? 'Dr. Fatima Al-Aali',
-                    style: AppTextStyles.h3),
-                const Text('Specialist - General Medicine',
-                    style: AppTextStyles.caption),
                 const SizedBox(height: 12),
-
-                // Dashed Separator Line
+                Text(
+                  _selectedDoctor ?? 'Dr. Fatima Al-Dosari',
+                  style: AppTextStyles.h3.copyWith(fontSize: 18),
+                ),
+                const Text('Specialist - Family Medicine', style: AppTextStyles.caption),
+                const SizedBox(height: 16),
                 Row(
                   children: List.generate(
-                    30,
-                    (index) => Expanded(
+                    24,
+                    (i) => Expanded(
                       child: Container(
-                        height: 1,
-                        color: index.isEven
-                            ? AppColors.primaryTeal
-                            : Colors.transparent,
+                        height: 1.5,
+                        color: i.isEven ? themeColor : Colors.transparent,
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 12),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('CENTER', style: AppTextStyles.caption),
-                        Text(_selectedSlot?.centerName ?? 'Naim HealthCenter',
-                            style: AppTextStyles.body
-                                .copyWith(fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 8),
-                        const Text('CPR NUMBER', style: AppTextStyles.caption),
-                        const Text('990422345',
-                            style: TextStyle(fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        const Text('DATE & TIME', style: AppTextStyles.caption),
-                        Text(
-                            _selectedSlot == null
-                                ? '-'
-                                : '${MaterialLocalizations.of(context).formatMediumDate(_selectedSlot!.slotDateTime)}, '
-                                    '${MaterialLocalizations.of(context).formatTimeOfDay(TimeOfDay.fromDateTime(_selectedSlot!.slotDateTime))}',
-                            style:
-                                const TextStyle(fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 8),
-                        const Text('BOOKING ID', style: AppTextStyles.caption),
-                        const Text('#NRK-2026-89',
-                            style: TextStyle(
-                                color: AppColors.primaryTeal,
-                                fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                  ],
+                const SizedBox(height: 16),
+                Text('DATE & TIME', style: AppTextStyles.caption),
+                Text(
+                  '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year} - ${_selectedTimeSlot ?? '09:30 AM'}',
+                  style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 24),
-
+          const SizedBox(height: 28),
           AppButton(
             label: 'View My Appointments',
             onPressed: () => Navigator.pushNamed(context, '/appointments'),
           ),
           const SizedBox(height: 12),
           TextButton(
-            onPressed: () => setState(() => _currentFlowStep = 0),
-            child: const Text('Back to Home',
-                style: TextStyle(
-                    color: AppColors.primaryTeal, fontWeight: FontWeight.bold)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // --- Helpers ---
-  Future<void> _confirmBooking() async {
-    final selectedSlot = _selectedSlot;
-    if (selectedSlot == null) return;
-
-    setState(() => _isBooking = true);
-    final success =
-        await context.read<AppointmentProvider>().bookSlot(selectedSlot.id);
-    if (!mounted) return;
-
-    setState(() => _isBooking = false);
-    if (success) {
-      setState(() => _currentFlowStep = 3);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            context.read<AppointmentProvider>().errorMessage ??
-                'This slot is no longer available.',
-          ),
-        ),
-      );
-    }
-  }
-
-  Widget _buildTypeSegment(AppointmentType type, String title, IconData icon) {
-    final isSelected = _selectedType == type;
-    return GestureDetector(
-      onTap: () => setState(() => _selectedType = type),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primaryTeal : Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon,
-                size: 16,
-                color: isSelected ? Colors.white : AppColors.primaryTeal),
-            const SizedBox(width: 6),
-            Text(
-              title,
-              style: TextStyle(
-                color: isSelected ? Colors.white : AppColors.primaryTeal,
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
-              ),
+            onPressed: () => Navigator.pushNamed(context, '/home'),
+            child: Text(
+              'Back to Home',
+              style: TextStyle(color: themeColor, fontWeight: FontWeight.bold),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMenuOptionCard({
-    required IconData icon,
-    required String title,
-    required VoidCallback onTap,
-  }) {
-    return AppCard(
-      onTap: onTap,
-      child: Row(
-        children: [
-          Icon(icon, color: AppColors.primaryTeal, size: 22),
-          const SizedBox(width: 12),
-          Expanded(
-              child: Text(title,
-                  style: AppTextStyles.body
-                      .copyWith(fontWeight: FontWeight.w600))),
-          const Icon(Icons.chevron_right, color: AppColors.primaryTeal),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildReviewDetailRow(
-      {required IconData icon,
-      required String title,
-      required String subtitle}) {
+  // ==========================================
+  // GLOBAL UI HELPERS & COMPONENTS
+  // ==========================================
+  Widget _buildFilterChip(String label, Color themeColor, VoidCallback onTap) {
+    return ActionChip(
+      onPressed: onTap,
+      label: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+          const SizedBox(width: 4),
+          const Icon(Icons.keyboard_arrow_down_rounded, size: 16),
+        ],
+      ),
+      backgroundColor: Colors.white,
+      side: const BorderSide(color: AppColors.ink500),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+    );
+  }
+
+  Widget _buildSummaryRow(IconData icon, String label, String val, Color themeColor) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 18, color: AppColors.primaryTeal),
-        const SizedBox(width: 8),
+        Icon(icon, color: themeColor, size: 22),
+        const SizedBox(width: 12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title,
-                  style:
-                      AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
-              Text(subtitle, style: AppTextStyles.caption),
+              Text(label, style: AppTextStyles.caption),
+              Text(val, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
             ],
           ),
         ),
       ],
+    );
+  }
+
+  void _showGenderFilterModal(Color themeColor) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return Container(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: ['All', 'Female', 'Male'].map((g) {
+              return ListTile(
+                title: Text(g),
+                trailing: _selectedGenderFilter == g ? Icon(Icons.check, color: themeColor) : null,
+                onTap: () {
+                  setState(() => _selectedGenderFilter = g);
+                  Navigator.pop(ctx);
+                },
+              );
+            }).toList(),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showTimeSortModal(Color themeColor) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return Container(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: ['Ascending', 'Descending'].map((t) {
+              return ListTile(
+                title: Text(t),
+                trailing: _selectedSortTime == t ? Icon(Icons.check, color: themeColor) : null,
+                onTap: () {
+                  setState(() => _selectedSortTime = t);
+                  Navigator.pop(ctx);
+                },
+              );
+            }).toList(),
+          ),
+        );
+      },
+    );
+  }
+
+  // Unified Application Bottom Navigation Bar
+  Widget _buildGlobalBottomNav(Color themeColor) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: AppColors.ink100, width: 1)),
+      ),
+      child: BottomNavigationBar(
+        currentIndex: 1, // Appointments Tab Active
+        selectedItemColor: themeColor,
+        unselectedItemColor: AppColors.ink500,
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              Navigator.pushReplacementNamed(context, '/home');
+              break;
+            case 1:
+              setState(() => _currentView = BookingView.chooseMethod);
+              break;
+            case 2:
+              Navigator.pushReplacementNamed(context, '/services-tab');
+              break;
+            case 3:
+              Navigator.pushReplacementNamed(context, '/profile');
+              break;
+          }
+        },
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home_rounded), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.calendar_today_outlined), activeIcon: Icon(Icons.calendar_today_rounded), label: 'Appts'),
+          BottomNavigationBarItem(icon: Icon(Icons.grid_view_outlined), activeIcon: Icon(Icons.grid_view_rounded), label: 'Services'),
+          BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person_rounded), label: 'Profile'),
+        ],
+      ),
     );
   }
 }
