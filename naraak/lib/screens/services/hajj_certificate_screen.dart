@@ -1,3 +1,4 @@
+// lib/screens/services/hajj_certificate_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/hajj_certificate_provider.dart';
@@ -11,11 +12,8 @@ import '../../widgets/external_api_notice.dart';
 import '../../widgets/review_row.dart';
 import '../../widgets/status_badge.dart';
 import '../../widgets/step_header.dart';
+import '../../widgets/app_top_bar.dart';
 
-/// Electronic Hajj Certificate — Phase 3 flow: eligibility check
-/// (already-issued / already-pending decision point) -> look up completed
-/// trip by Hijri year (not-found decision point) -> confirm -> review ->
-/// submit -> Pending Requests.
 class HajjCertificateScreen extends StatefulWidget {
   const HajjCertificateScreen({super.key});
 
@@ -64,7 +62,9 @@ class _HajjCertificateScreenState extends State<HajjCertificateScreen> {
       _showSuccessDialog();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(provider.errorMessage ?? 'Submission failed, please retry.')),
+        SnackBar(
+            content: Text(
+                provider.errorMessage ?? 'Submission failed, please retry.')),
       );
     }
   }
@@ -74,7 +74,8 @@ class _HajjCertificateScreenState extends State<HajjCertificateScreen> {
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) => AlertDialog(
-        icon: const Icon(Icons.check_circle, color: AppColors.success, size: 48),
+        icon:
+            const Icon(Icons.check_circle, color: AppColors.success, size: 48),
         title: const Text('Request Submitted'),
         content: const Text(
           'Your Electronic Hajj Certificate request has been submitted. Certificate generation '
@@ -97,12 +98,28 @@ class _HajjCertificateScreenState extends State<HajjCertificateScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Electronic Hajj Certificate')),
+      appBar: const AppTopBar(title: 'Electronic Hajj Certificate'),
       body: Consumer<HajjCertificateProvider>(
         builder: (context, provider, _) {
+          if (provider.initState == LoadState.loading ||
+              provider.initState == LoadState.idle) {
+            return const Center(
+                child: CircularProgressIndicator(color: AppColors.primaryTeal));
+          }
+
+          if (provider.initState == LoadState.error) {
+            return EmptyStateView(
+              isError: true,
+              title: 'Error Loading Service',
+              message: provider.errorMessage ??
+                  'An error occurred while checking existing requests.',
+              actionLabel: 'Retry',
+              onAction: () => provider.checkExistingRequest(),
+            );
+          }
+
           final existing = provider.existingRequest;
 
-          // Decision point: certificate already issued.
           if (existing != null && existing.isCompleted) {
             return Padding(
               padding: const EdgeInsets.all(20),
@@ -112,12 +129,16 @@ class _HajjCertificateScreenState extends State<HajjCertificateScreen> {
                   AppCard(
                     child: Column(
                       children: [
-                        const Icon(Icons.workspace_premium, color: AppColors.success, size: 48),
+                        const Icon(Icons.workspace_premium,
+                            color: AppColors.success, size: 48),
                         const SizedBox(height: 12),
-                        Text('Certificate Already Issued', style: AppTextStyles.h3, textAlign: TextAlign.center),
+                        Text('Certificate Already Issued',
+                            style: AppTextStyles.h3,
+                            textAlign: TextAlign.center),
                         const SizedBox(height: 8),
                         Text(
-                          existing.note ?? 'Your Electronic Hajj Certificate is ready.',
+                          existing.note ??
+                              'Your Electronic Hajj Certificate is ready.',
                           style: AppTextStyles.bodySecondary,
                           textAlign: TextAlign.center,
                         ),
@@ -131,7 +152,9 @@ class _HajjCertificateScreenState extends State<HajjCertificateScreen> {
                     label: 'Download Certificate (Demo)',
                     onPressed: () {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Certificate download requires backend connectivity.')),
+                        const SnackBar(
+                            content: Text(
+                                'Certificate download requires backend connectivity.')),
                       );
                     },
                   ),
@@ -140,14 +163,15 @@ class _HajjCertificateScreenState extends State<HajjCertificateScreen> {
             );
           }
 
-          // Decision point: an open request already exists.
           if (existing != null && existing.isOpen) {
             return EmptyStateView(
               icon: Icons.hourglass_top,
               title: 'You already have a pending request',
-              message: existing.note ?? 'Your certificate request is already being processed.',
+              message: existing.note ??
+                  'Your certificate request is already being processed.',
               actionLabel: 'View Pending Requests',
-              onAction: () => Navigator.pushReplacementNamed(context, '/pending-requests'),
+              onAction: () =>
+                  Navigator.pushReplacementNamed(context, '/pending-requests'),
             );
           }
 
@@ -174,7 +198,9 @@ class _HajjCertificateScreenState extends State<HajjCertificateScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Hijri Year of Travel', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600)),
+            Text('Hijri Year of Travel',
+                style:
+                    AppTextStyles.body.copyWith(fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
             Row(
               children: [
@@ -197,14 +223,15 @@ class _HajjCertificateScreenState extends State<HajjCertificateScreen> {
             ),
             const SizedBox(height: 20),
             if (provider.lookupState == LoadState.empty)
-              // Decision point: no completed Hajj trip found for that year.
-              EmptyStateView(
+              const EmptyStateView(
                 icon: Icons.search_off,
                 title: 'No records found',
-                message: 'We couldn\'t find a completed Hajj trip on file for that year. '
+                message:
+                    'We couldn\'t find a completed Hajj trip on file for that year. '
                     'Verify the year with your registered Hajj operator, or try another year.',
               )
-            else if (provider.lookupState == LoadState.success && provider.foundTrip != null)
+            else if (provider.lookupState == LoadState.success &&
+                provider.foundTrip != null)
               AppCard(
                 child: Row(
                   children: [
@@ -215,7 +242,8 @@ class _HajjCertificateScreenState extends State<HajjCertificateScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text('Trip found', style: AppTextStyles.h3),
-                          Text(provider.foundTrip!.operatorName, style: AppTextStyles.bodySecondary),
+                          Text(provider.foundTrip!.operatorName,
+                              style: AppTextStyles.bodySecondary),
                         ],
                       ),
                     ),
@@ -225,7 +253,8 @@ class _HajjCertificateScreenState extends State<HajjCertificateScreen> {
           ],
         );
       case 1:
-        final trip = provider.foundTrip!;
+        final trip = provider.foundTrip;
+        if (trip == null) return const SizedBox.shrink();
         return AppCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -239,7 +268,8 @@ class _HajjCertificateScreenState extends State<HajjCertificateScreen> {
           ),
         );
       default:
-        final trip = provider.foundTrip!;
+        final trip = provider.foundTrip;
+        if (trip == null) return const SizedBox.shrink();
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -267,7 +297,8 @@ class _HajjCertificateScreenState extends State<HajjCertificateScreen> {
 
   Widget _buildNavBar(HajjCertificateProvider provider) {
     final canGoNext = switch (_step) {
-      0 => provider.lookupState == LoadState.success && provider.foundTrip != null,
+      0 =>
+        provider.lookupState == LoadState.success && provider.foundTrip != null,
       _ => true,
     };
 
@@ -280,13 +311,16 @@ class _HajjCertificateScreenState extends State<HajjCertificateScreen> {
               child: AppButton(
                 label: 'Back',
                 isSecondary: true,
-                onPressed: provider.isSubmitting ? null : () => setState(() => _step -= 1),
+                onPressed: provider.isSubmitting
+                    ? null
+                    : () => setState(() => _step -= 1),
               ),
             ),
           if (_step > 0) const SizedBox(width: 12),
           Expanded(
             child: AppButton(
-              label: _step == _stepLabels.length - 1 ? 'Submit Request' : 'Next',
+              label:
+                  _step == _stepLabels.length - 1 ? 'Submit Request' : 'Next',
               isLoading: provider.isSubmitting,
               onPressed: !canGoNext
                   ? null

@@ -8,6 +8,7 @@ import '../theme/app_text_styles.dart';
 import '../widgets/app_card.dart';
 import '../widgets/status_badge.dart';
 import '../widgets/empty_state.dart';
+import '../widgets/app_top_bar.dart';
 
 enum _RequestFilter { all, inProgress, completed, actionNeeded }
 
@@ -67,13 +68,15 @@ class _PendingRequestsScreenState extends State<PendingRequestsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Pending Requests')),
+      appBar: const AppTopBar(title: 'Pending Requests'),
       body: Consumer<ServiceRequestProvider>(
         builder: (context, provider, _) {
           switch (provider.state) {
             case LoadState.idle:
             case LoadState.loading:
-              return const Center(child: CircularProgressIndicator(color: AppColors.primaryTeal));
+              return const Center(
+                  child:
+                      CircularProgressIndicator(color: AppColors.primaryTeal));
             case LoadState.error:
               return EmptyStateView(
                 isError: true,
@@ -86,7 +89,8 @@ class _PendingRequestsScreenState extends State<PendingRequestsScreen> {
               return const EmptyStateView(
                 icon: Icons.inbox_outlined,
                 title: 'No pending requests',
-                message: 'Requests you submit for services like the Hajj Certificate\n'
+                message:
+                    'Requests you submit for services like the Hajj Certificate\n'
                     'or Fee Exemption Card will appear here with live status.',
               );
             case LoadState.success:
@@ -99,7 +103,8 @@ class _PendingRequestsScreenState extends State<PendingRequestsScreen> {
                         ? EmptyStateView(
                             icon: Icons.filter_alt_off_outlined,
                             title: 'No requests in this filter',
-                            message: 'Try a different filter, or check back once you\'ve submitted a request.',
+                            message:
+                                'Try a different filter, or check back once you\'ve submitted a request.',
                           )
                         : RefreshIndicator(
                             color: AppColors.primaryTeal,
@@ -111,7 +116,10 @@ class _PendingRequestsScreenState extends State<PendingRequestsScreen> {
                                 final req = filtered[i];
                                 return Padding(
                                   padding: const EdgeInsets.only(bottom: 10),
-                                  child: AppCard(child: _RequestRow(request: req, status: _statusFor(req.status))),
+                                  child: AppCard(
+                                      child: _RequestRow(
+                                          request: req,
+                                          status: _statusFor(req.status))),
                                 );
                               },
                             ),
@@ -186,7 +194,8 @@ class _RequestRow extends StatelessWidget {
           const SizedBox(height: 4),
           Row(
             children: [
-              const Icon(Icons.attach_file, size: 14, color: AppColors.neutralGray),
+              const Icon(Icons.attach_file,
+                  size: 14, color: AppColors.neutralGray),
               const SizedBox(width: 4),
               Text(request.attachmentName!, style: AppTextStyles.caption),
             ],

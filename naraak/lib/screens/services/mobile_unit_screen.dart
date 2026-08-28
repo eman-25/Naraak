@@ -1,3 +1,4 @@
+// lib/screens/services/mobile_unit_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/user_profile_provider.dart';
@@ -5,6 +6,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/app_button.dart';
+import '../../widgets/app_top_bar.dart';
 
 class MobileUnitScreen extends StatefulWidget {
   const MobileUnitScreen({super.key});
@@ -17,9 +19,19 @@ class _MobileUnitScreenState extends State<MobileUnitScreen> {
   final _formKey = GlobalKey<FormState>();
 
   String? _selectedBlock;
+  String? _selectedCondition;
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _reasonController = TextEditingController();
   bool _isSubmitted = false;
+
+  final List<String> _patientConditions = [
+    'Person with Special Needs',
+    'Elderly (60+ years)',
+    'Bedridden Patient',
+    'Chronic Illness / High Risk',
+    'Post-Surgery Recovery',
+    'Other Special Condition',
+  ];
 
   final List<String> _areaBlocks = [
     'Block 301 - Manama',
@@ -43,25 +55,7 @@ class _MobileUnitScreenState extends State<MobileUnitScreen> {
     final profile = context.watch<UserProfileProvider>().profile;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Request Mobile Unit'),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: CircleAvatar(
-              backgroundColor: Colors.white24,
-              child: Text(
-                _getInitials(profile?.fullName ?? 'EK'),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+      appBar: const AppTopBar(title: 'Request Mobile Unit'),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: _isSubmitted ? _buildSuccessCard() : _buildRequestForm(profile),
@@ -82,7 +76,27 @@ class _MobileUnitScreenState extends State<MobileUnitScreen> {
                 const SizedBox(height: 4),
                 _buildReadOnlyField(profile?.cpr ?? '990422345'),
                 const SizedBox(height: 16),
-
+                const Text('Patient Condition / Category *',
+                    style: AppTextStyles.caption),
+                const SizedBox(height: 4),
+                DropdownButtonFormField<String>(
+                  value: _selectedCondition,
+                  hint: const Text('Select Patient Condition'),
+                  items: _patientConditions
+                      .map((condition) => DropdownMenuItem(
+                            value: condition,
+                            child: Text(condition),
+                          ))
+                      .toList(),
+                  onChanged: (val) => setState(() => _selectedCondition = val),
+                  validator: (val) => val == null
+                      ? 'Please select the patient condition'
+                      : null,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 16),
                 const Text('Block Number *', style: AppTextStyles.caption),
                 const SizedBox(height: 4),
                 DropdownButtonFormField<String>(
@@ -102,8 +116,8 @@ class _MobileUnitScreenState extends State<MobileUnitScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-
-                const Text('Full Residential Address *', style: AppTextStyles.caption),
+                const Text('Full Residential Address *',
+                    style: AppTextStyles.caption),
                 const SizedBox(height: 4),
                 TextFormField(
                   controller: _addressController,
@@ -117,8 +131,8 @@ class _MobileUnitScreenState extends State<MobileUnitScreen> {
                       : null,
                 ),
                 const SizedBox(height: 16),
-
-                const Text('Reason for Visit Request *', style: AppTextStyles.caption),
+                const Text('Reason for Visit Request *',
+                    style: AppTextStyles.caption),
                 const SizedBox(height: 4),
                 TextFormField(
                   controller: _reasonController,
@@ -162,6 +176,8 @@ class _MobileUnitScreenState extends State<MobileUnitScreen> {
             style: AppTextStyles.bodySecondary,
           ),
           const SizedBox(height: 20),
+          _buildReadOnlyField('Patient Category: $_selectedCondition'),
+          const SizedBox(height: 12),
           _buildReadOnlyField('Assigned Block: $_selectedBlock'),
           const SizedBox(height: 24),
           SizedBox(

@@ -5,54 +5,47 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/app_button.dart';
+import '../../widgets/app_top_bar.dart';
 
+/// Newborn Sehati Card — single-screen form matching the approved mockup:
+/// Reference Number is auto-filled and read-only; Newborn CPR, Father CPR,
+/// Mother CPR, and Block are entered by the user. One Submit action leads
+/// to the success confirmation card.
 class NewbornSehatiCardScreen extends StatefulWidget {
   const NewbornSehatiCardScreen({super.key});
 
   @override
-  State<NewbornSehatiCardScreen> createState() => _NewbornSehatiCardScreenState();
+  State<NewbornSehatiCardScreen> createState() =>
+      _NewbornSehatiCardScreenState();
 }
 
 class _NewbornSehatiCardScreenState extends State<NewbornSehatiCardScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  String? _selectedBlock;
+  final _newbornCprController = TextEditingController();
+  final _fatherCprController = TextEditingController();
+  final _motherCprController = TextEditingController();
+  final _blockController = TextEditingController();
+
   bool _isSubmitted = false;
 
-  final List<String> _residentialBlocks = [
-    'Block 301 - Manama',
-    'Block 302 - Manama',
-    'Block 308 - Qudaibiya',
-    'Block 318 - Hoora',
-    'Block 321 - Juffair',
-    'Block 404 - Sanabis',
-    'Block 602 - Sitra',
-  ];
+  static const _referenceNumber = 'NRK-NSC-2026-092';
+
+  @override
+  void dispose() {
+    _newbornCprController.dispose();
+    _fatherCprController.dispose();
+    _motherCprController.dispose();
+    _blockController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final profile = context.watch<UserProfileProvider>().profile;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Newborn Sehati Card'),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: CircleAvatar(
-              backgroundColor: Colors.white24,
-              child: Text(
-                _getInitials(profile?.fullName ?? 'EK'),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+      appBar: const AppTopBar(title: 'Newborn Sehati Card'),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: _isSubmitted ? _buildSuccessCard() : _buildRequestForm(),
@@ -71,55 +64,53 @@ class _NewbornSehatiCardScreenState extends State<NewbornSehatiCardScreen> {
               children: [
                 const Text('Reference Number', style: AppTextStyles.caption),
                 const SizedBox(height: 4),
-                _buildReadOnlyField('NRK-NSC-2026-092'),
+                _buildReadOnlyField(_referenceNumber),
                 const SizedBox(height: 16),
-
-                const Text('Block Number *', style: AppTextStyles.caption),
+                const Text('Newborn CPR *', style: AppTextStyles.caption),
                 const SizedBox(height: 4),
-                DropdownButtonFormField<String>(
-                  value: _selectedBlock,
-                  hint: const Text('Select Residential Block'),
-                  items: _residentialBlocks
-                      .map((block) => DropdownMenuItem(
-                            value: block,
-                            child: Text(block),
-                          ))
-                      .toList(),
-                  onChanged: (val) => setState(() => _selectedBlock = val),
-                  validator: (val) =>
-                      val == null ? 'Please select a residential block' : null,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                  ),
+                TextFormField(
+                  controller: _newbornCprController,
+                  keyboardType: TextInputType.number,
+                  decoration:
+                      const InputDecoration(border: OutlineInputBorder()),
+                  validator: (val) => val == null || val.trim().isEmpty
+                      ? 'Please enter the newborn\'s CPR'
+                      : null,
                 ),
                 const SizedBox(height: 16),
-
-                // Informational Note Box
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.secondaryIce,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text(
-                        'i ',
-                        style: TextStyle(
-                          color: AppColors.primaryTeal,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                      ),
-                      Expanded(
-                        child: Text(
-                          'Note: Newborn information will be auto-verified and fetched directly from the national birth registry.',
-                          style: AppTextStyles.caption,
-                        ),
-                      ),
-                    ],
-                  ),
+                const Text('Father CPR *', style: AppTextStyles.caption),
+                const SizedBox(height: 4),
+                TextFormField(
+                  controller: _fatherCprController,
+                  keyboardType: TextInputType.number,
+                  decoration:
+                      const InputDecoration(border: OutlineInputBorder()),
+                  validator: (val) => val == null || val.trim().isEmpty
+                      ? 'Please enter the father\'s CPR'
+                      : null,
+                ),
+                const SizedBox(height: 16),
+                const Text('Mother CPR *', style: AppTextStyles.caption),
+                const SizedBox(height: 4),
+                TextFormField(
+                  controller: _motherCprController,
+                  keyboardType: TextInputType.number,
+                  decoration:
+                      const InputDecoration(border: OutlineInputBorder()),
+                  validator: (val) => val == null || val.trim().isEmpty
+                      ? 'Please enter the mother\'s CPR'
+                      : null,
+                ),
+                const SizedBox(height: 16),
+                const Text('Block *', style: AppTextStyles.caption),
+                const SizedBox(height: 4),
+                TextFormField(
+                  controller: _blockController,
+                  decoration:
+                      const InputDecoration(border: OutlineInputBorder()),
+                  validator: (val) => val == null || val.trim().isEmpty
+                      ? 'Please enter your residential block'
+                      : null,
                 ),
               ],
             ),
@@ -128,7 +119,7 @@ class _NewbornSehatiCardScreenState extends State<NewbornSehatiCardScreen> {
           SizedBox(
             width: double.infinity,
             child: AppButton(
-              label: 'Submit Request',
+              label: 'Submit',
               onPressed: _submitForm,
             ),
           ),
@@ -146,12 +137,12 @@ class _NewbornSehatiCardScreenState extends State<NewbornSehatiCardScreen> {
           const Text('Request Submitted', style: AppTextStyles.h2),
           const SizedBox(height: 8),
           const Text(
-            'Your Newborn Sehati Card application (NRK-NSC-2026-092) has been submitted successfully.',
+            'Your Newborn Sehati Card application ($_referenceNumber) has been submitted successfully.',
             textAlign: TextAlign.center,
             style: AppTextStyles.bodySecondary,
           ),
           const SizedBox(height: 20),
-          _buildReadOnlyField('Registered Block: $_selectedBlock'),
+          _buildReadOnlyField('Registered Block: ${_blockController.text}'),
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,

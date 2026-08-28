@@ -7,6 +7,13 @@ class MockAppointmentService {
   // In-memory "database" for this demo session.
   final List<Appointment> _slots = [
     Appointment(
+      id: 'slot_today',
+      centerName: 'Naim Health Center',
+      doctorName: 'Dr. Fatima Al-Dosari',
+      slotDateTime: DateTime.now().add(const Duration(hours: 2)),
+      status: 'available',
+    ),
+    Appointment(
       id: 'slot_001',
       centerName: 'Hoora Health Center',
       doctorName: 'Dr. Layla Al-Ansari',
@@ -54,7 +61,8 @@ class MockAppointmentService {
 
     final index = _slots.indexWhere((s) => s.id == slotId);
     if (index == -1) {
-      throw Exception('CONFLICT: slot no longer available'); // maps to Phase 5 error code 409
+      throw Exception(
+          'CONFLICT: slot no longer available'); // maps to Phase 5 error code 409
     }
 
     final booked = _slots[index].copyWith(status: 'confirmed');
@@ -72,6 +80,11 @@ class MockAppointmentService {
   /// PUT/DELETE /api/v1/appointments/{id} — cancel
   Future<void> cancelAppointment(String id) async {
     await Future.delayed(const Duration(milliseconds: 400));
-    _myAppointments.removeWhere((a) => a.id == id);
+    final index = _myAppointments.indexWhere((a) => a.id == id);
+    if (index != -1) {
+      _myAppointments[index] = _myAppointments[index].copyWith(
+        status: 'cancelled',
+      );
+    }
   }
 }

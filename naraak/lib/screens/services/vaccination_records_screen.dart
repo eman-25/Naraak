@@ -7,6 +7,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/empty_state.dart';
+import '../../widgets/app_top_bar.dart';
 
 /// Vaccination Records & Certificate — Phase 3 §3.2, Higher Priority.
 /// Flags expected-but-missing records; lets the user download a certificate
@@ -15,7 +16,8 @@ class VaccinationRecordsScreen extends StatefulWidget {
   const VaccinationRecordsScreen({super.key});
 
   @override
-  State<VaccinationRecordsScreen> createState() => _VaccinationRecordsScreenState();
+  State<VaccinationRecordsScreen> createState() =>
+      _VaccinationRecordsScreenState();
 }
 
 class _VaccinationRecordsScreenState extends State<VaccinationRecordsScreen> {
@@ -36,14 +38,18 @@ class _VaccinationRecordsScreenState extends State<VaccinationRecordsScreen> {
     final url = await provider.getCertificateUrl(record.id);
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(url != null ? 'Certificate ready: $url (demo link)' : 'Certificate unavailable')),
+      SnackBar(
+          content: Text(url != null
+              ? 'Certificate ready: $url (demo link)'
+              : 'Certificate unavailable')),
     );
   }
 
   void _showReportMissingSheet(VaccinationRecord record) {
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (sheetContext) => _ReportMissingSheet(record: record),
     );
   }
@@ -51,13 +57,15 @@ class _VaccinationRecordsScreenState extends State<VaccinationRecordsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Vaccination Records')),
+      appBar: const AppTopBar(title: 'Vaccination Records'),
       body: Consumer<VaccinationProvider>(
         builder: (context, provider, _) {
           switch (provider.state) {
             case LoadState.idle:
             case LoadState.loading:
-              return const Center(child: CircularProgressIndicator(color: AppColors.primaryTeal));
+              return const Center(
+                  child:
+                      CircularProgressIndicator(color: AppColors.primaryTeal));
             case LoadState.error:
               return EmptyStateView(
                 isError: true,
@@ -70,7 +78,8 @@ class _VaccinationRecordsScreenState extends State<VaccinationRecordsScreen> {
               return const EmptyStateView(
                 icon: Icons.vaccines_outlined,
                 title: 'No vaccination records found',
-                message: 'Records for you and linked family members will appear here.',
+                message:
+                    'Records for you and linked family members will appear here.',
               );
             case LoadState.success:
               return ListView.builder(
@@ -85,28 +94,36 @@ class _VaccinationRecordsScreenState extends State<VaccinationRecordsScreen> {
                       child: Row(
                         children: [
                           Icon(
-                            record.isFlaggedMissing ? Icons.flag : Icons.vaccines,
-                            color: record.isFlaggedMissing ? AppColors.warning : AppColors.primaryTeal,
+                            record.isFlaggedMissing
+                                ? Icons.flag
+                                : Icons.vaccines,
+                            color: record.isFlaggedMissing
+                                ? AppColors.warning
+                                : AppColors.primaryTeal,
                           ),
                           const SizedBox(width: 14),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(record.vaccineName, style: AppTextStyles.h3),
+                                Text(record.vaccineName,
+                                    style: AppTextStyles.h3),
                                 Text(
                                   record.isFlaggedMissing
                                       ? 'Expected but not on file — tap to report'
                                       : '${record.dateAdministered.day}/${record.dateAdministered.month}/${record.dateAdministered.year}',
                                   style: record.isFlaggedMissing
-                                      ? AppTextStyles.caption.copyWith(color: AppColors.warning)
+                                      ? AppTextStyles.caption
+                                          .copyWith(color: AppColors.warning)
                                       : AppTextStyles.caption,
                                 ),
                               ],
                             ),
                           ),
                           Icon(
-                            record.certificateUrl != null ? Icons.download : Icons.chevron_right,
+                            record.certificateUrl != null
+                                ? Icons.download
+                                : Icons.chevron_right,
                             color: AppColors.neutralGray,
                           ),
                         ],
@@ -150,10 +167,13 @@ class _ReportMissingSheetState extends State<_ReportMissingSheet> {
     if (success) {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Report submitted. We will update your status shortly.')),
+        const SnackBar(
+            content:
+                Text('Report submitted. We will update your status shortly.')),
       );
     } else {
-      setState(() => _errorText = provider.errorMessage ?? 'Submission failed.');
+      setState(
+          () => _errorText = provider.errorMessage ?? 'Submission failed.');
     }
   }
 
@@ -181,7 +201,9 @@ class _ReportMissingSheetState extends State<_ReportMissingSheet> {
           ),
           if (_errorText != null) ...[
             const SizedBox(height: 8),
-            Text(_errorText!, style: AppTextStyles.caption.copyWith(color: AppColors.bahrainAccent)),
+            Text(_errorText!,
+                style: AppTextStyles.caption
+                    .copyWith(color: AppColors.bahrainAccent)),
           ],
           const SizedBox(height: 20),
           ElevatedButton(
@@ -190,7 +212,8 @@ class _ReportMissingSheetState extends State<_ReportMissingSheet> {
                 ? const SizedBox(
                     height: 20,
                     width: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    child: CircularProgressIndicator(
+                        strokeWidth: 2, color: Colors.white),
                   )
                 : const Text('Submit Report'),
           ),

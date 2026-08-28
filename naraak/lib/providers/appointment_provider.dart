@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../models/appointment.dart';
 import '../services_mock/mock/mock_appointment_service.dart';
+
 enum LoadState { idle, loading, success, empty, error }
 
 /// Provider wrapping MockAppointmentService — screens listen to this
@@ -55,7 +56,13 @@ class AppointmentProvider extends ChangeNotifier {
 
   Future<void> cancelAppointment(String id) async {
     await _service.cancelAppointment(id);
-    _myAppointments.removeWhere((a) => a.id == id);
+    _myAppointments = [
+      for (final appointment in _myAppointments)
+        if (appointment.id == id)
+          appointment.copyWith(status: 'cancelled')
+        else
+          appointment,
+    ];
     notifyListeners();
   }
 }

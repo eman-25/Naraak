@@ -23,6 +23,12 @@ class UserProfileProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void switchDisplayName(String name) {
+    if (_profile == null) return;
+    _profile = _profile!.copyWith(fullName: name);
+    notifyListeners();
+  }
+
   void logout() {
     _loggedInCpr = null;
     _profile = null;

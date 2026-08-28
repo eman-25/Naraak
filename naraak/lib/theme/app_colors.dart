@@ -1,35 +1,65 @@
+// lib/theme/app_colors.dart
 import 'package:flutter/material.dart';
 
-/// Naraak design tokens — colors.
-/// Source: Phase 4 High-Fidelity Design System, Section 2.1
-/// TO CONFIRM: verify WCAG 2.1 AA contrast for every text/background pairing
-/// before locking these in for production.
+/// Naraak Design System v2 — refined healthcare palette.
+/// Moves from a flat single-teal scheme to a layered, modern palette with
+/// a proper tonal ramp, softer semantic colors, and dark-mode parity.
 class AppColors {
   AppColors._();
 
-  // Primary
-  static const primaryTeal =
-      Color(0xFF0F6B72); // Primary buttons, active nav, key headers
-  static const primaryDark =
-      Color(0xFF0B4F54); // Pressed/hover, high-emphasis text on light bg
+  // ── Brand ────────────────────────────────────────────────
+  static const primary        = Color(0xFF0E7C7B); // Deep teal — trust, calm
+  static const primaryDark    = Color(0xFF0A5C5C);
+  static const primaryLight   = Color(0xFF4FA8A6);
+  static const primarySurface = Color(0xFFE6F4F3); // tinted container
 
-  // Secondary
-  static const secondaryIce =
-      Color(0xFFEAF3F3); // Card backgrounds, section fills
+  static const secondary        = Color(0xFF2D6CDF); // Confident blue accent
+  static const secondarySurface = Color(0xFFE8F0FE);
 
-  // Neutral
-  static const neutralDark = Color(0xFF1F2D3D); // Body text, icons
-  static const neutralGray =
-      Color(0xFF5A6472); // Secondary text, captions, helper text
+  // ── Semantic ─────────────────────────────────────────────
+  static const success        = Color(0xFF1E9E6B);
+  static const successSurface = Color(0xFFE3F7EE);
+  static const warning        = Color(0xFFDB8A1E);
+  static const warningSurface = Color(0xFFFCF0DD);
+  static const error          = Color(0xFFD64550); // softer than pure red
+  static const errorSurface   = Color(0xFFFCE8E9);
+  static const bahrainAccent  = Color(0xFFCE1126); // reserved: critical only
 
-  // Status
-  static const success = Color(0xFF2E7D5B); // Confirmed / Approved
-  static const warning = Color(0xFFC77B00); // Pending / In Progress
-  static const bahrainAccent =
-      Color(0xFFCE1126); // Critical errors ONLY — never decorative
+  // ── Neutrals (tonal ramp) ────────────────────────────────
+  static const ink900 = Color(0xFF12181B); // primary text
+  static const ink700 = Color(0xFF3C474D); // secondary text
+  static const ink500 = Color(0xFF6B767C); // captions, disabled
+  static const ink300 = Color(0xFFAEB8BC);
+  static const ink100 = Color(0xFFE7ECEE);
+  static const ink050 = Color(0xFFF5F8F9); // subtle fills
 
-  // Base
-  static const background = Color(0xFFFFFFFF);
-  static const darkBackground = Color(0xFF102126);
-  static const darkSurface = Color(0xFF183239);
+  static const surface        = Color(0xFFFFFFFF);
+  static const surfaceMuted   = Color(0xFFF7FAFA);
+  static const outline        = Color(0xFFE1E8EA);
+
+  // ── Dark mode ────────────────────────────────────────────
+  static const darkBg      = Color(0xFF0D1417);
+  static const darkSurface = Color(0xFF16201F);
+  static const darkSurface2= Color(0xFF1E2B2A);
+  static const darkOutline = Color(0xFF2A3A39);
+
+  // ── Gradients ────────────────────────────────────────────
+  static const heroGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF0E7C7B), Color(0xFF115E85)],
+  );
+
+  static const chipGradient = LinearGradient(
+    colors: [Color(0xFF0E7C7B), Color(0xFF17A398)],
+  );
+
+  // Legacy aliases so existing call-sites keep compiling during migration.
+  static const primaryTeal   = primary;
+  static const primaryDark_  = primaryDark;
+  static const secondaryIce  = primarySurface;
+  static const neutralDark   = ink900;
+  static const neutralGray   = ink500;
+  static const background    = surface;
+  static const darkBackground= darkBg;
 }

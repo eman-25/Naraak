@@ -5,6 +5,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/app_button.dart';
+import '../../widgets/app_top_bar.dart';
 
 class MedicalReportsScreen extends StatefulWidget {
   const MedicalReportsScreen({super.key});
@@ -68,28 +69,7 @@ class _MedicalReportsScreenState extends State<MedicalReportsScreen> {
     final profile = context.watch<UserProfileProvider>().profile;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Request a Medical Report'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_none),
-            onPressed: () {},
-          ),
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: CircleAvatar(
-              backgroundColor: Colors.white24,
-              child: Text(
-                _getInitials(profile?.fullName ?? 'EK'),
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold),
-              ),
-            ),
-          ),
-        ],
-      ),
+      appBar: const AppTopBar(title: 'Request a Medical Report'),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(

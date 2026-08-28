@@ -5,17 +5,19 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/app_button.dart';
+import '../../widgets/app_top_bar.dart';
 
 class MammogramScreeningScreen extends StatefulWidget {
   const MammogramScreeningScreen({super.key});
 
   @override
-  State<MammogramScreeningScreen> createState() => _MammogramScreeningScreenState();
+  State<MammogramScreeningScreen> createState() =>
+      _MammogramScreeningScreenState();
 }
 
 class _MammogramScreeningScreenState extends State<MammogramScreeningScreen> {
   final _formKey = GlobalKey<FormState>();
-  
+
   late TextEditingController _nameController;
   late TextEditingController _phoneController;
   String? _selectedCenter;
@@ -55,21 +57,7 @@ class _MammogramScreeningScreenState extends State<MammogramScreeningScreen> {
     final bool isEligible = isEligibleGender && isEligibleAge;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Mammogram Screening'),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: CircleAvatar(
-              backgroundColor: Colors.white24,
-              child: Text(
-                _getInitials(profile?.fullName ?? 'EK'),
-                style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ),
-        ],
-      ),
+      appBar: const AppTopBar(title: 'Mammogram Screening'),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -88,7 +76,8 @@ class _MammogramScreeningScreenState extends State<MammogramScreeningScreen> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: const [
-                  Icon(Icons.info_outline, color: AppColors.primaryTeal, size: 22),
+                  Icon(Icons.info_outline,
+                      color: AppColors.primaryTeal, size: 22),
                   SizedBox(width: 12),
                   Expanded(
                     child: Text(
@@ -113,7 +102,8 @@ class _MammogramScreeningScreenState extends State<MammogramScreeningScreen> {
     );
   }
 
-  Widget _buildIneligibilityCard(dynamic profile, bool isGenderOk, bool isAgeOk) {
+  Widget _buildIneligibilityCard(
+      dynamic profile, bool isGenderOk, bool isAgeOk) {
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -143,7 +133,9 @@ class _MammogramScreeningScreenState extends State<MammogramScreeningScreen> {
                     !isGenderOk
                         ? 'Service restricted to female patients.'
                         : 'Patients must be 40 years or older to qualify.',
-                    style: AppTextStyles.body.copyWith(color: AppColors.bahrainAccent, fontWeight: FontWeight.bold),
+                    style: AppTextStyles.body.copyWith(
+                        color: AppColors.bahrainAccent,
+                        fontWeight: FontWeight.bold),
                   ),
                 ),
               ],
@@ -165,44 +157,48 @@ class _MammogramScreeningScreenState extends State<MammogramScreeningScreen> {
             const SizedBox(height: 4),
             _buildReadOnlyField('NRK-MAM-2026-102'),
             const SizedBox(height: 16),
-
             const Text('Contact Name *', style: AppTextStyles.caption),
             const SizedBox(height: 4),
             TextFormField(
               controller: _nameController,
               decoration: const InputDecoration(border: OutlineInputBorder()),
-              validator: (val) => val == null || val.isEmpty ? 'Please enter contact name' : null,
+              validator: (val) => val == null || val.isEmpty
+                  ? 'Please enter contact name'
+                  : null,
             ),
             const SizedBox(height: 16),
-
             const Text('Contact Number *', style: AppTextStyles.caption),
             const SizedBox(height: 4),
             TextFormField(
               controller: _phoneController,
               keyboardType: TextInputType.phone,
               decoration: const InputDecoration(border: OutlineInputBorder()),
-              validator: (val) => val == null || val.isEmpty ? 'Please enter contact number' : null,
+              validator: (val) => val == null || val.isEmpty
+                  ? 'Please enter contact number'
+                  : null,
             ),
             const SizedBox(height: 16),
-
-            const Text('Preferred Health Center *', style: AppTextStyles.caption),
+            const Text('Preferred Health Center *',
+                style: AppTextStyles.caption),
             const SizedBox(height: 4),
             DropdownButtonFormField<String>(
               value: _selectedCenter,
               hint: const Text('Select Health Center'),
               items: _healthCenters
-                  .map((center) => DropdownMenuItem(value: center, child: Text(center)))
+                  .map((center) =>
+                      DropdownMenuItem(value: center, child: Text(center)))
                   .toList(),
               onChanged: (val) => setState(() => _selectedCenter = val),
-              validator: (val) => val == null ? 'Please select a health center' : null,
+              validator: (val) =>
+                  val == null ? 'Please select a health center' : null,
               decoration: const InputDecoration(border: OutlineInputBorder()),
             ),
             const SizedBox(height: 16),
-
             CheckboxListTile(
               contentPadding: EdgeInsets.zero,
               value: _confirmedNoRecentMammogram,
-              onChanged: (val) => setState(() => _confirmedNoRecentMammogram = val ?? false),
+              onChanged: (val) =>
+                  setState(() => _confirmedNoRecentMammogram = val ?? false),
               title: const Text(
                 'I confirm I have not had a mammogram screening in the last 2 years',
                 style: AppTextStyles.bodySecondary,
@@ -210,7 +206,6 @@ class _MammogramScreeningScreenState extends State<MammogramScreeningScreen> {
               controlAffinity: ListTileControlAffinity.leading,
             ),
             const SizedBox(height: 20),
-
             SizedBox(
               width: double.infinity,
               child: AppButton(
@@ -256,7 +251,8 @@ class _MammogramScreeningScreenState extends State<MammogramScreeningScreen> {
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: AppColors.neutralGray.withValues(alpha: 0.3)),
       ),
-      child: Text(text, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
+      child: Text(text,
+          style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
     );
   }
 
