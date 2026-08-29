@@ -631,28 +631,34 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
                         ],
                       ),
                     ),
-                    OutlinedButton(
-                      onPressed: () {
-                        setState(() {
-                          _selectedDoctor = item['doctor'];
-                          _selectedTimeSlot = item['time']!.split(' ')[0];
-                          _selectedDate = DateTime.now();
-                          _currentView = BookingView.reviewDetails;
-                        });
-                      },
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: themeColor, width: 1.5),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24),
+                    SizedBox(
+                      // An unconstrained OutlinedButton next to Expanded in
+                      // a Row collapses the Expanded sibling to near-zero
+                      // width (each character wraps to its own line) --
+                      // giving it an explicit width fixes it.
+                      width: 84,
+                      child: OutlinedButton(
+                        onPressed: () {
+                          setState(() {
+                            _selectedDoctor = item['doctor'];
+                            _selectedTimeSlot = item['time']!.split(' ')[0];
+                            _selectedDate = DateTime.now();
+                            _currentView = BookingView.reviewDetails;
+                          });
+                        },
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: themeColor, width: 1.5),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
                         ),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 8),
-                      ),
-                      child: Text(
-                        'Select',
-                        style: TextStyle(
-                          color: themeColor,
-                          fontWeight: FontWeight.bold,
+                        child: Text(
+                          'Select',
+                          style: TextStyle(
+                            color: themeColor,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),

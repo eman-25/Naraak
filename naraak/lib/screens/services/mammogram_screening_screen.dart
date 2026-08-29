@@ -7,6 +7,9 @@ import '../../widgets/app_card.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_top_bar.dart';
 
+/// Mammogram Screening — Phase 3 §4.9: age/gender eligibility gate, then a
+/// real branching question (tested in the last 2 years?) with its own stop
+/// state, not a single self-attest checkbox.
 class MammogramScreeningScreen extends StatefulWidget {
   const MammogramScreeningScreen({super.key});
 
@@ -21,7 +24,7 @@ class _MammogramScreeningScreenState extends State<MammogramScreeningScreen> {
   late TextEditingController _nameController;
   late TextEditingController _phoneController;
   String? _selectedCenter;
-  bool _confirmedNoRecentMammogram = false;
+  bool? _testedRecently;
   bool _isSubmitted = false;
 
   final List<String> _healthCenters = [
@@ -95,7 +98,7 @@ class _MammogramScreeningScreenState extends State<MammogramScreeningScreen> {
             else if (_isSubmitted)
               _buildSuccessCard()
             else
-              _buildRequestForm(),
+              _buildEligibilityQuestion(),
           ],
         ),
       ),
@@ -146,75 +149,122 @@ class _MammogramScreeningScreenState extends State<MammogramScreeningScreen> {
     );
   }
 
+  // --- Branching question: tested in the last 2 years? ---
+  Widget _buildEligibilityQuestion() {
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Have you had a mammogram test in the last 2 years?',
+              style: AppTextStyles.h3),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: _YesNoPill(
+                  label: 'Yes',
+                  selected: _testedRecently == true,
+                  onTap: () => setState(() => _testedRecently = true),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _YesNoPill(
+                  label: 'No',
+                  selected: _testedRecently == false,
+                  onTap: () => setState(() => _testedRecently = false),
+                ),
+              ),
+            ],
+          ),
+          if (_testedRecently == true) ...[
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.bahrainAccent.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.info_outline,
+                      color: AppColors.bahrainAccent),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Not eligible yet — too soon since your last mammogram.',
+                      style: AppTextStyles.body.copyWith(
+                          color: AppColors.bahrainAccent,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ] else if (_testedRecently == false) ...[
+            const SizedBox(height: 20),
+            const Divider(),
+            const SizedBox(height: 12),
+            _buildRequestForm(),
+          ],
+        ],
+      ),
+    );
+  }
+
   Widget _buildRequestForm() {
     return Form(
       key: _formKey,
-      child: AppCard(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Reference Number', style: AppTextStyles.caption),
-            const SizedBox(height: 4),
-            _buildReadOnlyField('NRK-MAM-2026-102'),
-            const SizedBox(height: 16),
-            const Text('Contact Name *', style: AppTextStyles.caption),
-            const SizedBox(height: 4),
-            TextFormField(
-              controller: _nameController,
-              decoration: const InputDecoration(border: OutlineInputBorder()),
-              validator: (val) => val == null || val.isEmpty
-                  ? 'Please enter contact name'
-                  : null,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Reference Number', style: AppTextStyles.caption),
+          const SizedBox(height: 4),
+          _buildReadOnlyField('NRK-MAM-2026-102'),
+          const SizedBox(height: 16),
+          const Text('Contact Name *', style: AppTextStyles.caption),
+          const SizedBox(height: 4),
+          TextFormField(
+            controller: _nameController,
+            decoration: const InputDecoration(border: OutlineInputBorder()),
+            validator: (val) =>
+                val == null || val.isEmpty ? 'Please enter contact name' : null,
+          ),
+          const SizedBox(height: 16),
+          const Text('Contact Number *', style: AppTextStyles.caption),
+          const SizedBox(height: 4),
+          TextFormField(
+            controller: _phoneController,
+            keyboardType: TextInputType.phone,
+            decoration: const InputDecoration(border: OutlineInputBorder()),
+            validator: (val) => val == null || val.isEmpty
+                ? 'Please enter contact number'
+                : null,
+          ),
+          const SizedBox(height: 16),
+          const Text('Preferred Health Center *', style: AppTextStyles.caption),
+          const SizedBox(height: 4),
+          DropdownButtonFormField<String>(
+            initialValue: _selectedCenter,
+            hint: const Text('Select Health Center'),
+            items: _healthCenters
+                .map((center) =>
+                    DropdownMenuItem(value: center, child: Text(center)))
+                .toList(),
+            onChanged: (val) => setState(() => _selectedCenter = val),
+            validator: (val) =>
+                val == null ? 'Please select a health center' : null,
+            decoration: const InputDecoration(border: OutlineInputBorder()),
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            child: AppButton(
+              label: 'Submit Request',
+              onPressed: _submitForm,
             ),
-            const SizedBox(height: 16),
-            const Text('Contact Number *', style: AppTextStyles.caption),
-            const SizedBox(height: 4),
-            TextFormField(
-              controller: _phoneController,
-              keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(border: OutlineInputBorder()),
-              validator: (val) => val == null || val.isEmpty
-                  ? 'Please enter contact number'
-                  : null,
-            ),
-            const SizedBox(height: 16),
-            const Text('Preferred Health Center *',
-                style: AppTextStyles.caption),
-            const SizedBox(height: 4),
-            DropdownButtonFormField<String>(
-              value: _selectedCenter,
-              hint: const Text('Select Health Center'),
-              items: _healthCenters
-                  .map((center) =>
-                      DropdownMenuItem(value: center, child: Text(center)))
-                  .toList(),
-              onChanged: (val) => setState(() => _selectedCenter = val),
-              validator: (val) =>
-                  val == null ? 'Please select a health center' : null,
-              decoration: const InputDecoration(border: OutlineInputBorder()),
-            ),
-            const SizedBox(height: 16),
-            CheckboxListTile(
-              contentPadding: EdgeInsets.zero,
-              value: _confirmedNoRecentMammogram,
-              onChanged: (val) =>
-                  setState(() => _confirmedNoRecentMammogram = val ?? false),
-              title: const Text(
-                'I confirm I have not had a mammogram screening in the last 2 years',
-                style: AppTextStyles.bodySecondary,
-              ),
-              controlAffinity: ListTileControlAffinity.leading,
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: AppButton(
-                label: 'Submit Request',
-                onPressed: _confirmedNoRecentMammogram ? _submitForm : null,
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -261,10 +311,40 @@ class _MammogramScreeningScreenState extends State<MammogramScreeningScreen> {
       setState(() => _isSubmitted = true);
     }
   }
+}
 
-  String _getInitials(String name) {
-    final parts = name.trim().split(' ');
-    if (parts.length >= 2) return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
-    return name.isNotEmpty ? name[0].toUpperCase() : 'EK';
+class _YesNoPill extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  const _YesNoPill(
+      {required this.label, required this.selected, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: selected ? AppColors.primaryTeal : AppColors.secondaryIce,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: selected
+                ? AppColors.primaryTeal
+                : AppColors.neutralGray.withValues(alpha: 0.3),
+          ),
+        ),
+        child: Text(
+          label,
+          style: AppTextStyles.body.copyWith(
+            color: selected ? Colors.white : AppColors.neutralDark,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
   }
 }

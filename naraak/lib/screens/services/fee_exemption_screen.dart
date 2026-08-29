@@ -22,6 +22,10 @@ class FeeExemptionScreen extends StatefulWidget {
 class _FeeExemptionScreenState extends State<FeeExemptionScreen> {
   final _formKey = GlobalKey<FormState>();
 
+  /// Phase 3 §4.7 / Figure 41: details and uploads are two separate
+  /// screens, not one long scroll.
+  int _step = 0;
+
   late String _referenceNumber;
   String? _gender;
   String? _nationality;
@@ -203,7 +207,10 @@ class _FeeExemptionScreenState extends State<FeeExemptionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const AppTopBar(title: 'Fee Exemption Card'),
+      appBar: AppTopBar(
+        title: 'Fee Exemption Card',
+        onBack: _step == 1 ? () => setState(() => _step = 0) : null,
+      ),
       body: Consumer<FeeExemptionProvider>(
         builder: (context, provider, _) {
           if (provider.initState == LoadState.idle ||
@@ -237,146 +244,153 @@ class _FeeExemptionScreenState extends State<FeeExemptionScreen> {
             key: _formKey,
             child: ListView(
               padding: const EdgeInsets.all(20),
-              children: [
-                // Form Fields Card
-                AppCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Reference Number', style: AppTextStyles.label),
-                      const SizedBox(height: 6),
-                      TextFormField(
-                        initialValue: '$_referenceNumber (auto-filled)',
-                        enabled: false,
-                      ),
-                      const SizedBox(height: 16),
-                      Text('Gender', style: AppTextStyles.label),
-                      const SizedBox(height: 6),
-                      DropdownButtonFormField<String>(
-                        value: _gender,
-                        items: ['Female', 'Male']
-                            .map((g) =>
-                                DropdownMenuItem(value: g, child: Text(g)))
-                            .toList(),
-                        onChanged: (v) => setState(() => _gender = v),
-                        decoration: const InputDecoration(hintText: '[Select]'),
-                      ),
-                      const SizedBox(height: 16),
-                      Text('Nationality', style: AppTextStyles.label),
-                      const SizedBox(height: 6),
-                      DropdownButtonFormField<String>(
-                        value: _nationality,
-                        items: _nationalities
-                            .map((n) =>
-                                DropdownMenuItem(value: n, child: Text(n)))
-                            .toList(),
-                        onChanged: (v) => setState(() => _nationality = v),
-                        decoration: const InputDecoration(hintText: '[Select]'),
-                      ),
-                      const SizedBox(height: 16),
-                      Text('Request Type', style: AppTextStyles.label),
-                      const SizedBox(height: 6),
-                      DropdownButtonFormField<String>(
-                        value: _requestType,
-                        items: _requestTypes
-                            .map((r) =>
-                                DropdownMenuItem(value: r, child: Text(r)))
-                            .toList(),
-                        onChanged: (v) => setState(() => _requestType = v),
-                        decoration:
-                            const InputDecoration(hintText: '[New / Renew]'),
-                        validator: (v) => v == null ? 'Required' : null,
-                      ),
-                      const SizedBox(height: 16),
-                      Text('Marital Status', style: AppTextStyles.label),
-                      const SizedBox(height: 6),
-                      DropdownButtonFormField<String>(
-                        value: _maritalStatus,
-                        items: _maritalStatuses
-                            .map((m) =>
-                                DropdownMenuItem(value: m, child: Text(m)))
-                            .toList(),
-                        onChanged: (v) => setState(() => _maritalStatus = v),
-                        decoration: const InputDecoration(hintText: '[Select]'),
-                      ),
-                      const SizedBox(height: 16),
-                      Text('Spouse Nationality', style: AppTextStyles.label),
-                      const SizedBox(height: 6),
-                      DropdownButtonFormField<String>(
-                        value: _spouseNationality,
-                        items: _nationalities
-                            .map((n) =>
-                                DropdownMenuItem(value: n, child: Text(n)))
-                            .toList(),
-                        onChanged: (v) =>
-                            setState(() => _spouseNationality = v),
-                        decoration: const InputDecoration(hintText: '[Select]'),
-                      ),
-                      const SizedBox(height: 16),
-                      Text('Contact Number', style: AppTextStyles.label),
-                      const SizedBox(height: 6),
-                      TextFormField(
-                        controller: _contactController,
-                        keyboardType: TextInputType.phone,
-                        validator: (v) =>
-                            v == null || v.isEmpty ? 'Required' : null,
-                      ),
-                      const SizedBox(height: 16),
-                      Text('Email', style: AppTextStyles.label),
-                      const SizedBox(height: 6),
-                      TextFormField(
-                        controller: _emailController,
-                        keyboardType: TextInputType.emailAddress,
-                      ),
-                      const SizedBox(height: 16),
-                      Text('Case Description', style: AppTextStyles.label),
-                      const SizedBox(height: 6),
-                      TextFormField(
-                        controller: _descriptionController,
-                        maxLines: 3,
-                        decoration:
-                            const InputDecoration(hintText: '[text area]'),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                // Upload Documents Card
-                AppCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildUploadField('CPR Copy', 'cprCopy', 'cpr_copy.pdf'),
-                      _buildUploadField('Residence Permit', 'residencePermit',
-                          'residence_permit.pdf'),
-                      _buildUploadField(
-                          'Marriage Certificate (if married/divorced)',
-                          'marriageCert',
-                          'marriage_cert.pdf'),
-                      _buildUploadField('Divorce Certificate (if divorced)',
-                          'divorceCert', 'divorce_cert.pdf'),
-                      _buildUploadField('Death Certificate (if widowed)',
-                          'deathCert', 'death_cert.pdf'),
-                      _buildUploadField('Birth Certificate (if children)',
-                          'birthCert', 'birth_cert.pdf'),
-                      _buildUploadField('Medical Report', 'medicalReport',
-                          'medical_report.pdf'),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                AppButton(
-                  label: provider.isSubmitting ? 'Submitting...' : 'Submit',
-                  isLoading: provider.isSubmitting,
-                  onPressed: provider.isSubmitting ? null : _handleSubmit,
-                ),
-              ],
+              children: _step == 0
+                  ? _buildDetailsStep()
+                  : _buildUploadsStep(provider),
             ),
           );
         },
       ),
     );
+  }
+
+  List<Widget> _buildDetailsStep() {
+    return [
+      // Form Fields Card
+      AppCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Reference Number', style: AppTextStyles.label),
+            const SizedBox(height: 6),
+            TextFormField(
+              initialValue: '$_referenceNumber (auto-filled)',
+              enabled: false,
+            ),
+            const SizedBox(height: 16),
+            Text('Gender', style: AppTextStyles.label),
+            const SizedBox(height: 6),
+            DropdownButtonFormField<String>(
+              value: _gender,
+              items: ['Female', 'Male']
+                  .map((g) => DropdownMenuItem(value: g, child: Text(g)))
+                  .toList(),
+              onChanged: (v) => setState(() => _gender = v),
+              decoration: const InputDecoration(hintText: '[Select]'),
+            ),
+            const SizedBox(height: 16),
+            Text('Nationality', style: AppTextStyles.label),
+            const SizedBox(height: 6),
+            DropdownButtonFormField<String>(
+              value: _nationality,
+              items: _nationalities
+                  .map((n) => DropdownMenuItem(value: n, child: Text(n)))
+                  .toList(),
+              onChanged: (v) => setState(() => _nationality = v),
+              decoration: const InputDecoration(hintText: '[Select]'),
+            ),
+            const SizedBox(height: 16),
+            Text('Request Type', style: AppTextStyles.label),
+            const SizedBox(height: 6),
+            DropdownButtonFormField<String>(
+              value: _requestType,
+              items: _requestTypes
+                  .map((r) => DropdownMenuItem(value: r, child: Text(r)))
+                  .toList(),
+              onChanged: (v) => setState(() => _requestType = v),
+              decoration: const InputDecoration(hintText: '[New / Renew]'),
+              validator: (v) => v == null ? 'Required' : null,
+            ),
+            const SizedBox(height: 16),
+            Text('Marital Status', style: AppTextStyles.label),
+            const SizedBox(height: 6),
+            DropdownButtonFormField<String>(
+              value: _maritalStatus,
+              items: _maritalStatuses
+                  .map((m) => DropdownMenuItem(value: m, child: Text(m)))
+                  .toList(),
+              onChanged: (v) => setState(() => _maritalStatus = v),
+              decoration: const InputDecoration(hintText: '[Select]'),
+            ),
+            const SizedBox(height: 16),
+            Text('Spouse Nationality', style: AppTextStyles.label),
+            const SizedBox(height: 6),
+            DropdownButtonFormField<String>(
+              value: _spouseNationality,
+              items: _nationalities
+                  .map((n) => DropdownMenuItem(value: n, child: Text(n)))
+                  .toList(),
+              onChanged: (v) => setState(() => _spouseNationality = v),
+              decoration: const InputDecoration(hintText: '[Select]'),
+            ),
+            const SizedBox(height: 16),
+            Text('Contact Number', style: AppTextStyles.label),
+            const SizedBox(height: 6),
+            TextFormField(
+              controller: _contactController,
+              keyboardType: TextInputType.phone,
+              validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+            ),
+            const SizedBox(height: 16),
+            Text('Email', style: AppTextStyles.label),
+            const SizedBox(height: 6),
+            TextFormField(
+              controller: _emailController,
+              keyboardType: TextInputType.emailAddress,
+            ),
+            const SizedBox(height: 16),
+            Text('Case Description', style: AppTextStyles.label),
+            const SizedBox(height: 6),
+            TextFormField(
+              controller: _descriptionController,
+              maxLines: 3,
+              decoration: const InputDecoration(hintText: '[text area]'),
+            ),
+          ],
+        ),
+      ),
+      const SizedBox(height: 24),
+      AppButton(
+        label: 'Next — Upload Documents',
+        onPressed: () {
+          if (_formKey.currentState!.validate()) {
+            setState(() => _step = 1);
+          }
+        },
+      ),
+    ];
+  }
+
+  List<Widget> _buildUploadsStep(FeeExemptionProvider provider) {
+    return [
+      // Upload Documents Card
+      AppCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildUploadField('CPR Copy', 'cprCopy', 'cpr_copy.pdf'),
+            _buildUploadField(
+                'Residence Permit', 'residencePermit', 'residence_permit.pdf'),
+            _buildUploadField('Marriage Certificate (if married/divorced)',
+                'marriageCert', 'marriage_cert.pdf'),
+            _buildUploadField('Divorce Certificate (if divorced)',
+                'divorceCert', 'divorce_cert.pdf'),
+            _buildUploadField('Death Certificate (if widowed)', 'deathCert',
+                'death_cert.pdf'),
+            _buildUploadField('Birth Certificate (if children)', 'birthCert',
+                'birth_cert.pdf'),
+            _buildUploadField(
+                'Medical Report', 'medicalReport', 'medical_report.pdf'),
+          ],
+        ),
+      ),
+      const SizedBox(height: 24),
+
+      AppButton(
+        label: provider.isSubmitting ? 'Submitting...' : 'Submit',
+        isLoading: provider.isSubmitting,
+        onPressed: provider.isSubmitting ? null : _handleSubmit,
+      ),
+    ];
   }
 }
