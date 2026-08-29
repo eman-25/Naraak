@@ -1,5 +1,6 @@
 // lib/screens/login_screen.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show FilteringTextInputFormatter;
 import 'package:provider/provider.dart';
 import '../providers/user_profile_provider.dart';
 import '../theme/app_colors.dart';
@@ -34,7 +35,8 @@ class _LoginScreenState extends State<LoginScreen> {
     FocusScope.of(context).unfocus();
 
     setState(() => _isLoading = true);
-    await Future.delayed(const Duration(milliseconds: 700)); // simulated eKey call
+    await Future.delayed(
+        const Duration(milliseconds: 700)); // simulated eKey call
 
     if (!mounted) return;
     setState(() => _isLoading = false);
@@ -62,7 +64,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 24),
                     Text(
                       'Naraak',
-                      style: AppTextStyles.display.copyWith(color: Colors.white),
+                      style:
+                          AppTextStyles.display.copyWith(color: Colors.white),
                     ),
                     const SizedBox(height: 6),
                     Text(
@@ -100,13 +103,15 @@ class _LoginScreenState extends State<LoginScreen> {
                               style: AppTextStyles.bodySecondary,
                             ),
                             const SizedBox(height: 22),
-
                             Text('CPR NUMBER', style: AppTextStyles.overline),
                             const SizedBox(height: 8),
                             TextFormField(
                               controller: _cprController,
                               focusNode: _focusNode,
                               keyboardType: TextInputType.number,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                              ],
                               autofocus: false,
                               style: AppTextStyles.h3.copyWith(
                                 fontWeight: FontWeight.w600,
@@ -125,27 +130,39 @@ class _LoginScreenState extends State<LoginScreen> {
                                 filled: true,
                                 fillColor: AppColors.ink050,
                                 border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(AppTheme.radiusSm),
-                                  borderSide: BorderSide(color: AppColors.outline, width: 1.4),
+                                  borderRadius:
+                                      BorderRadius.circular(AppTheme.radiusSm),
+                                  borderSide: BorderSide(
+                                      color: AppColors.outline, width: 1.4),
                                 ),
                                 enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(AppTheme.radiusSm),
-                                  borderSide: BorderSide(color: AppColors.outline, width: 1.4),
+                                  borderRadius:
+                                      BorderRadius.circular(AppTheme.radiusSm),
+                                  borderSide: BorderSide(
+                                      color: AppColors.outline, width: 1.4),
                                 ),
                                 focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(AppTheme.radiusSm),
-                                  borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                                  borderRadius:
+                                      BorderRadius.circular(AppTheme.radiusSm),
+                                  borderSide: const BorderSide(
+                                      color: AppColors.primary, width: 2),
                                 ),
                                 errorBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(AppTheme.radiusSm),
-                                  borderSide: const BorderSide(color: AppColors.error, width: 1.6),
+                                  borderRadius:
+                                      BorderRadius.circular(AppTheme.radiusSm),
+                                  borderSide: const BorderSide(
+                                      color: AppColors.error, width: 1.6),
                                 ),
                               ),
                               validator: (value) {
-                                if (value == null || value.trim().isEmpty) {
+                                final trimmed = value?.trim() ?? '';
+                                if (trimmed.isEmpty) {
                                   return 'Enter your CPR number to continue';
                                 }
-                                if (value.trim().length < 9) {
+                                if (!RegExp(r'^\d+$').hasMatch(trimmed)) {
+                                  return 'CPR number must contain digits only';
+                                }
+                                if (trimmed.length < 9) {
                                   return 'CPR number looks too short';
                                 }
                                 return null;
@@ -153,7 +170,6 @@ class _LoginScreenState extends State<LoginScreen> {
                               onFieldSubmitted: (_) => _handleLogin(),
                             ),
                             const SizedBox(height: 22),
-
                             AppButton(
                               label: 'Log in with eKey (Demo)',
                               icon: Icons.fingerprint_rounded,
@@ -168,16 +184,19 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     // ── Footer note ─────────────────────────────
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 18, vertical: 12),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.10),
                         borderRadius: BorderRadius.circular(AppTheme.radiusSm),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.16)),
+                        border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.16)),
                       ),
                       child: Row(
                         children: [
                           Icon(Icons.info_outline_rounded,
-                              size: 18, color: Colors.white.withValues(alpha: 0.85)),
+                              size: 18,
+                              color: Colors.white.withValues(alpha: 0.85)),
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(

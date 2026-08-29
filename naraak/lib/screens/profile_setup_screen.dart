@@ -103,8 +103,10 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                     decoration: const InputDecoration(labelText: 'Age'),
                     validator: (v) {
                       final n = int.tryParse(v ?? '');
-                      if (n == null || n <= 0 || n > 120)
-                        return 'Enter a valid age';
+                      if (n == null || n > 120) return 'Enter a valid age';
+                      if (n < 15) {
+                        return 'You must be at least 15 years old';
+                      }
                       return null;
                     },
                   ),
