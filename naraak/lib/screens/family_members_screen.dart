@@ -9,6 +9,7 @@ import '../theme/app_text_styles.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_card.dart';
 import '../widgets/app_top_bar.dart';
+import 'add_family_member_screen.dart';
 
 class FamilyMembersScreen extends StatelessWidget {
   const FamilyMembersScreen({super.key});
@@ -153,7 +154,10 @@ class _AddMemberButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => _showAddMemberSheet(context),
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const AddFamilyMemberScreen()),
+      ),
       borderRadius: BorderRadius.circular(AppTheme.radiusMd),
       child: DottedBorderBox(
         color: palette.primary,
@@ -169,42 +173,6 @@ class _AddMemberButton extends StatelessWidget {
                       color: palette.primary, fontWeight: FontWeight.w700)),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  void _showAddMemberSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (sheetContext) => Padding(
-        padding: EdgeInsets.only(
-          left: 20,
-          right: 20,
-          top: 20,
-          bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 20,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Add Family Member', style: AppTextStyles.h2),
-            const SizedBox(height: 8),
-            Text(
-              'New members authenticate via eKey to verify the family relationship, per Phase 3 §2.6.',
-              style: AppTextStyles.bodySecondary,
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: () => Navigator.pop(sheetContext),
-                child: const Text('Continue with eKey (Demo)'),
-              ),
-            ),
-          ],
         ),
       ),
     );

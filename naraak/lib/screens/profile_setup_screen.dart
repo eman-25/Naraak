@@ -100,13 +100,14 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                   child: TextFormField(
                     controller: _ageController,
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Age'),
+                    decoration: const InputDecoration(
+                      labelText: 'Age',
+                      errorMaxLines: 2,
+                    ),
                     validator: (v) {
                       final n = int.tryParse(v ?? '');
                       if (n == null || n > 120) return 'Enter a valid age';
-                      if (n < 15) {
-                        return 'You must be at least 15 years old';
-                      }
+                      if (n < 15) return 'Must be 15 or older';
                       return null;
                     },
                   ),

@@ -11,6 +11,8 @@ import '../providers/app_settings_provider.dart';
 import '../providers/service_request_provider.dart';
 import '../providers/appointment_provider.dart';
 import '../providers/auth_provider.dart';
+import '../providers/notifications_read_provider.dart';
+import '../models/notification_item.dart';
 import '../localization/app_localizations.dart';
 import '../main.dart' show ShellNavigation;
 
@@ -94,6 +96,16 @@ class _HeroHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final notifications = buildNotifications(
+      context,
+      context.watch<AppointmentProvider>().myAppointments,
+      context.watch<ServiceRequestProvider>().requests,
+    );
+    final hasUnread = context
+            .watch<NotificationsReadProvider>()
+            .unreadCount(notifications.map((n) => n.id)) >
+        0;
+
     return DecoratedBox(
       decoration: BoxDecoration(
         gradient: palette.heroGradient,
@@ -141,18 +153,19 @@ class _HeroHeader extends StatelessWidget {
                           Icons.notifications_none_rounded,
                           color: Colors.white,
                         ),
-                        Positioned(
-                          right: -1,
-                          top: -1,
-                          child: Container(
-                            width: 8,
-                            height: 8,
-                            decoration: const BoxDecoration(
-                              color: AppColors.error,
-                              shape: BoxShape.circle,
+                        if (hasUnread)
+                          Positioned(
+                            right: -1,
+                            top: -1,
+                            child: Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                color: AppColors.error,
+                                shape: BoxShape.circle,
+                              ),
                             ),
                           ),
-                        ),
                       ],
                     ),
                   ),
