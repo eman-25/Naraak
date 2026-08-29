@@ -189,7 +189,8 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
                         },
                         child: Consumer<AuthProvider>(
                           builder: (context, auth, _) {
-                            final initials = auth.currentUser?.initials ?? 'EK';
+                            final profileName = context.watch<UserProfileProvider>().profile?.fullName;
+                            final initials = _initials(profileName ?? auth.currentUser?.name);
                             return Container(
                               width: iconContainerSize,
                               height: iconContainerSize,
@@ -239,5 +240,11 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
         ),
       ],
     );
+  }
+
+  String _initials(String? name) {
+    final words = (name ?? '').trim().split(RegExp(r'\s+')).where((word) => word.isNotEmpty).toList();
+    if (words.isEmpty) return '?';
+    return (words.length == 1 ? words.first[0] : '${words.first[0]}${words.last[0]}').toUpperCase();
   }
 }

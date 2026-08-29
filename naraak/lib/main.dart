@@ -1,5 +1,6 @@
 // lib/main.dart — only the changed parts shown
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'theme/app_theme.dart';
 import 'localization/app_localizations.dart';
@@ -55,7 +56,12 @@ class NaraakApp extends StatelessWidget {
           themeMode: settings.themeMode,
           locale: settings.locale,
           supportedLocales: AppLocalizations.supportedLocales,
-          localizationsDelegates: const [AppLocalizationsDelegate()],
+          localizationsDelegates: const [
+            AppLocalizationsDelegate(),
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
           builder: (context, child) => MediaQuery(
             data: MediaQuery.of(context)
                 .copyWith(textScaler: TextScaler.linear(settings.textScale)),
@@ -66,12 +72,16 @@ class NaraakApp extends StatelessWidget {
             '/login': (_) => const LoginScreen(),
             '/profile-setup': (_) => const ProfileSetupScreen(),
             '/home': (_) => const RootShell(),
+            '/services-tab': (_) => const RootShell(initialIndex: 2),
+            '/profile': (_) => const RootShell(initialIndex: 3),
+            '/appointments': (_) => const RootShell(initialIndex: 1),
             '/pending-requests': (_) => const PendingRequestsScreen(),
             '/profile/appearance': (_) => const AppearanceSettingsScreen(),
             '/profile/family': (_) => const FamilyMembersScreen(),
             '/profile/personal-info': (_) => const PersonalInfoScreen(),
             '/notifications': (_) => const NotificationsScreen(),
             ...AppRouter.routes,
+            '/appointments': (_) => const RootShell(initialIndex: 1),
           },
           onGenerateRoute: (settings) => settings.name == '/'
               ? MaterialPageRoute(builder: (_) => const RootShell())
@@ -83,19 +93,26 @@ class NaraakApp extends StatelessWidget {
 }
 
 class RootShell extends StatefulWidget {
-  const RootShell({super.key});
+  final int initialIndex;
+  const RootShell({super.key, this.initialIndex = 0});
   @override
   State<RootShell> createState() => _RootShellState();
 }
 
 class _RootShellState extends State<RootShell> {
-  int _index = 0;
+  late int _index;
   static const _screens = [
     HomeScreen(),
-    ServicesScreen(),
     AppointmentsScreen(),
+    ServicesScreen(),
     ProfileScreen()
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _index = widget.initialIndex;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -110,13 +127,13 @@ class _RootShellState extends State<RootShell> {
               activeIcon: Icon(Icons.home),
               label: 'Home'),
           BottomNavigationBarItem(
-              icon: Icon(Icons.grid_view_outlined),
-              activeIcon: Icon(Icons.grid_view),
-              label: 'Services'),
-          BottomNavigationBarItem(
               icon: Icon(Icons.event_note_outlined),
               activeIcon: Icon(Icons.event_note),
               label: 'Appointments'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.grid_view_outlined),
+              activeIcon: Icon(Icons.grid_view),
+              label: 'Services'),
           BottomNavigationBarItem(
               icon: Icon(Icons.person_outline),
               activeIcon: Icon(Icons.person),

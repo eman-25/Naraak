@@ -217,6 +217,7 @@ class _MedicalReportsScreenState extends State<MedicalReportsScreen> {
               const SizedBox(height: 4),
               TextField(
                 controller: _reasonController,
+                onChanged: (_) => setState(() {}),
                 maxLines: 4,
                 decoration: const InputDecoration(
                   hintText: 'Describe why you need this report...',
