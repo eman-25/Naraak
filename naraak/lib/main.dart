@@ -174,14 +174,8 @@ class _RootShellState extends State<RootShell> {
                 valueListenable: _tabIndex,
                 builder: (_, index, __) {
                   final stack = IndexedStack(index: index, children: screens);
-                  // Home, Appointments, and Services manage their own
-                  // width/centering; the remaining tabs are still
-                  // mobile-width screens for now, so just center them in a
-                  // comfortable reading column rather than stretching them
-                  // edge-to-edge.
-                  if (!web || index == 0 || index == 1 || index == 2) {
-                    return stack;
-                  }
+                  // All four root tabs now manage their own width/centering.
+                  if (!web || index <= 3) return stack;
                   return Center(
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 640),
