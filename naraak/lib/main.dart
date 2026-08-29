@@ -29,6 +29,9 @@ import 'screens/app_settings_screen.dart';
 import 'screens/privacy_security_screen.dart';
 import 'screens/help_support_screen.dart';
 import 'screens/splash_screen.dart';
+import 'responsive/breakpoints.dart';
+import 'web/web_top_nav.dart';
+import 'web/web_home_screen.dart';
 
 void main() => runApp(const NaraakApp());
 
@@ -113,8 +116,18 @@ class _RootShellState extends State<RootShell> {
   final _navigatorKey = GlobalKey<NavigatorState>();
   final _tabIndex = ValueNotifier<int>(0);
 
-  static const _screens = [
+  static const _mobileScreens = [
     HomeScreen(),
+    AppointmentsScreen(),
+    ServicesScreen(),
+    ProfileScreen(),
+  ];
+
+  // Home gets a bespoke wide dashboard on web; the rest reuse the mobile
+  // screens for now (centered by RootShell below) until each gets its own
+  // desktop layout pass.
+  static const _webScreens = [
+    WebHomeScreen(),
     AppointmentsScreen(),
     ServicesScreen(),
     ProfileScreen(),
@@ -147,7 +160,18 @@ class _RootShellState extends State<RootShell> {
 
   @override
   Widget build(BuildContext context) {
+    final web = isWebWidth(context);
+    final screens = web ? _webScreens : _mobileScreens;
+
     return Scaffold(
+      appBar: web
+          ? WebTopNav(
+              currentIndex: _tabIndex.value,
+              onSelectTab: _selectTab,
+              onBookAppointment: () =>
+                  Navigator.pushNamed(context, '/services/booking'),
+            )
+          : null,
       body: ShellNavigation(
         selectTab: _selectTab,
         child: Navigator(
@@ -157,8 +181,20 @@ class _RootShellState extends State<RootShell> {
               return MaterialPageRoute(
                 builder: (_) => ValueListenableBuilder<int>(
                   valueListenable: _tabIndex,
-                  builder: (_, index, __) =>
-                      IndexedStack(index: index, children: _screens),
+                  builder: (_, index, __) {
+                    final stack = IndexedStack(index: index, children: screens);
+                    // Home manages its own full-bleed hero + centering; the
+                    // other tabs are still mobile-width screens for now, so
+                    // just center them in a comfortable reading column
+                    // rather than letting them stretch edge-to-edge.
+                    if (!web || index == 0) return stack;
+                    return Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 640),
+                        child: stack,
+                      ),
+                    );
+                  },
                 ),
               );
             }
@@ -170,31 +206,33 @@ class _RootShellState extends State<RootShell> {
           },
         ),
       ),
-      bottomNavigationBar: ValueListenableBuilder<int>(
-        valueListenable: _tabIndex,
-        builder: (_, index, __) => BottomNavigationBar(
-          currentIndex: index,
-          onTap: _selectTab,
-          items: const [
-            BottomNavigationBarItem(
-                icon: Icon(Icons.home_outlined),
-                activeIcon: Icon(Icons.home),
-                label: 'Home'),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.event_note_outlined),
-                activeIcon: Icon(Icons.event_note),
-                label: 'Appointments'),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.grid_view_outlined),
-                activeIcon: Icon(Icons.grid_view),
-                label: 'Services'),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.person_outline),
-                activeIcon: Icon(Icons.person),
-                label: 'Profile'),
-          ],
-        ),
-      ),
+      bottomNavigationBar: web
+          ? null
+          : ValueListenableBuilder<int>(
+              valueListenable: _tabIndex,
+              builder: (_, index, __) => BottomNavigationBar(
+                currentIndex: index,
+                onTap: _selectTab,
+                items: const [
+                  BottomNavigationBarItem(
+                      icon: Icon(Icons.home_outlined),
+                      activeIcon: Icon(Icons.home),
+                      label: 'Home'),
+                  BottomNavigationBarItem(
+                      icon: Icon(Icons.event_note_outlined),
+                      activeIcon: Icon(Icons.event_note),
+                      label: 'Appointments'),
+                  BottomNavigationBarItem(
+                      icon: Icon(Icons.grid_view_outlined),
+                      activeIcon: Icon(Icons.grid_view),
+                      label: 'Services'),
+                  BottomNavigationBarItem(
+                      icon: Icon(Icons.person_outline),
+                      activeIcon: Icon(Icons.person),
+                      label: 'Profile'),
+                ],
+              ),
+            ),
     );
   }
 }

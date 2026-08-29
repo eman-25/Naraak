@@ -58,23 +58,23 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Text('Family Doctor', style: AppTextStyles.h3),
                 ),
                 const SizedBox(height: 10),
-                _AnimatedEntry(index: 0, child: const _FamilyDoctorCard()),
+                _AnimatedEntry(index: 0, child: const FamilyDoctorCard()),
                 const SizedBox(height: 24),
                 _AnimatedEntry(
                   index: 1,
                   child: Text('Next Appointment', style: AppTextStyles.h3),
                 ),
                 const SizedBox(height: 10),
-                _AnimatedEntry(index: 1, child: const _NextAppointmentCard()),
+                _AnimatedEntry(index: 1, child: const NextAppointmentCard()),
                 const SizedBox(height: 24),
-                _AnimatedEntry(index: 2, child: const _PendingRequestsCard()),
+                _AnimatedEntry(index: 2, child: const PendingRequestsCard()),
                 const SizedBox(height: 24),
                 _AnimatedEntry(
                   index: 3,
                   child: Text('Top services', style: AppTextStyles.h3),
                 ),
                 const SizedBox(height: 10),
-                _AnimatedEntry(index: 3, child: const _TopServicesGrid()),
+                _AnimatedEntry(index: 3, child: const TopServicesGrid()),
               ]),
             ),
           ),
@@ -248,8 +248,8 @@ class _HeroHeader extends StatelessWidget {
   }
 }
 
-class _FamilyDoctorCard extends StatelessWidget {
-  const _FamilyDoctorCard();
+class FamilyDoctorCard extends StatelessWidget {
+  const FamilyDoctorCard();
 
   @override
   Widget build(BuildContext context) {
@@ -329,8 +329,8 @@ class _FamilyDoctorCard extends StatelessWidget {
   }
 }
 
-class _NextAppointmentCard extends StatelessWidget {
-  const _NextAppointmentCard();
+class NextAppointmentCard extends StatelessWidget {
+  const NextAppointmentCard();
 
   @override
   Widget build(BuildContext context) {
@@ -527,8 +527,8 @@ class _NextAppointmentCard extends StatelessWidget {
   }
 }
 
-class _PendingRequestsCard extends StatelessWidget {
-  const _PendingRequestsCard();
+class PendingRequestsCard extends StatelessWidget {
+  const PendingRequestsCard();
 
   @override
   Widget build(BuildContext context) {
@@ -689,8 +689,9 @@ class _SegmentedBar extends StatelessWidget {
   }
 }
 
-class _TopServicesGrid extends StatelessWidget {
-  const _TopServicesGrid();
+class TopServicesGrid extends StatelessWidget {
+  final int crossAxisCount;
+  const TopServicesGrid({this.crossAxisCount = 2});
 
   @override
   Widget build(BuildContext context) {
@@ -727,8 +728,8 @@ class _TopServicesGrid extends StatelessWidget {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: tiles.length,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossAxisCount,
         mainAxisSpacing: 12,
         crossAxisSpacing: 12,
         childAspectRatio: 1.55,
