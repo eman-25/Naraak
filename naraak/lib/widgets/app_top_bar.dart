@@ -5,6 +5,8 @@ import '../providers/auth_provider.dart';
 import '../providers/user_profile_provider.dart';
 import '../providers/appointment_provider.dart';
 import '../providers/service_request_provider.dart';
+import '../providers/notifications_read_provider.dart';
+import '../models/notification_item.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import '../theme/app_text_styles.dart';
@@ -31,9 +33,15 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
     final palette = AppPaletteExtension.of(context);
     final screenSize = MediaQuery.of(context).size;
     final iconContainerSize = (screenSize.width * 0.1).clamp(38.0, 48.0);
-    final hasNotifications =
-        context.watch<AppointmentProvider>().myAppointments.isNotEmpty ||
-            context.watch<ServiceRequestProvider>().requests.isNotEmpty;
+    final notifications = buildNotifications(
+      context,
+      context.watch<AppointmentProvider>().myAppointments,
+      context.watch<ServiceRequestProvider>().requests,
+    );
+    final unreadCount = context
+        .watch<NotificationsReadProvider>()
+        .unreadCount(notifications.map((n) => n.id));
+    final hasNotifications = unreadCount > 0;
 
     return Column(
       mainAxisSize: MainAxisSize.min,

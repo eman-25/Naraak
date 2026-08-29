@@ -14,6 +14,7 @@ import 'providers/fee_exemption_provider.dart';
 import 'providers/hajj_certificate_provider.dart';
 import 'providers/family_provider.dart';
 import 'providers/auth_provider.dart';
+import 'providers/notifications_read_provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/services_screen.dart';
 import 'screens/profile_screen.dart';
@@ -44,6 +45,7 @@ class NaraakApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => HajjCertificateProvider()),
         ChangeNotifierProvider(create: (_) => FamilyProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => NotificationsReadProvider()),
       ],
       child: Consumer<AppSettingsProvider>(
         builder: (context, settings, _) => MaterialApp(
