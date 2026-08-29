@@ -1,9 +1,9 @@
-/// Shaped to match the Phase 5 API spec for /api/v1/appointments,
-/// so swapping the mock service for a real one later is mechanical.
+// lib/models/appointment.dart
 class Appointment {
   final String id;
   final String centerName;
   final String doctorName;
+  final String? doctorGender; // 'Male' | 'Female'
   final DateTime slotDateTime;
   final String status; // 'available' | 'confirmed' | 'cancelled' | 'completed'
   final bool isTele;
@@ -12,17 +12,26 @@ class Appointment {
     required this.id,
     required this.centerName,
     required this.doctorName,
+    this.doctorGender,
     required this.slotDateTime,
     required this.status,
     this.isTele = false,
   });
 
-  Appointment copyWith({String? status}) {
+  Appointment copyWith({
+    String? id,
+    String? centerName,
+    String? doctorName,
+    String? doctorGender,
+    DateTime? slotDateTime,
+    String? status,
+  }) {
     return Appointment(
-      id: id,
-      centerName: centerName,
-      doctorName: doctorName,
-      slotDateTime: slotDateTime,
+      id: id ?? this.id,
+      centerName: centerName ?? this.centerName,
+      doctorName: doctorName ?? this.doctorName,
+      doctorGender: doctorGender ?? this.doctorGender,
+      slotDateTime: slotDateTime ?? this.slotDateTime,
       status: status ?? this.status,
       isTele: isTele,
     );
@@ -33,6 +42,7 @@ class Appointment {
       id: json['id'] as String,
       centerName: json['centerName'] as String,
       doctorName: json['doctorName'] as String,
+      doctorGender: json['doctorGender'] as String?,
       slotDateTime: DateTime.parse(json['slotDateTime'] as String),
       status: json['status'] as String,
       isTele: json['isTele'] as bool? ?? false,
@@ -43,6 +53,7 @@ class Appointment {
         'id': id,
         'centerName': centerName,
         'doctorName': doctorName,
+        'doctorGender': doctorGender,
         'slotDateTime': slotDateTime.toIso8601String(),
         'status': status,
         'isTele': isTele,
