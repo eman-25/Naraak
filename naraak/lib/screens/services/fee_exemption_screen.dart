@@ -60,7 +60,8 @@ class _FeeExemptionScreenState extends State<FeeExemptionScreen> {
 
     final profile = context.read<UserProfileProvider>().profile;
     _gender = profile?.gender ?? 'Female';
-    _nationality = profile?.nationality ?? 'Bahraini';
+    final storedNationality = profile?.nationality;
+    _nationality = _nationalities.contains(storedNationality) ? storedNationality : null;
     _contactController =
         TextEditingController(text: profile?.mobileNumber ?? '');
     _emailController = TextEditingController(text: 'f.darraj@example.com');

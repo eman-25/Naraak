@@ -34,6 +34,7 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
   String? _selectedDoctor;
   DateTime _selectedDate = DateTime.now();
   String? _selectedTimeSlot;
+  String? _selectedSlotId;
 
   // Search & Filter state for Available Today / Closest Slot
   final TextEditingController _searchController = TextEditingController();
@@ -336,6 +337,13 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
               onDateChanged: (date) => setState(() => _selectedDate = date),
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.only(top: 10),
+            child: Text(
+              'Selected date: ${MaterialLocalizations.of(context).formatFullDate(_selectedDate)}',
+              style: AppTextStyles.body.copyWith(color: themeColor, fontWeight: FontWeight.w700),
+            ),
+          ),
           const SizedBox(height: 24),
 
           // Available Time Slots Section
@@ -404,6 +412,14 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
   // SCREEN 3: AVAILABLE TODAY
   // ==========================================
   Widget _buildScreen3AvailableToday(Color themeColor) {
+    final slots = context.watch<AppointmentProvider>().availableSlots.where((slot) {
+      final matchesGender = _selectedGenderFilter == 'All' ||
+          slot.doctorGender?.toLowerCase() == _selectedGenderFilter.toLowerCase();
+      return matchesGender && slot.doctorName.toLowerCase().contains(_searchController.text.toLowerCase());
+    }).toList()
+      ..sort((a, b) => _selectedSortTime == 'Ascending'
+          ? a.slotDateTime.compareTo(b.slotDateTime)
+          : b.slotDateTime.compareTo(a.slotDateTime));
     return Column(
       children: [
         // Search & Filter Header Section
@@ -429,11 +445,11 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
               const SizedBox(height: 12),
               Row(
                 children: [
-                  _buildFilterChip('Gender', themeColor, () {
+                  _buildFilterChip('Gender: $_selectedGenderFilter', themeColor, () {
                     _showGenderFilterModal(themeColor);
                   }),
                   const SizedBox(width: 8),
-                  _buildFilterChip('Time', themeColor, () {
+                  _buildFilterChip('Time: $_selectedSortTime', themeColor, () {
                     _showTimeSortModal(themeColor);
                   }),
                 ],
@@ -444,28 +460,25 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
 
         // Doctors Cards List
         Expanded(
-          child: ListView(
+          child: slots.isEmpty
+              ? const Center(child: Text('No available doctors match these filters.'))
+              : ListView(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            children: [
-              _buildDoctorTodayCard(
-                doctorName: 'Dr. Fatima Al-Dosari',
+            children: slots.map((slot) => Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: _buildDoctorTodayCard(
+                doctorName: '${slot.doctorName} (${slot.doctorGender ?? 'Not specified'})',
                 themeColor: themeColor,
-                slots: ['10:00', '10:30', '11:00'],
+                slots: [MaterialLocalizations.of(context).formatTimeOfDay(TimeOfDay.fromDateTime(slot.slotDateTime))],
+                onSelected: () => setState(() {
+                  _selectedDoctor = slot.doctorName;
+                  _selectedTimeSlot = MaterialLocalizations.of(context).formatTimeOfDay(TimeOfDay.fromDateTime(slot.slotDateTime));
+                  _selectedDate = slot.slotDateTime;
+                  _selectedSlotId = slot.id;
+                  _currentView = BookingView.reviewDetails;
+                }),
               ),
-              const SizedBox(height: 16),
-              _buildDoctorTodayCard(
-                doctorName: 'Dr. Khalid Al-Mansoori',
-                themeColor: themeColor,
-                slots: ['11:00', '11:30'],
-              ),
-              const SizedBox(height: 16),
-              _buildDoctorTodayCard(
-                doctorName: 'Dr. Hind Al-Zayani',
-                themeColor: themeColor,
-                slots: ['14:00'],
-              ),
-              const SizedBox(height: 20),
-            ],
+            )).toList(),
           ),
         ),
       ],
@@ -476,6 +489,7 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
     required String doctorName,
     required Color themeColor,
     required List<String> slots,
+    VoidCallback? onSelected,
   }) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -502,7 +516,7 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
             children: slots.map((slot) {
               final isSelected = _selectedDoctor == doctorName && _selectedTimeSlot == slot;
               return InkWell(
-                onTap: () {
+                onTap: onSelected ?? () {
                   setState(() {
                     _selectedDoctor = doctorName;
                     _selectedTimeSlot = slot;
@@ -539,14 +553,14 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
   // SCREEN 4: CLOSEST AVAILABLE SLOT
   // ==========================================
   Widget _buildScreen4ClosestSlot(Color themeColor) {
-    final closestSlots = [
-      {'doctor': 'Dr. Hind Al-Zayani', 'time': '10:00 AM — Today'},
-      {'doctor': 'Dr. Khalid Al-Mansoori', 'time': '10:30 AM — Today'},
-      {'doctor': 'Dr. Fatima Al-Dosari', 'time': '11:00 AM — Today'},
-      {'doctor': 'Dr. Mohamed Al-Ansari', 'time': '11:00 AM — Today'},
-      {'doctor': 'Dr. Sara Al-Rumaihi', 'time': '02:00 PM — Today'},
-    ];
-
+    final closestSlots = context.watch<AppointmentProvider>().availableSlots
+        .where((slot) => _selectedGenderFilter == 'All' || slot.doctorGender == _selectedGenderFilter)
+        .map((slot) => <String, String>{
+              'doctor': slot.doctorName,
+              'time': '${MaterialLocalizations.of(context).formatMediumDate(slot.slotDateTime)} · ${MaterialLocalizations.of(context).formatTimeOfDay(TimeOfDay.fromDateTime(slot.slotDateTime))}',
+              'id': slot.id,
+            })
+        .toList();
     return Column(
       children: [
         // Sorting Header Options
@@ -556,9 +570,9 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
             children: [
               _buildFilterChip('Name', themeColor, () {}),
               const SizedBox(width: 8),
-              _buildFilterChip('Gender', themeColor, () {}),
+              _buildFilterChip('Gender: $_selectedGenderFilter', themeColor, () => _showGenderFilterModal(themeColor)),
               const SizedBox(width: 8),
-              _buildFilterChip('Time', themeColor, () {}),
+              _buildFilterChip('Time', themeColor, () => _showTimeSortModal(themeColor)),
             ],
           ),
         ),
@@ -612,6 +626,7 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
                           _selectedDoctor = item['doctor'];
                           _selectedTimeSlot = item['time']!.split(' ')[0];
                           _selectedDate = DateTime.now();
+                          _selectedSlotId = item['id'];
                           _currentView = BookingView.reviewDetails;
                         });
                       },
@@ -684,7 +699,13 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
             onPressed: () async {
               setState(() => _isBooking = true);
               final provider = context.read<AppointmentProvider>();
-              final success = await provider.bookSlot(provider.availableSlots.isNotEmpty ? provider.availableSlots.first.id : 'slot_today');
+              final slotId = _selectedSlotId ??
+                  (provider.availableSlots.isNotEmpty ? provider.availableSlots.first.id : null);
+              if (slotId == null) {
+                setState(() => _isBooking = false);
+                return;
+              }
+              final success = await provider.bookSlot(slotId);
               setState(() => _isBooking = false);
               if (success) {
                 setState(() {

@@ -30,18 +30,14 @@ class _VaccinationRecordsScreenState extends State<VaccinationRecordsScreen> {
   }
 
   Future<void> _handleDownload(VaccinationRecord record) async {
-    final provider = context.read<VaccinationProvider>();
     if (record.certificateUrl == null) {
       _showReportMissingSheet(record);
       return;
     }
-    final url = await provider.getCertificateUrl(record.id);
-    if (!mounted) return;
+    // Certificate URLs are supplied only by the production records service.
+    // Never expose a non-functional placeholder link to the user.
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-          content: Text(url != null
-              ? 'Certificate ready: $url (demo link)'
-              : 'Certificate unavailable')),
+      const SnackBar(content: Text('A certificate is not available for this record yet.')),
     );
   }
 
