@@ -766,14 +766,38 @@ class DashboardPopularServicesGrid extends StatelessWidget {
   const DashboardPopularServicesGrid({super.key});
 
   static const _tiles = [
-    ('Book Appointment', 'Choose a clinic, doctor, and time that suits you.',
-        Icons.calendar_month_rounded, '/services/booking', Color(0xFFD8EEED), Color(0xFF0E7C7B)),
-    ('Mammogram Screening', 'Check your eligibility and request a screening.',
-        Icons.favorite_rounded, '/services/mammogram', Color(0xFFF8E0E3), Color(0xFFB04855)),
-    ('Vaccination Records', 'View your history or report a missing record.',
-        Icons.vaccines_rounded, '/services/vaccinations', Color(0xFFE2EEF7), Color(0xFF2D6B9B)),
-    ('Medical Reports', 'View reports or request one from a recent visit.',
-        Icons.description_rounded, '/services/medical-reports', Color(0xFFF7EDDC), Color(0xFFA66B22)),
+    (
+      'Book Appointment',
+      'Choose a clinic, doctor, and time that suits you.',
+      Icons.calendar_month_rounded,
+      '/services/booking',
+      'assets/images/service_booking.jpg',
+      Color(0xFF0E7C7B),
+    ),
+    (
+      'Mammogram Screening',
+      'Check your eligibility and request a screening.',
+      Icons.favorite_rounded,
+      '/services/mammogram',
+      'assets/images/service_mammogram.jpg',
+      Color(0xFFB04855),
+    ),
+    (
+      'Vaccination Records',
+      'View your history or report a missing record.',
+      Icons.vaccines_rounded,
+      '/services/vaccinations',
+      'assets/images/service_vaccination.jpg',
+      Color(0xFF2D6B9B),
+    ),
+    (
+      'Medical Reports',
+      'View reports or request one from a recent visit.',
+      Icons.description_rounded,
+      '/services/medical-reports',
+      'assets/images/service_medical_reports.jpg',
+      Color(0xFFA66B22),
+    ),
   ];
 
   @override
@@ -791,7 +815,7 @@ class DashboardPopularServicesGrid extends StatelessWidget {
         crossAxisSpacing: 14,
         childAspectRatio: columns == 2 ? 0.82 : 0.92,
         children: _tiles.map((t) {
-          final (title, desc, icon, route, iconBg, iconFg) = t;
+          final (title, desc, icon, route, imagePath, iconFg) = t;
           return InkWell(
             onTap: () => Navigator.pushNamed(context, route),
             borderRadius: BorderRadius.circular(14),
@@ -811,7 +835,12 @@ class DashboardPopularServicesGrid extends StatelessWidget {
                     child: Stack(
                       fit: StackFit.expand,
                       children: [
-                        Container(color: iconBg.withValues(alpha: 0.5)),
+                        Image.asset(
+                          imagePath,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              Container(color: iconFg.withValues(alpha: 0.15)),
+                        ),
                         Positioned(
                           left: 10,
                           bottom: 9,
