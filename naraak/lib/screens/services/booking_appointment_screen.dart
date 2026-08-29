@@ -39,6 +39,7 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _selectedGenderFilter = 'All';
   String _selectedSortTime = 'Ascending';
+  String? _selectedSortName;
   Appointment? _confirmedAppointment;
   bool _isBooking = false;
 
@@ -573,14 +574,28 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
   // ==========================================
   // SCREEN 4: CLOSEST AVAILABLE SLOT
   // ==========================================
+  static const List<_ClosestDoctor> _closestDoctors = [
+    _ClosestDoctor('Dr. Hind Al-Zayani', 'Female', '10:00 AM — Today'),
+    _ClosestDoctor('Dr. Khalid Al-Mansoori', 'Male', '10:30 AM — Today'),
+    _ClosestDoctor('Dr. Fatima Al-Dosari', 'Female', '11:00 AM — Today'),
+    _ClosestDoctor('Dr. Mohamed Al-Ansari', 'Male', '11:00 AM — Today'),
+    _ClosestDoctor('Dr. Sara Al-Rumaihi', 'Female', '02:00 PM — Today'),
+  ];
+
   Widget _buildScreen4ClosestSlot(Color themeColor) {
-    final closestSlots = [
-      {'doctor': 'Dr. Hind Al-Zayani', 'time': '10:00 AM — Today'},
-      {'doctor': 'Dr. Khalid Al-Mansoori', 'time': '10:30 AM — Today'},
-      {'doctor': 'Dr. Fatima Al-Dosari', 'time': '11:00 AM — Today'},
-      {'doctor': 'Dr. Mohamed Al-Ansari', 'time': '11:00 AM — Today'},
-      {'doctor': 'Dr. Sara Al-Rumaihi', 'time': '02:00 PM — Today'},
-    ];
+    var closestSlots = _closestDoctors.where((d) {
+      return _selectedGenderFilter == 'All' || d.gender == _selectedGenderFilter;
+    }).toList();
+
+    // The list is declared in ascending time order, so once the user picks
+    // a name sort it takes over; otherwise Time controls the order.
+    if (_selectedSortName == 'Z-A') {
+      closestSlots.sort((a, b) => b.name.compareTo(a.name));
+    } else if (_selectedSortName == 'A-Z') {
+      closestSlots.sort((a, b) => a.name.compareTo(b.name));
+    } else if (_selectedSortTime == 'Descending') {
+      closestSlots = closestSlots.reversed.toList();
+    }
 
     return Column(
       children: [
@@ -589,18 +604,29 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
           child: Row(
             children: [
-              _buildFilterChip('Name', themeColor, () {}),
+              _buildFilterChip('Name', themeColor, () {
+                _showNameSortModal(themeColor);
+              }),
               const SizedBox(width: 8),
-              _buildFilterChip('Gender', themeColor, () {}),
+              _buildFilterChip('Gender', themeColor, () {
+                _showGenderFilterModal(themeColor);
+              }),
               const SizedBox(width: 8),
-              _buildFilterChip('Time', themeColor, () {}),
+              _buildFilterChip('Time', themeColor, () {
+                _showTimeSortModal(themeColor);
+              }),
             ],
           ),
         ),
 
         // List of Closest Available Doctor Slots
         Expanded(
-          child: ListView.separated(
+          child: closestSlots.isEmpty
+              ? Center(
+                  child: Text('No doctors match your filters',
+                      style: AppTextStyles.bodySecondary),
+                )
+              : ListView.separated(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
             itemCount: closestSlots.length,
             separatorBuilder: (_, __) => const SizedBox(height: 12),
@@ -628,12 +654,12 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            item['doctor']!,
+                            item.name,
                             style: AppTextStyles.h3.copyWith(fontSize: 15),
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            item['time']!,
+                            item.time,
                             style: AppTextStyles.caption.copyWith(
                               color: themeColor,
                               fontWeight: FontWeight.w600,
@@ -651,8 +677,8 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
                       child: OutlinedButton(
                         onPressed: () {
                           setState(() {
-                            _selectedDoctor = item['doctor'];
-                            _selectedTimeSlot = item['time']!.split(' ')[0];
+                            _selectedDoctor = item.name;
+                            _selectedTimeSlot = item.time.split(' ')[0];
                             _selectedDate = DateTime.now();
                             _currentView = BookingView.reviewDetails;
                           });
@@ -949,6 +975,42 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
       },
     );
   }
+
+  void _showNameSortModal(Color themeColor) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return Container(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: ['A-Z', 'Z-A'].map((t) {
+              return ListTile(
+                title: Text(t),
+                trailing: _selectedSortName == t
+                    ? Icon(Icons.check, color: themeColor)
+                    : null,
+                onTap: () {
+                  setState(() => _selectedSortName = t);
+                  Navigator.pop(ctx);
+                },
+              );
+            }).toList(),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _ClosestDoctor {
+  final String name;
+  final String gender;
+  final String time;
+  const _ClosestDoctor(this.name, this.gender, this.time);
 }
 
 class _TodayDoctor {

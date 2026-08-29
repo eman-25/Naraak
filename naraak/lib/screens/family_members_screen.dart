@@ -21,34 +21,18 @@ class FamilyMembersScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: const AppTopBar(title: 'Family Members'),
-      body: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: Container(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
-              decoration: BoxDecoration(
-                gradient: palette.heroGradient,
-                borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(28),
-                    bottomRight: Radius.circular(28)),
-              ),
-              child: Text('Manage dependents and act on their behalf',
-                  style: AppTextStyles.body.copyWith(color: Colors.white)),
-            ),
-          ),
-          SliverPadding(
-            padding: const EdgeInsets.all(20),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate([
-                ...members.map((m) => Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: _MemberCard(member: m, palette: palette),
-                    )),
-                const SizedBox(height: 4),
-                _AddMemberButton(palette: palette),
-              ]),
-            ),
-          ),
+      body: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          Text('Manage dependents and act on their behalf',
+              style: AppTextStyles.bodySecondary),
+          const SizedBox(height: 16),
+          ...members.map((m) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _MemberCard(member: m, palette: palette),
+              )),
+          const SizedBox(height: 4),
+          _AddMemberButton(palette: palette),
         ],
       ),
     );
