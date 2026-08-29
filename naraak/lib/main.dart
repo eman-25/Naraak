@@ -30,7 +30,8 @@ import 'screens/privacy_security_screen.dart';
 import 'screens/help_support_screen.dart';
 import 'screens/splash_screen.dart';
 import 'responsive/breakpoints.dart';
-import 'web/web_top_nav.dart';
+import 'web/web_sidebar.dart';
+import 'web/web_mini_topbar.dart';
 import 'web/web_home_screen.dart';
 
 void main() => runApp(const NaraakApp());
@@ -158,81 +159,95 @@ class _RootShellState extends State<RootShell> {
     super.dispose();
   }
 
+  static const _pageLabels = ['Home', 'Appointments', 'Services', 'Profile'];
+
+  Widget _buildNavigator(bool web, List<Widget> screens) {
+    return ShellNavigation(
+      selectTab: _selectTab,
+      child: Navigator(
+        key: _navigatorKey,
+        onGenerateRoute: (settings) {
+          if (settings.name == '/' || settings.name == null) {
+            return MaterialPageRoute(
+              builder: (_) => ValueListenableBuilder<int>(
+                valueListenable: _tabIndex,
+                builder: (_, index, __) {
+                  final stack = IndexedStack(index: index, children: screens);
+                  // Home manages its own full-bleed hero + centering; the
+                  // other tabs are still mobile-width screens for now, so
+                  // just center them in a comfortable reading column
+                  // rather than letting them stretch edge-to-edge.
+                  if (!web || index == 0) return stack;
+                  return Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 640),
+                      child: stack,
+                    ),
+                  );
+                },
+              ),
+            );
+          }
+          final builder = _shellRoutes[settings.name];
+          if (builder != null) {
+            return MaterialPageRoute(builder: builder, settings: settings);
+          }
+          return null;
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final web = isWebWidth(context);
     final screens = web ? _webScreens : _mobileScreens;
 
-    return Scaffold(
-      appBar: web
-          ? WebTopNav(
-              currentIndex: _tabIndex.value,
-              onSelectTab: _selectTab,
-              onBookAppointment: () =>
-                  Navigator.pushNamed(context, '/services/booking'),
-            )
-          : null,
-      body: ShellNavigation(
-        selectTab: _selectTab,
-        child: Navigator(
-          key: _navigatorKey,
-          onGenerateRoute: (settings) {
-            if (settings.name == '/' || settings.name == null) {
-              return MaterialPageRoute(
-                builder: (_) => ValueListenableBuilder<int>(
-                  valueListenable: _tabIndex,
-                  builder: (_, index, __) {
-                    final stack = IndexedStack(index: index, children: screens);
-                    // Home manages its own full-bleed hero + centering; the
-                    // other tabs are still mobile-width screens for now, so
-                    // just center them in a comfortable reading column
-                    // rather than letting them stretch edge-to-edge.
-                    if (!web || index == 0) return stack;
-                    return Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 640),
-                        child: stack,
-                      ),
-                    );
-                  },
-                ),
-              );
-            }
-            final builder = _shellRoutes[settings.name];
-            if (builder != null) {
-              return MaterialPageRoute(builder: builder, settings: settings);
-            }
-            return null;
-          },
-        ),
-      ),
-      bottomNavigationBar: web
-          ? null
-          : ValueListenableBuilder<int>(
-              valueListenable: _tabIndex,
-              builder: (_, index, __) => BottomNavigationBar(
-                currentIndex: index,
-                onTap: _selectTab,
-                items: const [
-                  BottomNavigationBarItem(
-                      icon: Icon(Icons.home_outlined),
-                      activeIcon: Icon(Icons.home),
-                      label: 'Home'),
-                  BottomNavigationBarItem(
-                      icon: Icon(Icons.event_note_outlined),
-                      activeIcon: Icon(Icons.event_note),
-                      label: 'Appointments'),
-                  BottomNavigationBarItem(
-                      icon: Icon(Icons.grid_view_outlined),
-                      activeIcon: Icon(Icons.grid_view),
-                      label: 'Services'),
-                  BottomNavigationBarItem(
-                      icon: Icon(Icons.person_outline),
-                      activeIcon: Icon(Icons.person),
-                      label: 'Profile'),
+    if (web) {
+      return Scaffold(
+        body: Row(
+          children: [
+            WebSidebar(currentIndex: _tabIndex.value, onSelectTab: _selectTab),
+            Expanded(
+              child: Column(
+                children: [
+                  WebMiniTopBar(pageLabel: _pageLabels[_tabIndex.value]),
+                  Expanded(child: _buildNavigator(true, screens)),
                 ],
               ),
             ),
+          ],
+        ),
+      );
+    }
+
+    return Scaffold(
+      body: _buildNavigator(false, screens),
+      bottomNavigationBar: ValueListenableBuilder<int>(
+        valueListenable: _tabIndex,
+        builder: (_, index, __) => BottomNavigationBar(
+          currentIndex: index,
+          onTap: _selectTab,
+          items: const [
+            BottomNavigationBarItem(
+                icon: Icon(Icons.home_outlined),
+                activeIcon: Icon(Icons.home),
+                label: 'Home'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.event_note_outlined),
+                activeIcon: Icon(Icons.event_note),
+                label: 'Appointments'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.grid_view_outlined),
+                activeIcon: Icon(Icons.grid_view),
+                label: 'Services'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.person_outline),
+                activeIcon: Icon(Icons.person),
+                label: 'Profile'),
+          ],
+        ),
+      ),
     );
   }
 }
