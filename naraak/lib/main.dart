@@ -28,6 +28,7 @@ import 'screens/notifications_screen.dart';
 import 'screens/app_settings_screen.dart';
 import 'screens/privacy_security_screen.dart';
 import 'screens/help_support_screen.dart';
+import 'screens/splash_screen.dart';
 
 void main() => runApp(const NaraakApp());
 
@@ -65,7 +66,7 @@ class NaraakApp extends StatelessWidget {
                 .copyWith(textScaler: TextScaler.linear(settings.textScale)),
             child: child!,
           ),
-          home: const LoginScreen(),
+          home: const SplashScreen(),
           // Only pre-shell routes live here. Everything reachable once
           // inside the app (services, pending requests, notifications,
           // profile sub-pages) is registered on RootShell's own nested

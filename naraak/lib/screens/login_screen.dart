@@ -7,6 +7,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_button.dart';
+import '../widgets/skyline_background.dart';
 
 /// Single-user demo login — SCOPE LIMIT: no real eKey authentication.
 /// Enter any CPR number to continue; this is a dummy-data prototype only.
@@ -48,8 +49,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(gradient: AppColors.heroGradient),
+      body: SkylineBackground(
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
