@@ -91,8 +91,8 @@ class _PendingRequestsScreenState extends State<PendingRequestsScreen> {
                 icon: Icons.inbox_outlined,
                 title: 'No pending requests',
                 message:
-                    'Requests you submit for services like the Hajj Certificate\n'
-                    'or Fee Exemption Card will appear here with live status.',
+                    'Requests you submit for services \n'
+                    'will appear here.',
               );
             case LoadState.success:
               final filtered = _applyFilter(provider.requests);
