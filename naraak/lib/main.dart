@@ -33,6 +33,7 @@ import 'responsive/breakpoints.dart';
 import 'web/web_sidebar.dart';
 import 'web/web_mini_topbar.dart';
 import 'web/web_home_screen.dart';
+import 'widgets/mobile_top_bar.dart';
 
 void main() => runApp(const NaraakApp());
 
@@ -173,11 +174,11 @@ class _RootShellState extends State<RootShell> {
                 valueListenable: _tabIndex,
                 builder: (_, index, __) {
                   final stack = IndexedStack(index: index, children: screens);
-                  // Home manages its own full-bleed hero + centering; the
-                  // other tabs are still mobile-width screens for now, so
-                  // just center them in a comfortable reading column
-                  // rather than letting them stretch edge-to-edge.
-                  if (!web || index == 0) return stack;
+                  // Home and Appointments manage their own width/centering;
+                  // the remaining tabs are still mobile-width screens for
+                  // now, so just center them in a comfortable reading
+                  // column rather than letting them stretch edge-to-edge.
+                  if (!web || index == 0 || index == 1) return stack;
                   return Center(
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 640),
@@ -222,6 +223,7 @@ class _RootShellState extends State<RootShell> {
     }
 
     return Scaffold(
+      appBar: const MobileTopBar(),
       body: _buildNavigator(false, screens),
       bottomNavigationBar: ValueListenableBuilder<int>(
         valueListenable: _tabIndex,
