@@ -813,7 +813,7 @@ class DashboardPopularServicesGrid extends StatelessWidget {
         physics: const NeverScrollableScrollPhysics(),
         mainAxisSpacing: 14,
         crossAxisSpacing: 14,
-        childAspectRatio: columns == 2 ? 0.82 : 0.92,
+        childAspectRatio: columns == 2 ? 1.05 : 1.42,
         children: _tiles.map((t) {
           final (title, desc, icon, route, imagePath, iconFg) = t;
           return InkWell(
@@ -830,8 +830,8 @@ class DashboardPopularServicesGrid extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(
-                    height: 80,
+                  Expanded(
+                    flex: 3,
                     child: Stack(
                       fit: StackFit.expand,
                       children: [
@@ -842,40 +842,38 @@ class DashboardPopularServicesGrid extends StatelessWidget {
                               Container(color: iconFg.withValues(alpha: 0.15)),
                         ),
                         Positioned(
-                          left: 10,
-                          bottom: 9,
+                          left: 12,
+                          bottom: 10,
                           child: Container(
-                            width: 32,
-                            height: 32,
+                            width: 36,
+                            height: 36,
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(11),
                             ),
-                            child: Icon(icon, size: 16, color: iconFg),
+                            child: Icon(icon, size: 18, color: iconFg),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(11, 12, 11, 13),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(title,
-                              style: AppTextStyles.body
-                                  .copyWith(fontSize: 12, fontWeight: FontWeight.w700),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis),
-                          const SizedBox(height: 5),
-                          Expanded(
-                            child: Text(desc,
-                                style: AppTextStyles.caption.copyWith(fontSize: 9.5),
-                                overflow: TextOverflow.fade),
-                          ),
-                        ],
-                      ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(13, 12, 13, 13),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(title,
+                            style: AppTextStyles.body
+                                .copyWith(fontSize: 15, fontWeight: FontWeight.w700),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis),
+                        const SizedBox(height: 5),
+                        Text(desc,
+                            style: AppTextStyles.bodySecondary.copyWith(fontSize: 12.5),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis),
+                      ],
                     ),
                   ),
                 ],
