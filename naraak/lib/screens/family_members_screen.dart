@@ -32,25 +32,8 @@ class FamilyMembersScreen extends StatelessWidget {
                     bottomLeft: Radius.circular(28),
                     bottomRight: Radius.circular(28)),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text('Family Members',
-                          style: AppTextStyles.h1
-                              .copyWith(color: Colors.white, fontSize: 24)),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 4),
-                    child: Text('Manage dependents and act on their behalf',
-                        style: AppTextStyles.bodySecondary
-                            .copyWith(color: Colors.white70)),
-                  ),
-                ],
-              ),
+              child: Text('Manage dependents and act on their behalf',
+                  style: AppTextStyles.body.copyWith(color: Colors.white)),
             ),
           ),
           SliverPadding(
