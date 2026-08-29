@@ -25,6 +25,9 @@ import 'screens/profile_setup_screen.dart';
 import 'screens/family_members_screen.dart';
 import 'screens/personal_info_screen.dart';
 import 'screens/notifications_screen.dart';
+import 'screens/app_settings_screen.dart';
+import 'screens/privacy_security_screen.dart';
+import 'screens/help_support_screen.dart';
 
 void main() => runApp(const NaraakApp());
 
@@ -120,6 +123,9 @@ class _RootShellState extends State<RootShell> {
     '/pending-requests': (_) => const PendingRequestsScreen(),
     '/profile/family': (_) => const FamilyMembersScreen(),
     '/profile/personal-info': (_) => const PersonalInfoScreen(),
+    '/profile/app-settings': (_) => const AppSettingsScreen(),
+    '/profile/privacy-security': (_) => const PrivacySecurityScreen(),
+    '/profile/help-support': (_) => const HelpSupportScreen(),
     '/notifications': (_) => const NotificationsScreen(),
     ...AppRouter.routes,
   };

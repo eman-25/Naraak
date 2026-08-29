@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../providers/app_settings_provider.dart';
 import '../../providers/user_profile_provider.dart';
+import '../../services_mock/repository/request_repository.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../widgets/app_card.dart';
@@ -335,7 +337,14 @@ class _PhcResearchScreenState extends State<PhcResearchScreen> {
               child: AppButton(
                 label: 'Submit Application',
                 onPressed: _isConfirmed
-                    ? () => setState(() => _isSubmitted = true)
+                    ? () {
+                        RequestRepository.instance.addRequest(
+                          serviceName: 'PHC Research Application',
+                          status: 'submitted',
+                          note: '$_selectedRole — ${_titleController.text}',
+                        );
+                        setState(() => _isSubmitted = true);
+                      }
                     : null,
               ),
             ),
@@ -375,6 +384,8 @@ class _PhcResearchScreenState extends State<PhcResearchScreen> {
   }
 
   // --- Helpers ---
+  Color get _themeColor => context.watch<AppSettingsProvider>().palette.primary;
+
   Widget _buildRoleTab(String title) {
     final isSelected = _selectedRole == title;
     return GestureDetector(
@@ -382,7 +393,7 @@ class _PhcResearchScreenState extends State<PhcResearchScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primaryTeal : Colors.transparent,
+          color: isSelected ? _themeColor : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
         ),
         child: Center(
@@ -421,13 +432,10 @@ class _PhcResearchScreenState extends State<PhcResearchScreen> {
           height: 28,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: (isDone || isCurrent)
-                ? AppColors.primaryTeal
-                : Colors.transparent,
+            color: (isDone || isCurrent) ? _themeColor : Colors.transparent,
             border: Border.all(
-              color: (isDone || isCurrent)
-                  ? AppColors.primaryTeal
-                  : AppColors.neutralGray,
+              color:
+                  (isDone || isCurrent) ? _themeColor : AppColors.neutralGray,
               width: 2,
             ),
           ),
@@ -449,7 +457,7 @@ class _PhcResearchScreenState extends State<PhcResearchScreen> {
           label,
           style: TextStyle(
             fontSize: 11,
-            color: isCurrent ? AppColors.primaryTeal : AppColors.neutralGray,
+            color: isCurrent ? _themeColor : AppColors.neutralGray,
             fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
           ),
         ),
@@ -462,9 +470,8 @@ class _PhcResearchScreenState extends State<PhcResearchScreen> {
       child: Container(
         height: 2,
         margin: const EdgeInsets.symmetric(horizontal: 8).copyWith(bottom: 16),
-        color: active
-            ? AppColors.primaryTeal
-            : AppColors.neutralGray.withValues(alpha: 0.3),
+        color:
+            active ? _themeColor : AppColors.neutralGray.withValues(alpha: 0.3),
       ),
     );
   }
@@ -490,19 +497,18 @@ class _PhcResearchScreenState extends State<PhcResearchScreen> {
               color: AppColors.secondaryIce.withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: AppColors.primaryTeal.withValues(alpha: 0.4),
+                color: _themeColor.withValues(alpha: 0.4),
                 style: BorderStyle.solid,
               ),
             ),
             child: Column(
               children: [
-                const Icon(Icons.cloud_upload_outlined,
-                    color: AppColors.primaryTeal, size: 28),
+                Icon(Icons.cloud_upload_outlined, color: _themeColor, size: 28),
                 const SizedBox(height: 6),
                 Text(
                   fileName ?? 'Drag & Drop or browse',
                   style: AppTextStyles.body.copyWith(
-                    color: AppColors.primaryTeal,
+                    color: _themeColor,
                     fontWeight: FontWeight.bold,
                   ),
                 ),

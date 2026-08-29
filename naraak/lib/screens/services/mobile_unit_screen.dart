@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/user_profile_provider.dart';
+import '../../services_mock/repository/request_repository.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../widgets/app_card.dart';
@@ -210,6 +211,11 @@ class _MobileUnitScreenState extends State<MobileUnitScreen> {
 
   void _submitForm() {
     if (_formKey.currentState?.validate() ?? false) {
+      RequestRepository.instance.addRequest(
+        serviceName: 'Mobile Unit Visit',
+        status: 'submitted',
+        note: '$_selectedCondition at $_selectedBlock',
+      );
       setState(() => _isSubmitted = true);
     }
   }

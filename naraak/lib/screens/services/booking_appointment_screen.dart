@@ -465,33 +465,44 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
 
         // Doctors Cards List
         Expanded(
-          child: ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            children: [
-              _buildDoctorTodayCard(
-                doctorName: 'Dr. Fatima Al-Dosari',
+          child: Builder(builder: (context) {
+            final query = _searchController.text.trim().toLowerCase();
+            final doctors = _todayDoctors.where((d) {
+              final matchesGender = _selectedGenderFilter == 'All' ||
+                  d.gender == _selectedGenderFilter;
+              final matchesSearch =
+                  query.isEmpty || d.name.toLowerCase().contains(query);
+              return matchesGender && matchesSearch;
+            }).toList();
+
+            if (doctors.isEmpty) {
+              return Center(
+                child: Text('No doctors match your filters',
+                    style: AppTextStyles.bodySecondary),
+              );
+            }
+
+            return ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              itemCount: doctors.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 16),
+              itemBuilder: (context, i) => _buildDoctorTodayCard(
+                doctorName: doctors[i].name,
                 themeColor: themeColor,
-                slots: ['10:00', '10:30', '11:00'],
+                slots: doctors[i].slots,
               ),
-              const SizedBox(height: 16),
-              _buildDoctorTodayCard(
-                doctorName: 'Dr. Khalid Al-Mansoori',
-                themeColor: themeColor,
-                slots: ['11:00', '11:30'],
-              ),
-              const SizedBox(height: 16),
-              _buildDoctorTodayCard(
-                doctorName: 'Dr. Hind Al-Zayani',
-                themeColor: themeColor,
-                slots: ['14:00'],
-              ),
-              const SizedBox(height: 20),
-            ],
-          ),
+            );
+          }),
         ),
       ],
     );
   }
+
+  static const List<_TodayDoctor> _todayDoctors = [
+    _TodayDoctor('Dr. Fatima Al-Dosari', 'Female', ['10:00', '10:30', '11:00']),
+    _TodayDoctor('Dr. Khalid Al-Mansoori', 'Male', ['11:00', '11:30']),
+    _TodayDoctor('Dr. Hind Al-Zayani', 'Female', ['14:00']),
+  ];
 
   Widget _buildDoctorTodayCard({
     required String doctorName,
@@ -938,4 +949,11 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
       },
     );
   }
+}
+
+class _TodayDoctor {
+  final String name;
+  final String gender;
+  final List<String> slots;
+  const _TodayDoctor(this.name, this.gender, this.slots);
 }

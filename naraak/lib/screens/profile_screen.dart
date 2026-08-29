@@ -213,7 +213,11 @@ class ProfileScreen extends StatelessWidget {
                 const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16),
                     child: Divider(height: 1)),
-                _PlainMenuRow(label: 'Privacy & Security', onTap: () {}),
+                _PlainMenuRow(
+                  label: 'Privacy & Security',
+                  onTap: () =>
+                      Navigator.pushNamed(context, '/profile/privacy-security'),
+                ),
                 const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16),
                     child: Divider(height: 1)),
@@ -224,11 +228,19 @@ class ProfileScreen extends StatelessWidget {
                 const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16),
                     child: Divider(height: 1)),
-                _PlainMenuRow(label: 'App Settings', onTap: () {}),
+                _PlainMenuRow(
+                  label: 'App Settings',
+                  onTap: () =>
+                      Navigator.pushNamed(context, '/profile/app-settings'),
+                ),
                 const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16),
                     child: Divider(height: 1)),
-                _PlainMenuRow(label: 'Help & Support', onTap: () {}),
+                _PlainMenuRow(
+                  label: 'Help & Support',
+                  onTap: () =>
+                      Navigator.pushNamed(context, '/profile/help-support'),
+                ),
               ],
             ),
           ),

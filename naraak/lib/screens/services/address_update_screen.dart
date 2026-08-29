@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/user_profile_provider.dart';
+import '../../services_mock/repository/request_repository.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../widgets/app_card.dart';
@@ -179,6 +180,11 @@ class _AddressUpdateScreenState extends State<AddressUpdateScreen> {
 
   void _submitForm() {
     if (_formKey.currentState?.validate() ?? false) {
+      RequestRepository.instance.addRequest(
+        serviceName: 'Residential Address Update',
+        status: 'submitted',
+        note: 'New block: $_selectedNewBlock',
+      );
       setState(() => _isSubmitted = true);
     }
   }
