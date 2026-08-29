@@ -10,14 +10,32 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _breathController;
+  late final Animation<double> _breathScale;
+
   @override
   void initState() {
     super.initState();
+    _breathController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    )..repeat(reverse: true);
+    _breathScale = Tween<double>(begin: 0.94, end: 1.04).animate(
+      CurvedAnimation(parent: _breathController, curve: Curves.easeInOut),
+    );
+
     Future.delayed(const Duration(milliseconds: 2500), () {
       if (!mounted) return;
       Navigator.pushReplacementNamed(context, '/login');
     });
+  }
+
+  @override
+  void dispose() {
+    _breathController.dispose();
+    super.dispose();
   }
 
   @override
@@ -31,28 +49,32 @@ class _SplashScreenState extends State<SplashScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Container(
-                    width: 100,
-                    height: 100,
-                    padding: const EdgeInsets.all(18),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(28),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.22),
-                          blurRadius: 28,
-                          offset: const Offset(0, 12),
+                  ScaleTransition(
+                    scale: _breathScale,
+                    child: Container(
+                      width: 100,
+                      height: 100,
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.22),
+                            blurRadius: 28,
+                            offset: const Offset(0, 12),
+                          ),
+                        ],
+                      ),
+                      child: Image.asset(
+                        'assets/images/naraak_logo.png',
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Icon(
+                          Icons.local_hospital_rounded,
+                          color: Colors.teal,
+                          size: 44,
                         ),
-                      ],
-                    ),
-                    child: Image.asset(
-                      'assets/images/naraak_logo.png',
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) => const Icon(
-                        Icons.local_hospital_rounded,
-                        color: Colors.teal,
-                        size: 44,
                       ),
                     ),
                   ),
@@ -77,12 +99,17 @@ class _SplashScreenState extends State<SplashScreen> {
                     ),
                   ),
                   const SizedBox(height: 48),
-                  SizedBox(
-                    width: 28,
-                    height: 28,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.6,
-                      color: Colors.white.withValues(alpha: 0.85),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: SizedBox(
+                      width: 100,
+                      height: 3,
+                      child: LinearProgressIndicator(
+                        backgroundColor: Colors.white.withValues(alpha: 0.25),
+                        valueColor: AlwaysStoppedAnimation(
+                          Colors.white.withValues(alpha: 0.9),
+                        ),
+                      ),
                     ),
                   ),
                 ],
