@@ -59,6 +59,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    const SizedBox(height: 48),
                     // ── Logo & Brand ─────────────────────────────
                     _LogoMark(),
                     const SizedBox(height: 24),
@@ -178,37 +179,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ],
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // ── Footer note ─────────────────────────────
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 18, vertical: 12),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.10),
-                        borderRadius: BorderRadius.circular(AppTheme.radiusSm),
-                        border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.16)),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.info_outline_rounded,
-                              size: 18,
-                              color: Colors.white.withValues(alpha: 0.85)),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              'eKey is Bahrain\'s national digital identity system. '
-                              'This demo does not perform real authentication.',
-                              style: AppTextStyles.caption.copyWith(
-                                color: Colors.white.withValues(alpha: 0.85),
-                                height: 1.4,
-                              ),
-                            ),
-                          ),
-                        ],
                       ),
                     ),
                   ],

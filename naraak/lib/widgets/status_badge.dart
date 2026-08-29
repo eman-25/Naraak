@@ -17,42 +17,47 @@ class StatusBadge extends StatelessWidget {
   final AppStatus status;
   const StatusBadge({super.key, required this.status});
 
-  ({Color fg, Color bg, IconData icon, String label}) get _c {
+  ({Color fg, Color bg, IconData icon, String label}) _colorsFor(bool isDark) {
     switch (status) {
       case AppStatus.approved:
       case AppStatus.confirmed:
+        final fg = isDark ? AppColors.darkSuccess : AppColors.success;
         return (
-          fg: AppColors.success,
-          bg: AppColors.successSurface,
+          fg: fg,
+          bg: isDark ? fg.withValues(alpha: 0.16) : AppColors.successSurface,
           icon: Icons.check_circle_rounded,
           label: 'Confirmed'
         );
       case AppStatus.completed:
+        final fg = isDark ? AppColors.darkSuccess : AppColors.success;
         return (
-          fg: AppColors.success,
-          bg: AppColors.successSurface,
+          fg: fg,
+          bg: isDark ? fg.withValues(alpha: 0.16) : AppColors.successSurface,
           icon: Icons.check_circle_rounded,
           label: 'Completed'
         );
       case AppStatus.pending:
       case AppStatus.inProgress:
+        final fg = isDark ? AppColors.darkWarning : AppColors.warning;
         return (
-          fg: AppColors.warning,
-          bg: AppColors.warningSurface,
+          fg: fg,
+          bg: isDark ? fg.withValues(alpha: 0.16) : AppColors.warningSurface,
           icon: Icons.schedule_rounded,
           label: 'In Progress'
         );
       case AppStatus.rejected:
+        final fg = isDark ? AppColors.darkError : AppColors.error;
         return (
-          fg: AppColors.error,
-          bg: AppColors.errorSurface,
+          fg: fg,
+          bg: isDark ? fg.withValues(alpha: 0.16) : AppColors.errorSurface,
           icon: Icons.cancel_rounded,
           label: 'Rejected'
         );
       case AppStatus.cancelled:
+        final fg = isDark ? AppColors.darkError : AppColors.error;
         return (
-          fg: AppColors.error,
-          bg: AppColors.errorSurface,
+          fg: fg,
+          bg: isDark ? fg.withValues(alpha: 0.16) : AppColors.errorSurface,
           icon: Icons.cancel_rounded,
           label: 'Cancelled'
         );
@@ -61,7 +66,8 @@ class StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = _c;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final c = _colorsFor(isDark);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
       decoration:

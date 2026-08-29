@@ -38,10 +38,20 @@ class AppColors {
   static const outline        = Color(0xFFE1E8EA);
 
   // ── Dark mode ────────────────────────────────────────────
-  static const darkBg      = Color(0xFF0D1417);
-  static const darkSurface = Color(0xFF16201F);
-  static const darkSurface2= Color(0xFF1E2B2A);
-  static const darkOutline = Color(0xFF2A3A39);
+  static const darkBg       = Color(0xFF0D1218); // page background
+  static const darkSurface  = Color(0xFF171D24); // cards
+  static const darkSurface2 = Color(0xFF1D242C); // secondary/nested cards
+  static const darkOutline  = Color(0xFF2A3340);
+
+  static const darkPrimary       = Color(0xFF006B70); // primary teal
+  static const darkAccent        = Color(0xFF00A6A6); // accent teal / icons
+  static const darkTextPrimary   = Color(0xFFF2F4F5);
+  static const darkTextSecondary = Color(0xFFAAB3BB);
+
+  static const darkSuccess = Color(0xFF00C98B); // approved
+  static const darkError   = Color(0xFFF22F3D); // alert
+  static const darkWarning = Color(0xFFF59E0B); // warning orange
+  static const darkAmber   = Color(0xFFF5B82E); // amber
 
   // ── Gradients ────────────────────────────────────────────
   static const heroGradient = LinearGradient(
