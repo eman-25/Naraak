@@ -544,9 +544,19 @@ class _PendingRequestsCard extends StatelessWidget {
     final rejected = needsAttention;
     final pendingBase =
         (total - inProgress - completed - rejected).clamp(0, total);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return AppCard(
       onTap: () => Navigator.pushNamed(context, '/pending-requests'),
+      // A flat dark card here read as "still not themed" next to the
+      // translucent accent-tinted accessibility bar above it — blending
+      // the palette accent into the dark surface (rather than a raw alpha
+      // overlay, which would just look muddy) gives it the same glassy
+      // feel while keeping text contrast solid.
+      color: isDark
+          ? Color.alphaBlend(
+              palette.primary.withValues(alpha: 0.20), AppColors.darkSurface)
+          : null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
