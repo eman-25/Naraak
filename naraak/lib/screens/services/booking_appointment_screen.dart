@@ -118,27 +118,36 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
       body: SafeArea(
         child: AnimatedSwitcher(
           duration: const Duration(milliseconds: 250),
-          child: _buildCurrentScreenView(themeColor, userProfile),
+          // AnimatedSwitcher stacks its child without forcing tight width,
+          // so a bare Column (like the slot-list screens) shrink-wraps to
+          // its narrowest content instead of filling the screen. Force it
+          // full-size here instead of relying on every view to do it.
+          child: SizedBox.expand(
+            child: _buildCurrentScreenView(themeColor, userProfile),
+          ),
         ),
       ),
     );
   }
 
   Widget _buildCurrentScreenView(Color themeColor, dynamic profile) {
-    switch (_currentView) {
-      case BookingView.chooseMethod:
-        return _buildScreen1ChooseMethod(themeColor);
-      case BookingView.bookByDateDoctor:
-        return _buildScreen2BookByDateDoctor(themeColor, profile);
-      case BookingView.availableToday:
-        return _buildScreen3AvailableToday(themeColor);
-      case BookingView.closestSlot:
-        return _buildScreen4ClosestSlot(themeColor);
-      case BookingView.reviewDetails:
-        return _buildReviewDetailsView(themeColor, profile);
-      case BookingView.bookingSuccess:
-        return _buildSuccessPassView(themeColor);
-    }
+    // AnimatedSwitcher needs a distinct key per view, otherwise it can't
+    // tell the outgoing/incoming children apart and lays out mid-crossfade
+    // with squashed constraints (this is what caused the doctor-name text
+    // on Closest Slot to wrap one character per line).
+    return KeyedSubtree(
+      key: ValueKey(_currentView),
+      child: switch (_currentView) {
+        BookingView.chooseMethod => _buildScreen1ChooseMethod(themeColor),
+        BookingView.bookByDateDoctor =>
+          _buildScreen2BookByDateDoctor(themeColor, profile),
+        BookingView.availableToday => _buildScreen3AvailableToday(themeColor),
+        BookingView.closestSlot => _buildScreen4ClosestSlot(themeColor),
+        BookingView.reviewDetails =>
+          _buildReviewDetailsView(themeColor, profile),
+        BookingView.bookingSuccess => _buildSuccessPassView(themeColor),
+      },
+    );
   }
 
   // ==========================================
