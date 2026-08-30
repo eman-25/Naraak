@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../localization/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../providers/user_profile_provider.dart';
 import '../../data/naraak_repository.dart';
@@ -50,24 +51,24 @@ class _AddressUpdateScreenState extends State<AddressUpdateScreen> {
         if (leave && context.mounted) Navigator.of(context).pop();
       },
       child: Scaffold(
-      appBar: const NaraakAppBar(title: 'Update Address'),
-      body: ResponsivePageFrame(
-        maxWidth: 820,
-        child: Column(
-          children: [
-            if (!_isSubmitted) ...[
-              const ServiceHero(
-                imageAsset: 'assets/images/dashboard_phc_hero.png',
-                title: 'Update Residential Address',
-                description:
-                    'Update your block and see your newly assigned health center.',
-              ),
-              const SizedBox(height: 20),
+        appBar: const NaraakAppBar(title: 'Update Address'),
+        body: ResponsivePageFrame(
+          maxWidth: 820,
+          child: Column(
+            children: [
+              if (!_isSubmitted) ...[
+                const ServiceHero(
+                  imageAsset: 'assets/images/dashboard_phc_hero.png',
+                  title: 'Update Residential Address',
+                  description:
+                      'Update your block and see your newly assigned health center.',
+                ),
+                const SizedBox(height: 20),
+              ],
+              _isSubmitted ? _buildSuccessCard() : _buildFormCard(profile),
             ],
-            _isSubmitted ? _buildSuccessCard() : _buildFormCard(profile),
-          ],
+          ),
         ),
-      ),
       ),
     );
   }
@@ -81,27 +82,31 @@ class _AddressUpdateScreenState extends State<AddressUpdateScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Reference Number', style: AppTextStyles.caption),
+                Text(AppLocalizations.of(context).raw('Reference Number'),
+                    style: AppTextStyles.caption),
                 const SizedBox(height: 4),
                 _buildReadOnlyField('NRK-ADD-2026-441'),
                 const SizedBox(height: 16),
 
-                const Text('Requester CPR', style: AppTextStyles.caption),
+                Text(AppLocalizations.of(context).raw('Requester CPR'),
+                    style: AppTextStyles.caption),
                 const SizedBox(height: 4),
                 _buildReadOnlyField(profile?.cpr ?? '990422345'),
                 const SizedBox(height: 16),
 
-                const Text('Current Block Number',
+                Text(AppLocalizations.of(context).raw('Current Block Number'),
                     style: AppTextStyles.caption),
                 const SizedBox(height: 4),
                 _buildReadOnlyField('316 (Hoora)'),
                 const SizedBox(height: 16),
 
-                const Text('New Block Number *', style: AppTextStyles.caption),
+                Text(AppLocalizations.of(context).raw('New Block Number *'),
+                    style: AppTextStyles.caption),
                 const SizedBox(height: 4),
                 DropdownButtonFormField<String>(
                   value: _selectedNewBlock,
-                  hint: const Text('Select New Block'),
+                  hint: Text(
+                      AppLocalizations.of(context).raw('Select New Block')),
                   items: _availableBlocks
                       .map((block) => DropdownMenuItem(
                             value: block,
@@ -167,7 +172,8 @@ class _AddressUpdateScreenState extends State<AddressUpdateScreen> {
         children: [
           const Icon(Icons.check_circle, size: 64, color: AppColors.success),
           const SizedBox(height: 16),
-          const Text('Address Updated', style: AppTextStyles.h2),
+          Text(AppLocalizations.of(context).raw('Address Updated'),
+              style: AppTextStyles.h2),
           const SizedBox(height: 8),
           const Text(
             'Your residential address update request (NRK-ADD-2026-441) has been processed successfully.',
@@ -223,5 +229,4 @@ class _AddressUpdateScreenState extends State<AddressUpdateScreen> {
                     Localizations.localeOf(context).languageCode == 'ar'))));
     }
   }
-
 }

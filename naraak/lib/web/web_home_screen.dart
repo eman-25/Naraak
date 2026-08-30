@@ -46,7 +46,8 @@ class _WebHomeScreenState extends State<WebHomeScreen> {
               child: SizedBox(
                 height: 310,
                 child: Stack(fit: StackFit.expand, children: [
-                  Image.asset('assets/images/dashboard_phc_hero.png', fit: BoxFit.cover),
+                  Image.asset('assets/images/Primary Healthcare Centers.jpg',
+                      fit: BoxFit.cover),
                   Padding(
                     padding: const EdgeInsets.all(38),
                     child: Align(
@@ -57,17 +58,27 @@ class _WebHomeScreenState extends State<WebHomeScreen> {
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Primary Healthcare,\nCloser to You', style: TextStyle(color: Colors.white, fontSize: 38, fontWeight: FontWeight.w800, height: 1.08)),
+                            const Text('Primary Healthcare,\nCloser to You',
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 38,
+                                    fontWeight: FontWeight.w800,
+                                    height: 1.08)),
                             const SizedBox(height: 14),
-                            const Text('All your primary healthcare services in one place. Fast. Easy. Secure.', style: TextStyle(color: Colors.white, fontSize: 15)),
+                            const Text(
+                                'All your primary healthcare services in one place. Fast. Easy. Secure.',
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 15)),
                             const SizedBox(height: 22),
                             TextField(
                               readOnly: true,
-                              onTap: () => ShellNavigation.of(context)?.selectTab(2),
+                              onTap: () =>
+                                  ShellNavigation.of(context)?.selectTab(2),
                               decoration: const InputDecoration(
                                 filled: true,
                                 fillColor: Colors.white,
-                                hintText: 'Search for services, health centers and more...',
+                                hintText:
+                                    'Search for services, health centers and more...',
                                 prefixIcon: Icon(Icons.search_rounded),
                               ),
                             ),

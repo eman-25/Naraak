@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../localization/app_localizations.dart';
 import '../providers/user_profile_provider.dart';
 import '../models/user_profile.dart';
 import '../theme/app_text_styles.dart';
@@ -35,6 +36,23 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     'Yousif HC (Sitra)',
   ];
 
+  String _healthCenterLabel(AppLocalizations strings, String center) {
+    switch (center) {
+      case 'Hoora Health Center':
+        return strings.text('hooraHealthCenter');
+      case 'Naim Health Center':
+        return strings.text('naimHealthCenter');
+      case 'Muharraq Health Center':
+        return strings.text('muharraqHealthCenter');
+      case 'Bilad Al-Qadeem Health Center':
+        return strings.text('biladQadeemHealthCenter');
+      case 'Yousif HC (Sitra)':
+        return strings.text('yousifHealthCenter');
+      default:
+        return center;
+    }
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -47,6 +65,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     final provider = context.read<UserProfileProvider>();
+    final apiProfile = provider.profile;
     final profile = UserProfile(
       fullName: _nameController.text.trim(),
       cpr: provider.loggedInCpr ?? '',
@@ -54,6 +73,12 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       gender: _gender,
       mobileNumber: _mobileController.text.trim(),
       assignedHealthCenter: _healthCenter,
+      bloodType: apiProfile?.bloodType,
+      nationality: apiProfile?.nationality,
+      emergencyContactName: apiProfile?.emergencyContactName,
+      emergencyContactPhone: apiProfile?.emergencyContactPhone,
+      familyDoctorName: apiProfile?.familyDoctorName,
+      familyDoctorSpecialty: apiProfile?.familyDoctorSpecialty,
     );
     provider.completeProfile(profile);
 
@@ -63,9 +88,10 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   @override
   Widget build(BuildContext context) {
     final cpr = context.watch<UserProfileProvider>().loggedInCpr ?? '';
+    final strings = AppLocalizations.of(context);
 
     return Scaffold(
-      appBar: const NaraakAppBar(title: 'Complete Your Profile'),
+      appBar: NaraakAppBar(title: strings.text('completeYourProfile')),
       body: Align(
         alignment: Alignment.topCenter,
         child: ConstrainedBox(
@@ -78,14 +104,13 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                 const Center(child: NaraakLogo(size: 88)),
                 const SizedBox(height: 18),
                 Text(
-                  'Tell us about yourself',
+                  strings.text('tellUsAboutYourself'),
                   style: AppTextStyles.h1,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'A few details to personalize your dashboard. This data stays on '
-                  'your device for this demo session only.',
+                  strings.text('profileSetupSubtitle'),
                   style: AppTextStyles.bodySecondary,
                   textAlign: TextAlign.center,
                 ),
@@ -95,8 +120,8 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                 TextFormField(
                   initialValue: cpr,
                   enabled: false,
-                  decoration: const InputDecoration(
-                    labelText: 'CPR Number (from login)',
+                  decoration: InputDecoration(
+                    labelText: strings.text('cprFromLogin'),
                     prefixIcon: Icon(Icons.badge_outlined),
                   ),
                 ),
@@ -104,12 +129,12 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
 
                 TextFormField(
                   controller: _nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Full Name',
+                  decoration: InputDecoration(
+                    labelText: strings.text('fullName'),
                     prefixIcon: Icon(Icons.person_outline),
                   ),
                   validator: (v) => (v == null || v.trim().isEmpty)
-                      ? 'Enter your full name'
+                      ? strings.text('enterFullName')
                       : null,
                 ),
                 const SizedBox(height: 16),
@@ -120,15 +145,16 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                       child: TextFormField(
                         controller: _ageController,
                         keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          labelText: 'Age',
+                        decoration: InputDecoration(
+                          labelText: strings.text('age'),
                           prefixIcon: Icon(Icons.cake_outlined),
                           errorMaxLines: 2,
                         ),
                         validator: (v) {
                           final n = int.tryParse(v ?? '');
-                          if (n == null || n > 120) return 'Enter a valid age';
-                          if (n < 15) return 'Must be 15 or older';
+                          if (n == null || n > 120)
+                            return strings.text('enterValidAge');
+                          if (n < 15) return strings.text('mustBeFifteen');
                           return null;
                         },
                       ),
@@ -137,14 +163,16 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                     Expanded(
                       child: DropdownButtonFormField<String>(
                         initialValue: _gender,
-                        decoration: const InputDecoration(
-                          labelText: 'Gender',
+                        decoration: InputDecoration(
+                          labelText: strings.text('gender'),
                           prefixIcon: Icon(Icons.people_outline),
                         ),
-                        items: const [
+                        items: [
                           DropdownMenuItem(
-                              value: 'Female', child: Text('Female')),
-                          DropdownMenuItem(value: 'Male', child: Text('Male')),
+                              value: 'Female',
+                              child: Text(strings.text('female'))),
+                          DropdownMenuItem(
+                              value: 'Male', child: Text(strings.text('male'))),
                         ],
                         onChanged: (v) =>
                             setState(() => _gender = v ?? _gender),
@@ -157,25 +185,27 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                 TextFormField(
                   controller: _mobileController,
                   keyboardType: TextInputType.phone,
-                  decoration: const InputDecoration(
-                    labelText: 'Mobile Number',
+                  decoration: InputDecoration(
+                    labelText: strings.text('mobileNumber'),
                     hintText: '+973 3XXX XXXX',
                     prefixIcon: Icon(Icons.phone_outlined),
                   ),
                   validator: (v) => (v == null || v.trim().isEmpty)
-                      ? 'Enter your mobile number'
+                      ? strings.text('enterMobileNumber')
                       : null,
                 ),
                 const SizedBox(height: 16),
 
                 DropdownButtonFormField<String>(
                   initialValue: _healthCenter,
-                  decoration: const InputDecoration(
-                    labelText: 'Assigned Health Center',
+                  decoration: InputDecoration(
+                    labelText: strings.text('assignedHealthCenter'),
                     prefixIcon: Icon(Icons.local_hospital_outlined),
                   ),
                   items: _healthCenters
-                      .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                      .map((c) => DropdownMenuItem(
+                          value: c,
+                          child: Text(_healthCenterLabel(strings, c))))
                       .toList(),
                   onChanged: (v) =>
                       setState(() => _healthCenter = v ?? _healthCenter),
@@ -183,7 +213,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                 const SizedBox(height: 32),
 
                 NaraakButton(
-                  label: 'Save & Continue',
+                  label: strings.text('saveAndContinue'),
                   icon: Icons.arrow_forward_rounded,
                   onPressed: _handleSave,
                 ),

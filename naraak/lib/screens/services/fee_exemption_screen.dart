@@ -1,5 +1,6 @@
 // lib/screens/services/fee_exemption_screen.dart
 import 'package:flutter/material.dart';
+import '../../localization/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../providers/fee_exemption_provider.dart';
 import '../../providers/appointment_provider.dart' show LoadState;
@@ -74,7 +75,8 @@ class _FeeExemptionScreenState extends State<FeeExemptionScreen> {
     final profile = context.read<UserProfileProvider>().profile;
     _gender = profile?.gender ?? 'Female';
     final storedNationality = profile?.nationality;
-    _nationality = _nationalities.contains(storedNationality) ? storedNationality : null;
+    _nationality =
+        _nationalities.contains(storedNationality) ? storedNationality : null;
     _contactController =
         TextEditingController(text: profile?.mobileNumber ?? '');
     _emailController = TextEditingController(text: 'f.darraj@example.com');
@@ -98,7 +100,9 @@ class _FeeExemptionScreenState extends State<FeeExemptionScreen> {
 
     if (_uploads['cprCopy'] == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please upload CPR Copy to proceed.')),
+        SnackBar(
+            content: Text(AppLocalizations.of(context)
+                .raw('Please upload CPR Copy to proceed.'))),
       );
       return;
     }
@@ -137,7 +141,7 @@ class _FeeExemptionScreenState extends State<FeeExemptionScreen> {
       builder: (dialogContext) => AlertDialog(
         icon:
             const Icon(Icons.check_circle, color: AppColors.success, size: 48),
-        title: const Text('Application Submitted'),
+        title: Text(AppLocalizations.of(context).raw('Application Submitted')),
         content: const Text(
           'Your Health Fee Exemption Card application has been submitted for review. '
           'Track its status under Pending Requests.',
@@ -149,15 +153,15 @@ class _FeeExemptionScreenState extends State<FeeExemptionScreen> {
               Navigator.pop(context);
               Navigator.pushNamed(context, '/pending-requests');
             },
-            child: const Text('View Pending Requests'),
+            child:
+                Text(AppLocalizations.of(context).raw('View Pending Requests')),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildUploadField(
-      String label, String key, String defaultFileName) {
+  Widget _buildUploadField(String label, String key, String defaultFileName) {
     final provider = context.read<FeeExemptionProvider>();
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
@@ -186,76 +190,77 @@ class _FeeExemptionScreenState extends State<FeeExemptionScreen> {
         if (leave && context.mounted) Navigator.of(context).pop();
       },
       child: Scaffold(
-      appBar: NaraakAppBar(
-        title: 'Fee Exemption Card',
-        onBack: _step == 1
-            ? () => setState(() => _step = 0)
-            : (_started ? () => setState(() => _started = false) : null),
-      ),
-      body: Consumer<FeeExemptionProvider>(
-        builder: (context, provider, _) {
-          if (provider.initState == LoadState.idle ||
-              provider.initState == LoadState.loading) {
-            return const Center(
-                child: CircularProgressIndicator(color: AppColors.primaryTeal));
-          }
-          if (provider.initState == LoadState.error) {
-            return EmptyStateView(
-              isError: true,
-              title: 'Could not check eligibility',
-              message: provider.errorMessage ?? 'Please try again.',
-              actionLabel: 'Retry',
-              onAction: () => provider.init(),
-            );
-          }
-          if (provider.hasPendingRequest) {
-            return EmptyStateView(
-              icon: Icons.hourglass_top,
-              title: 'You already have a pending request',
-              message:
-                  'A fee exemption application is already being processed. '
-                  'You can submit a new one once it\'s resolved.',
-              actionLabel: 'View Pending Requests',
-              onAction: () =>
-                  Navigator.pushReplacementNamed(context, '/pending-requests'),
-            );
-          }
+        appBar: NaraakAppBar(
+          title: 'Fee Exemption Card',
+          onBack: _step == 1
+              ? () => setState(() => _step = 0)
+              : (_started ? () => setState(() => _started = false) : null),
+        ),
+        body: Consumer<FeeExemptionProvider>(
+          builder: (context, provider, _) {
+            if (provider.initState == LoadState.idle ||
+                provider.initState == LoadState.loading) {
+              return const Center(
+                  child:
+                      CircularProgressIndicator(color: AppColors.primaryTeal));
+            }
+            if (provider.initState == LoadState.error) {
+              return EmptyStateView(
+                isError: true,
+                title: 'Could not check eligibility',
+                message: provider.errorMessage ?? 'Please try again.',
+                actionLabel: 'Retry',
+                onAction: () => provider.init(),
+              );
+            }
+            if (provider.hasPendingRequest) {
+              return EmptyStateView(
+                icon: Icons.hourglass_top,
+                title: 'You already have a pending request',
+                message:
+                    'A fee exemption application is already being processed. '
+                    'You can submit a new one once it\'s resolved.',
+                actionLabel: 'View Pending Requests',
+                onAction: () => Navigator.pushReplacementNamed(
+                    context, '/pending-requests'),
+              );
+            }
 
-          return ResponsivePageFrame(
-            maxWidth: 820,
-            child: Column(
-              children: [
-                const ServiceHero(
-                  icon: Icons.shield_rounded,
-                  accent: Color(0xFFB45309),
-                  title: 'Health Fee Exemption Card',
-                  description:
-                      'Apply for health fee exemption based on your entitlement.',
-                ),
-                const SizedBox(height: 20),
-                if (!_started)
-                  _buildChecklist()
-                else
-                  Form(
-                    key: _formKey,
-                    child: Column(
-                      children: [
-                        ProgressStepper(
-                          steps: const ['Eligibility', 'Documents'],
-                          currentStep: _step,
-                        ),
-                        const SizedBox(height: 24),
-                        ...(_step == 0
-                            ? _buildDetailsStep()
-                            : _buildUploadsStep(provider)),
-                      ],
-                    ),
+            return ResponsivePageFrame(
+              maxWidth: 820,
+              child: Column(
+                children: [
+                  const ServiceHero(
+                    icon: Icons.shield_rounded,
+                    accent: Color(0xFFB45309),
+                    title: 'Health Fee Exemption Card',
+                    description:
+                        'Apply for health fee exemption based on your entitlement.',
                   ),
-              ],
-            ),
-          );
-        },
-      ),
+                  const SizedBox(height: 20),
+                  if (!_started)
+                    _buildChecklist()
+                  else
+                    Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          ProgressStepper(
+                            steps: const ['Eligibility', 'Documents'],
+                            currentStep: _step,
+                          ),
+                          const SizedBox(height: 24),
+                          ...(_step == 0
+                              ? _buildDetailsStep()
+                              : _buildUploadsStep(provider)),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+            );
+          },
+        ),
       ),
     );
   }
@@ -271,7 +276,10 @@ class _FeeExemptionScreenState extends State<FeeExemptionScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Before you begin, please prepare:', style: AppTextStyles.h3),
+          Text(
+              AppLocalizations.of(context)
+                  .raw('Before you begin, please prepare:'),
+              style: AppTextStyles.h3),
           const SizedBox(height: 16),
           for (final (label, icon) in items)
             Padding(
@@ -288,9 +296,7 @@ class _FeeExemptionScreenState extends State<FeeExemptionScreen> {
                     child: Icon(icon, size: 16, color: AppColors.warning),
                   ),
                   const SizedBox(width: 12),
-                  Expanded(
-                      child:
-                          Text(label, style: AppTextStyles.body)),
+                  Expanded(child: Text(label, style: AppTextStyles.body)),
                 ],
               ),
             ),
@@ -311,14 +317,16 @@ class _FeeExemptionScreenState extends State<FeeExemptionScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Reference Number', style: AppTextStyles.label),
+            Text(AppLocalizations.of(context).raw('Reference Number'),
+                style: AppTextStyles.label),
             const SizedBox(height: 6),
             TextFormField(
               initialValue: '$_referenceNumber (auto-filled)',
               enabled: false,
             ),
             const SizedBox(height: 16),
-            Text('Gender', style: AppTextStyles.label),
+            Text(AppLocalizations.of(context).raw('Gender'),
+                style: AppTextStyles.label),
             const SizedBox(height: 6),
             DropdownButtonFormField<String>(
               value: _gender,
@@ -329,7 +337,8 @@ class _FeeExemptionScreenState extends State<FeeExemptionScreen> {
               decoration: const InputDecoration(hintText: '[Select]'),
             ),
             const SizedBox(height: 16),
-            Text('Nationality', style: AppTextStyles.label),
+            Text(AppLocalizations.of(context).raw('Nationality'),
+                style: AppTextStyles.label),
             const SizedBox(height: 6),
             DropdownButtonFormField<String>(
               value: _nationality,
@@ -340,7 +349,8 @@ class _FeeExemptionScreenState extends State<FeeExemptionScreen> {
               decoration: const InputDecoration(hintText: '[Select]'),
             ),
             const SizedBox(height: 16),
-            Text('Request Type', style: AppTextStyles.label),
+            Text(AppLocalizations.of(context).raw('Request Type'),
+                style: AppTextStyles.label),
             const SizedBox(height: 6),
             DropdownButtonFormField<String>(
               value: _requestType,
@@ -352,7 +362,8 @@ class _FeeExemptionScreenState extends State<FeeExemptionScreen> {
               validator: (v) => v == null ? 'Required' : null,
             ),
             const SizedBox(height: 16),
-            Text('Marital Status', style: AppTextStyles.label),
+            Text(AppLocalizations.of(context).raw('Marital Status'),
+                style: AppTextStyles.label),
             const SizedBox(height: 6),
             DropdownButtonFormField<String>(
               value: _maritalStatus,
@@ -363,7 +374,8 @@ class _FeeExemptionScreenState extends State<FeeExemptionScreen> {
               decoration: const InputDecoration(hintText: '[Select]'),
             ),
             const SizedBox(height: 16),
-            Text('Spouse Nationality', style: AppTextStyles.label),
+            Text(AppLocalizations.of(context).raw('Spouse Nationality'),
+                style: AppTextStyles.label),
             const SizedBox(height: 6),
             DropdownButtonFormField<String>(
               value: _spouseNationality,
@@ -374,7 +386,8 @@ class _FeeExemptionScreenState extends State<FeeExemptionScreen> {
               decoration: const InputDecoration(hintText: '[Select]'),
             ),
             const SizedBox(height: 16),
-            Text('Contact Number', style: AppTextStyles.label),
+            Text(AppLocalizations.of(context).raw('Contact Number'),
+                style: AppTextStyles.label),
             const SizedBox(height: 6),
             TextFormField(
               controller: _contactController,
@@ -382,14 +395,16 @@ class _FeeExemptionScreenState extends State<FeeExemptionScreen> {
               validator: (v) => v == null || v.isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: 16),
-            Text('Email', style: AppTextStyles.label),
+            Text(AppLocalizations.of(context).raw('Email'),
+                style: AppTextStyles.label),
             const SizedBox(height: 6),
             TextFormField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
             ),
             const SizedBox(height: 16),
-            Text('Case Description', style: AppTextStyles.label),
+            Text(AppLocalizations.of(context).raw('Case Description'),
+                style: AppTextStyles.label),
             const SizedBox(height: 6),
             TextFormField(
               controller: _descriptionController,

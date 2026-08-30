@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import '../localization/app_localizations.dart';
+import '../providers/app_settings_provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/clinical_data_provider.dart';
 import '../providers/family_provider.dart';
@@ -38,6 +40,11 @@ class _EkeyLoginScreenState extends State<EkeyLoginScreen> {
     final profile = context.read<UserProfileProvider>();
     final success = await profile.login(_cprController.text.trim());
     if (!mounted) return;
+    if (success) {
+      context
+          .read<AppSettingsProvider>()
+          .setLocaleFromApiLanguage(profile.preferredLanguage);
+    }
     if (!success) {
       setState(() => _loading = false);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -63,6 +70,7 @@ class _EkeyLoginScreenState extends State<EkeyLoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final palette = AppPaletteExtension.of(context);
     final surface = isDark ? AppColors.darkSurface : AppColors.surface;
@@ -85,7 +93,7 @@ class _EkeyLoginScreenState extends State<EkeyLoginScreen> {
                       Align(
                         alignment: AlignmentDirectional.centerStart,
                         child: IconButton(
-                          tooltip: 'Back',
+                          tooltip: strings.text('back'),
                           onPressed: () => Navigator.pop(context),
                           icon: const Icon(Icons.arrow_back_rounded),
                         ),
@@ -94,13 +102,13 @@ class _EkeyLoginScreenState extends State<EkeyLoginScreen> {
                       const Center(child: NaraakLogo(size: 112)),
                       const SizedBox(height: 24),
                       Text(
-                        'Welcome to Naraak',
+                        strings.text('welcomeToNaraak'),
                         style: AppTextStyles.display,
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Use your CPR number to continue securely.',
+                        strings.text('useCprSecurely'),
                         style: AppTextStyles.bodySecondary,
                         textAlign: TextAlign.center,
                       ),
@@ -146,15 +154,15 @@ class _EkeyLoginScreenState extends State<EkeyLoginScreen> {
                                         color: palette.primary),
                                   ),
                                   const SizedBox(width: 14),
-                                  const Expanded(
+                                  Expanded(
                                     child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        Text('eKey Authentication',
+                                        Text(strings.text('ekeyAuthentication'),
                                             style: AppTextStyles.h3),
                                         SizedBox(height: 2),
-                                        Text('Simulated prototype access',
+                                        Text(strings.text('simulatedAccess'),
                                             style: AppTextStyles.caption),
                                       ],
                                     ),
@@ -172,18 +180,19 @@ class _EkeyLoginScreenState extends State<EkeyLoginScreen> {
                                   FilteringTextInputFormatter.digitsOnly,
                                   LengthLimitingTextInputFormatter(9),
                                 ],
-                                decoration: const InputDecoration(
-                                  labelText: 'CPR Number',
-                                  hintText: 'Enter your 9-digit CPR',
+                                decoration: InputDecoration(
+                                  labelText: strings.text('cprNumberLabel'),
+                                  hintText: strings.text('enterNineDigitCpr'),
                                   prefixIcon: Icon(Icons.badge_outlined),
                                 ),
                                 validator: (value) {
                                   final cpr = value?.trim() ?? '';
                                   if (cpr.isEmpty) {
-                                    return 'Enter your CPR number';
+                                    return strings
+                                        .text('enterCprNumberValidation');
                                   }
                                   if (cpr.length != 9) {
-                                    return 'CPR number must contain 9 digits';
+                                    return strings.text('cprMustBeNineDigits');
                                   }
                                   return null;
                                 },
@@ -191,7 +200,7 @@ class _EkeyLoginScreenState extends State<EkeyLoginScreen> {
                               ),
                               const SizedBox(height: 20),
                               NaraakButton(
-                                label: 'Continue with eKey',
+                                label: strings.text('continueWithEkey'),
                                 icon: Icons.arrow_forward_rounded,
                                 isLoading: _loading,
                                 onPressed: _submit,

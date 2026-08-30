@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../localization/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../providers/user_profile_provider.dart';
 import '../../data/naraak_repository.dart';
@@ -90,38 +91,38 @@ class _NewbornSehatiCardScreenState extends State<NewbornSehatiCardScreen> {
         if (leave && context.mounted) Navigator.of(context).pop();
       },
       child: Scaffold(
-      appBar: NaraakAppBar(
-        title: 'Newborn Sehati Card',
-        onBack: _isSubmitted ? null : _handleBack,
-      ),
-      body: ResponsivePageFrame(
-        maxWidth: 820,
-        child: Column(
-          children: [
-            if (!_isSubmitted) ...[
-              const ServiceHero(
-                icon: Icons.crib_rounded,
-                accent: Color(0xFFC97A93),
-                title: 'Newborn Sehati Card',
-                description:
-                    'Register your newborn and request their health card.',
-              ),
-              const SizedBox(height: 20),
-              ProgressStepper(
-                steps: const [
-                  'Eligibility',
-                  'Information',
-                  'Documents',
-                  'Review'
-                ],
-                currentStep: _step,
-              ),
-              const SizedBox(height: 24),
-            ],
-            _isSubmitted ? _buildSuccessCard() : _buildStep(),
-          ],
+        appBar: NaraakAppBar(
+          title: 'Newborn Sehati Card',
+          onBack: _isSubmitted ? null : _handleBack,
         ),
-      ),
+        body: ResponsivePageFrame(
+          maxWidth: 820,
+          child: Column(
+            children: [
+              if (!_isSubmitted) ...[
+                const ServiceHero(
+                  icon: Icons.crib_rounded,
+                  accent: Color(0xFFC97A93),
+                  title: 'Newborn Sehati Card',
+                  description:
+                      'Register your newborn and request their health card.',
+                ),
+                const SizedBox(height: 20),
+                ProgressStepper(
+                  steps: const [
+                    'Eligibility',
+                    'Information',
+                    'Documents',
+                    'Review'
+                  ],
+                  currentStep: _step,
+                ),
+                const SizedBox(height: 24),
+              ],
+              _isSubmitted ? _buildSuccessCard() : _buildStep(),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -171,7 +172,8 @@ class _NewbornSehatiCardScreenState extends State<NewbornSehatiCardScreen> {
         children: [
           const Icon(Icons.check_circle, size: 64, color: AppColors.success),
           const SizedBox(height: 16),
-          const Text('Request Submitted', style: AppTextStyles.h2),
+          Text(AppLocalizations.of(context).raw('Request Submitted'),
+              style: AppTextStyles.h2),
           const SizedBox(height: 8),
           const Text(
             'Your Newborn Sehati Card application ($_referenceNumber) has been submitted successfully.',
@@ -250,8 +252,7 @@ class _EligibilityStep extends StatelessWidget {
     }
     return FormSection(
       title: 'Check eligibility',
-      description:
-          'We matched a newborn registry record linked to your CPR.',
+      description: 'We matched a newborn registry record linked to your CPR.',
       children: [
         Container(
           padding: const EdgeInsets.all(16),
@@ -268,7 +269,9 @@ class _EligibilityStep extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Registry match found',
+                    Text(
+                        AppLocalizations.of(context)
+                            .raw('Registry match found'),
                         style: AppTextStyles.body),
                     Text('Newborn CPR: $newbornCpr',
                         style: AppTextStyles.caption),
@@ -310,7 +313,8 @@ class _InformationStep extends StatelessWidget {
       title: 'Newborn information',
       description: 'Confirm the family details for this registration.',
       children: [
-        const Text('Newborn CPR', style: AppTextStyles.caption),
+        Text(AppLocalizations.of(context).raw('Newborn CPR'),
+            style: AppTextStyles.caption),
         const SizedBox(height: 4),
         TextField(
           controller: newbornCprController,
@@ -318,7 +322,8 @@ class _InformationStep extends StatelessWidget {
           decoration: const InputDecoration(border: OutlineInputBorder()),
         ),
         const SizedBox(height: 16),
-        const Text('Father CPR', style: AppTextStyles.caption),
+        Text(AppLocalizations.of(context).raw('Father CPR'),
+            style: AppTextStyles.caption),
         const SizedBox(height: 4),
         TextField(
           controller: fatherCprController,
@@ -326,7 +331,8 @@ class _InformationStep extends StatelessWidget {
           decoration: const InputDecoration(border: OutlineInputBorder()),
         ),
         const SizedBox(height: 16),
-        const Text('Mother CPR', style: AppTextStyles.caption),
+        Text(AppLocalizations.of(context).raw('Mother CPR'),
+            style: AppTextStyles.caption),
         const SizedBox(height: 4),
         TextField(
           controller: motherCprController,
@@ -334,7 +340,8 @@ class _InformationStep extends StatelessWidget {
           decoration: const InputDecoration(border: OutlineInputBorder()),
         ),
         const SizedBox(height: 16),
-        const Text('Contact', style: AppTextStyles.caption),
+        Text(AppLocalizations.of(context).raw('Contact'),
+            style: AppTextStyles.caption),
         const SizedBox(height: 4),
         TextField(
           controller: contactController,
@@ -342,7 +349,8 @@ class _InformationStep extends StatelessWidget {
           decoration: const InputDecoration(border: OutlineInputBorder()),
         ),
         const SizedBox(height: 16),
-        const Text('Notes (optional)', style: AppTextStyles.caption),
+        Text(AppLocalizations.of(context).raw('Notes (optional)'),
+            style: AppTextStyles.caption),
         const SizedBox(height: 4),
         TextField(
           controller: notesController,
@@ -351,7 +359,9 @@ class _InformationStep extends StatelessWidget {
         ),
         const SizedBox(height: 22),
         NaraakButton(
-            label: 'Continue', icon: Icons.arrow_forward_rounded, onPressed: onNext),
+            label: 'Continue',
+            icon: Icons.arrow_forward_rounded,
+            onPressed: onNext),
       ],
     );
   }
@@ -386,7 +396,9 @@ class _DocumentsStep extends StatelessWidget {
         ),
         const SizedBox(height: 22),
         NaraakButton(
-            label: 'Continue', icon: Icons.arrow_forward_rounded, onPressed: onNext),
+            label: 'Continue',
+            icon: Icons.arrow_forward_rounded,
+            onPressed: onNext),
       ],
     );
   }
@@ -431,8 +443,7 @@ class _ReviewStep extends StatelessWidget {
         Row(children: [
           Expanded(child: NaraakButton(label: 'Back', onPressed: onBack)),
           const SizedBox(width: 12),
-          Expanded(
-              child: NaraakButton(label: 'Submit', onPressed: onSubmit)),
+          Expanded(child: NaraakButton(label: 'Submit', onPressed: onSubmit)),
         ]),
       ],
     );
@@ -447,8 +458,13 @@ class _ReviewRow extends StatelessWidget {
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.only(bottom: 12),
         child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          SizedBox(width: 110, child: Text(label, style: AppTextStyles.bodySecondary)),
-          Expanded(child: Text(value, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w700))),
+          SizedBox(
+              width: 110,
+              child: Text(label, style: AppTextStyles.bodySecondary)),
+          Expanded(
+              child: Text(value,
+                  style: AppTextStyles.body
+                      .copyWith(fontWeight: FontWeight.w700))),
         ]),
       );
 }

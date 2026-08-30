@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../localization/app_localizations.dart';
 import '../providers/app_settings_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
@@ -12,6 +13,7 @@ class WelcomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<AppSettingsProvider>();
+    final strings = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       body: SafeArea(
@@ -69,41 +71,46 @@ class WelcomeScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 28),
-                  Text('Primary Healthcare, Closer to You',
+                  Text(strings.text('welcomeHeadline'),
                       style: AppTextStyles.display),
                   const SizedBox(height: 12),
                   Text(
-                    'All your PHC services in one place. Fast. Easy. Secure.',
+                    strings.text('welcomeSubtitle'),
                     style: AppTextStyles.bodySecondary,
                   ),
                   const SizedBox(height: 22),
-                  const Wrap(
+                  Wrap(
                     spacing: 10,
                     runSpacing: 10,
                     children: [
-                      _Benefit(icon: Icons.bolt_rounded, label: 'Fast'),
-                      _Benefit(icon: Icons.lock_rounded, label: 'Secure'),
-                      _Benefit(icon: Icons.touch_app_rounded, label: 'Easy'),
+                      _Benefit(
+                          icon: Icons.bolt_rounded,
+                          label: strings.text('fast')),
+                      _Benefit(
+                          icon: Icons.lock_rounded,
+                          label: strings.text('secure')),
+                      _Benefit(
+                          icon: Icons.touch_app_rounded,
+                          label: strings.text('easy')),
                     ],
                   ),
                   const SizedBox(height: 32),
                   AppButton(
-                    label: 'Login with eKey',
+                    label: strings.text('loginWithEkey'),
                     icon: Icons.fingerprint_rounded,
                     onPressed: () => Navigator.pushNamed(context, '/login'),
                   ),
                   const SizedBox(height: 8),
                   AppButton(
-                    label: 'Learn more about Naraak',
+                    label: strings.text('learnMoreNaraak'),
                     variant: AppButtonVariant.ghost,
                     onPressed: () => showModalBottomSheet<void>(
                       context: context,
                       showDragHandle: true,
-                      builder: (context) => const Padding(
-                        padding: EdgeInsets.fromLTRB(24, 8, 24, 32),
+                      builder: (context) => Padding(
+                        padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
                         child: Text(
-                          'Naraak is a prototype digital e-services platform '
-                          'for Bahrain Primary Healthcare Centers.',
+                          strings.text('naraakPrototypeDescription'),
                           style: AppTextStyles.body,
                         ),
                       ),

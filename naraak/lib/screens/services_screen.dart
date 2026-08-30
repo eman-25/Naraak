@@ -54,13 +54,17 @@ class _ServicesScreenState extends State<ServicesScreen> {
       Color(0xFF0F6B72), // teal / aqua — Appointments & Consultation
       Icons.event_available_rounded,
       [
-        _ServiceEntry('booking',
+        _ServiceEntry(
+            'booking',
             'Choose a clinic, doctor, and time that suits you.',
-            Icons.event_available_rounded, '/services/booking',
+            Icons.event_available_rounded,
+            '/services/booking',
             imagePath: 'assets/images/service_booking.jpg'),
-        _ServiceEntry('mammogram',
+        _ServiceEntry(
+            'mammogram',
             'Check your eligibility and request a screening.',
-            Icons.favorite_border_rounded, '/services/mammogram',
+            Icons.favorite_border_rounded,
+            '/services/mammogram',
             imagePath: 'assets/images/service_mammogram.jpg'),
       ],
     ),
@@ -70,17 +74,24 @@ class _ServicesScreenState extends State<ServicesScreen> {
       Color(0xFF2D6CDF), // light blue — My Records
       Icons.folder_shared_rounded,
       [
-        _ServiceEntry('vaccinations',
+        _ServiceEntry(
+            'vaccinations',
             'View your history or report a missing record.',
-            Icons.vaccines_rounded, '/services/vaccinations',
+            Icons.vaccines_rounded,
+            '/services/vaccinations',
             imagePath: 'assets/images/service_vaccination.jpg'),
-        _ServiceEntry('medicalReports',
+        _ServiceEntry(
+            'medicalReports',
             'View reports or request one from a recent visit.',
-            Icons.description_rounded, '/services/medical-reports',
-            imagePath: 'assets/images/service_medical_reports.jpg'),
-        _ServiceEntry('hajj',
+            Icons.description_rounded,
+            '/services/medical-reports',
+            imagePath: 'assets/images/Medical reports and certificates..png'),
+        _ServiceEntry(
+            'hajj',
             'Access your certificate after the required visit.',
-            Icons.workspace_premium_rounded, '/services/hajj-certificate'),
+            Icons.workspace_premium_rounded,
+            '/services/hajj-certificate',
+            imagePath: 'assets/images/Electronic Hajj certificate.jpeg'),
       ],
     ),
     _ServiceCategory(
@@ -89,22 +100,30 @@ class _ServicesScreenState extends State<ServicesScreen> {
       Color(0xFFB45309), // warm orange / sand — Administrative Services
       Icons.assignment_rounded,
       [
-        _ServiceEntry('newborn',
+        _ServiceEntry(
+            'newborn',
             'Register your newborn and request their health card.',
-            Icons.child_care_rounded, '/services/newborn-sehati'),
-        _ServiceEntry('addressUpdate',
+            Icons.child_care_rounded,
+            '/services/newborn-sehati',
+            imagePath: 'assets/images/Sehati Card request for newborn.png'),
+        _ServiceEntry(
+            'addressUpdate',
             'Update your block and see your assigned center.',
-            Icons.home_rounded, '/services/address-update',
-            imagePath: 'assets/images/dashboard_phc_hero.png'),
-        _ServiceEntry('feeExemption',
+            Icons.home_rounded,
+            '/services/address-update',
+            imagePath: 'assets/images/Update residential address.jpg'),
+        _ServiceEntry(
+            'feeExemption',
             'Apply with the required supporting documents.',
-            Icons.percent_rounded, '/services/fee-exemption'),
-        _ServiceEntry('changeDoctor',
-            'Browse doctors with available capacity.',
+            Icons.percent_rounded,
+            '/services/fee-exemption',
+            imagePath: 'assets/images/Health fee exemption card issuance.jpg'),
+        _ServiceEntry('changeDoctor', 'Browse doctors with available capacity.',
             Icons.medical_services_rounded, '/services/change-doctor',
             imagePath: 'assets/images/family_doctor_card.jpeg'),
         _ServiceEntry('mobileUnit', 'Ask for a primary care visit at home.',
-            Icons.airport_shuttle_rounded, '/services/mobile-unit'),
+            Icons.airport_shuttle_rounded, '/services/mobile-unit',
+            imagePath: 'assets/images/Request mobile unit service.jpg'),
       ],
     ),
     _ServiceCategory(
@@ -115,7 +134,9 @@ class _ServicesScreenState extends State<ServicesScreen> {
       [
         _ServiceEntry('research', 'Submit a research application to PHC.',
             Icons.school_rounded, '/services/phc-research',
-            isNew: true),
+            isNew: true,
+            imagePath:
+                'assets/images/Primary healthcare research applications.jpg'),
       ],
     ),
   ];
@@ -153,55 +174,56 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
     return ResponsivePageFrame(
       child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('NARAAK SERVICES',
-                style: AppTextStyles.overline.copyWith(color: palette.primary)),
-            const SizedBox(height: 6),
-            Text('Services', style: AppTextStyles.h1.copyWith(fontSize: 28)),
-            const SizedBox(height: 6),
-            Text('All your health services in one place.',
-                style: AppTextStyles.bodySecondary),
-            const SizedBox(height: 18),
-            _SearchField(
-              controller: _searchController,
-              onChanged: (v) => setState(() => _query = v),
-              isDark: isDark,
-              palette: palette,
-            ),
-            const SizedBox(height: 22),
-            if (_query.trim().isEmpty) ...[
-              _ServicesHero(palette: palette),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(strings.raw('NARAAK SERVICES'),
+              style: AppTextStyles.overline.copyWith(color: palette.primary)),
+          const SizedBox(height: 6),
+          Text(strings.raw('Services'),
+              style: AppTextStyles.h1.copyWith(fontSize: 28)),
+          const SizedBox(height: 6),
+          Text(strings.raw('All your health services in one place.'),
+              style: AppTextStyles.bodySecondary),
+          const SizedBox(height: 18),
+          _SearchField(
+            controller: _searchController,
+            onChanged: (v) => setState(() => _query = v),
+            isDark: isDark,
+            palette: palette,
+          ),
+          const SizedBox(height: 22),
+          if (_query.trim().isEmpty) ...[
+            _ServicesHero(palette: palette),
+            const SizedBox(height: 30),
+          ],
+          if (results.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 40),
+              child: Center(
+                child: Column(
+                  children: [
+                    Icon(Icons.search_off_rounded,
+                        size: 40, color: AppColors.ink300),
+                    const SizedBox(height: 10),
+                    Text('No services match "$_query"',
+                        style: AppTextStyles.bodySecondary),
+                  ],
+                ),
+              ),
+            )
+          else
+            for (final category in results) ...[
+              _CategoryHeading(
+                  label: strings.text(category.labelKey),
+                  subtitle: strings.raw(category.subtitle),
+                  accent: category.accent,
+                  icon: category.icon,
+                  isDark: isDark),
+              const SizedBox(height: 14),
+              _ServiceGrid(entries: category.entries, category: category),
               const SizedBox(height: 30),
             ],
-            if (results.isEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 40),
-                child: Center(
-                  child: Column(
-                    children: [
-                      Icon(Icons.search_off_rounded,
-                          size: 40, color: AppColors.ink300),
-                      const SizedBox(height: 10),
-                      Text('No services match "$_query"',
-                          style: AppTextStyles.bodySecondary),
-                    ],
-                  ),
-                ),
-              )
-            else
-              for (final category in results) ...[
-                _CategoryHeading(
-                    label: strings.text(category.labelKey),
-                    subtitle: category.subtitle,
-                    accent: category.accent,
-                    icon: category.icon,
-                    isDark: isDark),
-                const SizedBox(height: 14),
-                _ServiceGrid(entries: category.entries, category: category),
-                const SizedBox(height: 30),
-              ],
-          ],
+        ],
       ),
     );
   }
@@ -220,6 +242,7 @@ class _SearchField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context);
     return Container(
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkSurface : Colors.white,
@@ -239,7 +262,7 @@ class _SearchField extends StatelessWidget {
         onChanged: onChanged,
         style: AppTextStyles.body,
         decoration: InputDecoration(
-          hintText: 'Search for a service...',
+          hintText: strings.raw('Search for a service...'),
           hintStyle: AppTextStyles.bodySecondary,
           prefixIcon: Icon(Icons.search_rounded,
               color: isDark ? AppColors.darkTextSecondary : AppColors.ink500),
@@ -506,8 +529,8 @@ class _IllustrationTile extends StatelessWidget {
                 size: 110, color: Colors.white.withValues(alpha: 0.18)),
           ),
           Center(
-            child:
-                Icon(icon, size: 40, color: Colors.white.withValues(alpha: 0.85)),
+            child: Icon(icon,
+                size: 40, color: Colors.white.withValues(alpha: 0.85)),
           ),
         ],
       ),
@@ -521,6 +544,7 @@ class _ServicesHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context);
     return Container(
       height: 190,
       decoration: BoxDecoration(
@@ -563,22 +587,22 @@ class _ServicesHero extends StatelessWidget {
                           const Icon(Icons.favorite_rounded,
                               size: 15, color: Color(0xFFBCE8E4)),
                           const SizedBox(width: 6),
-                          Text('YOUR HEALTH, YOUR WAY',
+                          Text(strings.raw('YOUR HEALTH, YOUR WAY'),
                               style: AppTextStyles.overline.copyWith(
                                   color: const Color(0xFFBCE8E4),
                                   fontSize: 10)),
                         ],
                       ),
                       const SizedBox(height: 14),
-                      Text('Simple access to primary care.',
+                      Text(strings.raw('Simple access to primary care.'),
                           style: AppTextStyles.h2.copyWith(
                               color: Colors.white,
                               fontSize: 22,
                               letterSpacing: -0.5)),
                       const SizedBox(height: 8),
                       Text(
-                        'Book, request and manage services without visiting '
-                        'the center for every step.',
+                        strings.raw(
+                            'Book, request and manage services without visiting the center for every step.'),
                         style: AppTextStyles.bodySecondary
                             .copyWith(color: const Color(0xFFCEE5E4)),
                       ),

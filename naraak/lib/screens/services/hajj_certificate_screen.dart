@@ -1,5 +1,6 @@
 // lib/screens/services/hajj_certificate_screen.dart
 import 'package:flutter/material.dart';
+import '../../localization/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../providers/hajj_certificate_provider.dart';
 import '../../providers/appointment_provider.dart' show LoadState;
@@ -67,34 +68,34 @@ class _HajjCertificateScreenState extends State<HajjCertificateScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-              const ServiceHero(
-                icon: Icons.mosque_rounded,
-                accent: Color(0xFF0B4F54),
-                title: 'Electronic Hajj Certificate',
-                description:
-                    'Download your Hajj health certificate once your pre-travel visit is on file.',
-              ),
-              const SizedBox(height: 20),
-              const _PrerequisiteBanner(),
-              const SizedBox(height: 20),
-              if (request == null)
-                _NoRequestSection(
-                  isSubmitting: provider.isSubmitting,
-                  onRequest: () => provider.requestCertificate(),
-                )
-              else
-                _StatusSection(
-                  status: request.status,
-                  downloaded: _downloaded,
-                  onDownload: () {
-                    setState(() => _downloaded = true);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text(
-                              'Certificate download requires backend connectivity.')),
-                    );
-                  },
+                const ServiceHero(
+                  icon: Icons.mosque_rounded,
+                  accent: Color(0xFF0B4F54),
+                  title: 'Electronic Hajj Certificate',
+                  description:
+                      'Download your Hajj health certificate once your pre-travel visit is on file.',
                 ),
+                const SizedBox(height: 20),
+                const _PrerequisiteBanner(),
+                const SizedBox(height: 20),
+                if (request == null)
+                  _NoRequestSection(
+                    isSubmitting: provider.isSubmitting,
+                    onRequest: () => provider.requestCertificate(),
+                  )
+                else
+                  _StatusSection(
+                    status: request.status,
+                    downloaded: _downloaded,
+                    onDownload: () {
+                      setState(() => _downloaded = true);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                            content: Text(
+                                'Certificate download requires backend connectivity.')),
+                      );
+                    },
+                  ),
               ],
             ),
           );
@@ -167,7 +168,9 @@ class _NoRequestSection extends StatelessWidget {
             label: 'Find Nearest Health Center',
             variant: AppButtonVariant.secondary,
             onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Not available in this demo.')),
+              SnackBar(
+                  content: Text(AppLocalizations.of(context)
+                      .raw('Not available in this demo.'))),
             ),
           ),
         ),
@@ -201,7 +204,8 @@ class _StatusSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('CURRENT REQUEST STATUS', style: AppTextStyles.overline),
+        Text(AppLocalizations.of(context).raw('CURRENT REQUEST STATUS'),
+            style: AppTextStyles.overline),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -240,7 +244,8 @@ class _StatusSection extends StatelessWidget {
           style: AppTextStyles.bodySecondary,
         ),
         const SizedBox(height: 24),
-        Text('APPLICATION PROGRESS', style: AppTextStyles.overline),
+        Text(AppLocalizations.of(context).raw('APPLICATION PROGRESS'),
+            style: AppTextStyles.overline),
         const SizedBox(height: 14),
         ProgressStepper(
           steps: const ['Requested', 'Processing', 'Ready', 'Downloaded'],
@@ -253,7 +258,9 @@ class _StatusSection extends StatelessWidget {
             label: 'Find my health centre',
             variant: AppButtonVariant.secondary,
             onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Not available in this demo.')),
+              SnackBar(
+                  content: Text(AppLocalizations.of(context)
+                      .raw('Not available in this demo.'))),
             ),
           ),
         ),

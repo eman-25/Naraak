@@ -1,5 +1,6 @@
 // lib/main.dart — only the changed parts shown
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'theme/app_theme.dart';
 import 'data/naraak_repository.dart';
@@ -95,7 +96,12 @@ class NaraakApp extends StatelessWidget {
           themeMode: settings.themeMode,
           locale: settings.locale,
           supportedLocales: AppLocalizations.supportedLocales,
-          localizationsDelegates: const [AppLocalizationsDelegate()],
+          localizationsDelegates: const [
+            AppLocalizationsDelegate(),
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
           builder: (context, child) => MediaQuery(
             data: MediaQuery.of(context)
                 .copyWith(textScaler: TextScaler.linear(settings.textScale)),
@@ -257,7 +263,8 @@ class _RootShellState extends State<RootShell> {
         child: Scaffold(
           body: Column(
             children: [
-              WebDashboardHeader(selected: _tabIndex.value, onSelect: _selectTab),
+              WebDashboardHeader(
+                  selected: _tabIndex.value, onSelect: _selectTab),
               Expanded(child: _buildNavigator(true, screens)),
             ],
           ),

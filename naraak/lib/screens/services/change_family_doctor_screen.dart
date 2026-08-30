@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../localization/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../models/health_center_option.dart';
 import '../../providers/change_doctor_provider.dart';
@@ -94,7 +95,7 @@ class _ChangeFamilyDoctorScreenState extends State<ChangeFamilyDoctorScreen> {
       builder: (dialogContext) => AlertDialog(
         icon:
             const Icon(Icons.check_circle, color: AppColors.success, size: 48),
-        title: const Text('Request Submitted'),
+        title: Text(AppLocalizations.of(context).raw('Request Submitted')),
         content: Text(
           'Your request to transfer to $_selectedDoctor at $centerName has been submitted. '
           'You can track its status under Pending Requests.',
@@ -106,7 +107,8 @@ class _ChangeFamilyDoctorScreenState extends State<ChangeFamilyDoctorScreen> {
               Navigator.pop(context);
               Navigator.pushNamed(context, '/pending-requests');
             },
-            child: const Text('View Pending Requests'),
+            child:
+                Text(AppLocalizations.of(context).raw('View Pending Requests')),
           ),
         ],
       ),
@@ -189,30 +191,38 @@ class _ChangeFamilyDoctorScreenState extends State<ChangeFamilyDoctorScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Reference Number',
+                      Text(AppLocalizations.of(context).raw('Reference Number'),
                           style: AppTextStyles.caption),
                       const SizedBox(height: 4),
                       _buildReadOnlyField(_referenceNumber),
                       const SizedBox(height: 16),
-                      const Text('Patient CPR', style: AppTextStyles.caption),
+                      Text(AppLocalizations.of(context).raw('Patient CPR'),
+                          style: AppTextStyles.caption),
                       const SizedBox(height: 4),
                       _buildReadOnlyField(profile?.cpr ?? 'â€”'),
                       const SizedBox(height: 16),
-                      const Text('Patient Name', style: AppTextStyles.caption),
+                      Text(AppLocalizations.of(context).raw('Patient Name'),
+                          style: AppTextStyles.caption),
                       const SizedBox(height: 4),
                       _buildReadOnlyField(profile?.fullName ?? 'â€”'),
                       const SizedBox(height: 16),
-                      const Text('Current Health Center',
+                      Text(
+                          AppLocalizations.of(context)
+                              .raw('Current Health Center'),
                           style: AppTextStyles.caption),
                       const SizedBox(height: 4),
                       _buildReadOnlyField(currentCenter.name),
                       const SizedBox(height: 16),
-                      const Text('Current Family Doctor',
+                      Text(
+                          AppLocalizations.of(context)
+                              .raw('Current Family Doctor'),
                           style: AppTextStyles.caption),
                       const SizedBox(height: 4),
                       _buildReadOnlyField(currentDoctor),
                       const SizedBox(height: 16),
-                      const Text('Requested Family Doctor *',
+                      Text(
+                          AppLocalizations.of(context)
+                              .raw('Requested Family Doctor *'),
                           style: AppTextStyles.caption),
                       const SizedBox(height: 4),
                       if (requestableDoctors.isEmpty)
@@ -240,7 +250,8 @@ class _ChangeFamilyDoctorScreenState extends State<ChangeFamilyDoctorScreen> {
                             if (requestableDoctors
                                 .every((d) => !d.capacityAvailable))
                               Padding(
-                                padding: const EdgeInsets.only(top: 4, bottom: 4),
+                                padding:
+                                    const EdgeInsets.only(top: 4, bottom: 4),
                                 child: Text(
                                   'None of the doctors at this center currently '
                                   'have capacity. Please check back later.',
@@ -251,7 +262,9 @@ class _ChangeFamilyDoctorScreenState extends State<ChangeFamilyDoctorScreen> {
                           ],
                         ),
                       const SizedBox(height: 16),
-                      const Text('Reason for Request *',
+                      Text(
+                          AppLocalizations.of(context)
+                              .raw('Reason for Request *'),
                           style: AppTextStyles.caption),
                       const SizedBox(height: 4),
                       TextFormField(
@@ -354,8 +367,8 @@ class _DoctorOptionCard extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 22,
-                backgroundColor:
-                    AppColors.primaryTeal.withValues(alpha: isDark ? 0.24 : 0.12),
+                backgroundColor: AppColors.primaryTeal
+                    .withValues(alpha: isDark ? 0.24 : 0.12),
                 child: Icon(
                   doctor.gender.toLowerCase() == 'female'
                       ? Icons.face_3_rounded
@@ -392,7 +405,9 @@ class _DoctorOptionCard extends StatelessWidget {
                 ),
               ),
               Icon(
-                selected ? Icons.check_circle_rounded : Icons.chevron_right_rounded,
+                selected
+                    ? Icons.check_circle_rounded
+                    : Icons.chevron_right_rounded,
                 color: selected ? AppColors.primaryTeal : AppColors.ink300,
               ),
             ],

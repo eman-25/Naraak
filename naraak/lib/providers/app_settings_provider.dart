@@ -26,6 +26,11 @@ class AppSettingsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setLocaleFromApiLanguage(String? languageCode) {
+    if (languageCode != 'ar' && languageCode != 'en') return;
+    setLocale(Locale(languageCode!));
+  }
+
   void setLocale(Locale locale) {
     _locale = locale;
     notifyListeners();

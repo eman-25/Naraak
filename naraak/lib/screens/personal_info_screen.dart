@@ -15,7 +15,6 @@ class PersonalInfoScreen extends StatefulWidget {
 }
 
 class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
-  late TextEditingController _nationalityController;
   late TextEditingController _emergencyNameController;
   late TextEditingController _emergencyPhoneController;
 
@@ -23,8 +22,6 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
   void initState() {
     super.initState();
     final profile = context.read<UserProfileProvider>().profile;
-    _nationalityController =
-        TextEditingController(text: profile?.nationality ?? '');
     _emergencyNameController =
         TextEditingController(text: profile?.emergencyContactName ?? '');
     _emergencyPhoneController =
@@ -33,7 +30,6 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
 
   @override
   void dispose() {
-    _nationalityController.dispose();
     _emergencyNameController.dispose();
     _emergencyPhoneController.dispose();
     super.dispose();
@@ -44,16 +40,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
     final current = provider.profile;
     if (current == null) return;
 
-    // Preserves existing bloodType set by the health center
-    final nationality = _nationalityController.text.trim();
-    if (nationality.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter your nationality.')),
-      );
-      return;
-    }
     provider.completeProfile(current.copyWith(
-      nationality: nationality,
       emergencyContactName: _emergencyNameController.text.trim(),
       emergencyContactPhone: _emergencyPhoneController.text.trim(),
     ));
@@ -125,12 +112,28 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        profile?.bloodType ?? 'O+',
+                        profile?.bloodType ?? 'Not available',
                         style: AppTextStyles.caption.copyWith(
                           color: AppColors.error,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                const Divider(height: 1),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Nationality',
+                        style: AppTextStyles.body
+                            .copyWith(fontWeight: FontWeight.w600)),
+                    Text(
+                      profile?.nationality ?? 'Not available',
+                      style: AppTextStyles.body
+                          .copyWith(fontWeight: FontWeight.w600),
                     ),
                   ],
                 ),
@@ -148,7 +151,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
-                          'Blood type is verified and determined by your assigned health center records.',
+                          'Blood type and nationality are verified identity data retrieved through eKey-linked primary government and health databases. They cannot be edited here.',
                           style: AppTextStyles.caption
                               .copyWith(color: Colors.grey),
                         ),
@@ -168,10 +171,6 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Nationality', style: AppTextStyles.label),
-                const SizedBox(height: 6),
-                TextFormField(controller: _nationalityController),
-                const SizedBox(height: 16),
                 Text('Emergency Contact Name', style: AppTextStyles.label),
                 const SizedBox(height: 6),
                 TextFormField(

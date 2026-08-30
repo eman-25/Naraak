@@ -1,6 +1,7 @@
 // lib/screens/appointments_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../localization/app_localizations.dart';
 import '../models/appointment.dart';
 import '../providers/appointment_provider.dart';
 import '../providers/app_settings_provider.dart';
@@ -60,6 +61,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context);
     final palette = context.watch<AppSettingsProvider>().palette;
     final allAppointments = context.watch<AppointmentProvider>().myAppointments;
     final upcomingCount = allAppointments
@@ -70,76 +72,77 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
 
     return ResponsivePageFrame(
       child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Wrap(
-              alignment: WrapAlignment.spaceBetween,
-              crossAxisAlignment: WrapCrossAlignment.end,
-              spacing: 16,
-              runSpacing: 14,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text('YOUR CARE',
-                        style: AppTextStyles.overline
-                            .copyWith(color: palette.primary)),
-                    const SizedBox(height: 6),
-                    Text('Appointments',
-                        style: AppTextStyles.h1.copyWith(fontSize: 26)),
-                    const SizedBox(height: 6),
-                    ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 480),
-                      child: Text(
-                        'Manage upcoming visits and review your appointment history.',
-                        style: AppTextStyles.bodySecondary,
-                      ),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.end,
+            spacing: 16,
+            runSpacing: 14,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(strings.raw('YOUR CARE'),
+                      style: AppTextStyles.overline
+                          .copyWith(color: palette.primary)),
+                  const SizedBox(height: 6),
+                  Text(strings.raw('Appointments'),
+                      style: AppTextStyles.h1.copyWith(fontSize: 26)),
+                  const SizedBox(height: 6),
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 480),
+                    child: Text(
+                      strings.raw(
+                          'Manage upcoming visits and review your appointment history.'),
+                      style: AppTextStyles.bodySecondary,
                     ),
-                  ],
-                ),
-                ElevatedButton.icon(
-                  onPressed: () =>
-                      Navigator.pushNamed(context, '/services/booking'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: palette.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 18, vertical: 14),
-                    minimumSize: const Size(64, 44),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
-                    elevation: 0,
                   ),
-                  icon: const Icon(Icons.calendar_month_rounded, size: 17),
-                  label: const Text('Book appointment'),
+                ],
+              ),
+              ElevatedButton.icon(
+                onPressed: () =>
+                    Navigator.pushNamed(context, '/services/booking'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: palette.primary,
+                  foregroundColor: Colors.white,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                  minimumSize: const Size(64, 44),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                  elevation: 0,
                 ),
-              ],
-            ),
-            const SizedBox(height: 22),
-            _FilterTabs(
-              filter: _filter,
-              upcomingCount: upcomingCount,
-              onChanged: (f) => setState(() => _filter = f),
-            ),
-            const SizedBox(height: 18),
-            if (filtered.isEmpty)
-              _EmptyState(filter: _filter)
-            else
-              LayoutBuilder(builder: (context, constraints) {
-                if (constraints.maxWidth > 860) {
-                  return _AppointmentTable(appointments: filtered);
-                }
-                return Column(
-                  children: filtered
-                      .map((a) => Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: _AppointmentCard(appointment: a),
-                          ))
-                      .toList(),
-                );
-              }),
-          ],
+                icon: const Icon(Icons.calendar_month_rounded, size: 17),
+                label: Text(strings.raw('Book Appointment')),
+              ),
+            ],
+          ),
+          const SizedBox(height: 22),
+          _FilterTabs(
+            filter: _filter,
+            upcomingCount: upcomingCount,
+            onChanged: (f) => setState(() => _filter = f),
+          ),
+          const SizedBox(height: 18),
+          if (filtered.isEmpty)
+            _EmptyState(filter: _filter)
+          else
+            LayoutBuilder(builder: (context, constraints) {
+              if (constraints.maxWidth > 860) {
+                return _AppointmentTable(appointments: filtered);
+              }
+              return Column(
+                children: filtered
+                    .map((a) => Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: _AppointmentCard(appointment: a),
+                        ))
+                    .toList(),
+              );
+            }),
+        ],
       ),
     );
   }
@@ -244,14 +247,17 @@ class _HeaderCell extends StatelessWidget {
   const _HeaderCell(this.label, {required this.flex});
 
   @override
-  Widget build(BuildContext context) => Expanded(
-        flex: flex,
-        child: Padding(
-          padding: const EdgeInsets.only(right: 12),
-          child: Text(label,
-              style: AppTextStyles.overline.copyWith(fontSize: 10.5)),
-        ),
-      );
+  Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context);
+    return Expanded(
+      flex: flex,
+      child: Padding(
+        padding: const EdgeInsets.only(right: 12),
+        child: Text(strings.raw(label),
+            style: AppTextStyles.overline.copyWith(fontSize: 10.5)),
+      ),
+    );
+  }
 }
 
 class _AppointmentRow extends StatelessWidget {
@@ -274,6 +280,7 @@ class _AppointmentRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -306,7 +313,7 @@ class _AppointmentRow extends StatelessWidget {
         ),
         _cell(
           flex: 2,
-          child: Text(appointment.isTele ? 'Tele' : 'In-center',
+          child: Text(strings.raw(appointment.isTele ? 'Tele' : 'In-center'),
               style: AppTextStyles.bodySecondary),
         ),
         _cell(flex: 2, child: StatusBadge(status: status)),
@@ -330,7 +337,7 @@ class _AppointmentRow extends StatelessWidget {
                                 appointmentId: appointment.id),
                           ),
                         ),
-                        child: const Text('Join'),
+                        child: Text(strings.raw('Join')),
                       ),
                     TextButton(
                       style: TextButton.styleFrom(
@@ -340,7 +347,7 @@ class _AppointmentRow extends StatelessWidget {
                       onPressed: () => context
                           .read<AppointmentProvider>()
                           .cancelAppointment(appointment.id),
-                      child: const Text('Cancel'),
+                      child: Text(strings.raw('Cancel')),
                     ),
                   ],
                 ),
@@ -361,6 +368,7 @@ class _FilterTabs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context);
     final palette = context.watch<AppSettingsProvider>().palette;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final tabs = [
@@ -394,7 +402,7 @@ class _FilterTabs extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(label,
+                    Text(strings.raw(label),
                         style: AppTextStyles.body.copyWith(
                           fontSize: 12,
                           fontWeight:
@@ -477,6 +485,7 @@ class _AppointmentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context);
     final palette = context.watch<AppSettingsProvider>().palette;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final localizations = MaterialLocalizations.of(context);
@@ -550,7 +559,7 @@ class _AppointmentCard extends StatelessWidget {
                             color: AppColors.secondarySurface,
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          child: Text('Tele',
+                          child: Text(strings.raw('Tele'),
                               style: AppTextStyles.caption.copyWith(
                                   color: AppColors.secondary,
                                   fontWeight: FontWeight.w700,
@@ -611,7 +620,7 @@ class _AppointmentCard extends StatelessWidget {
                                     appointmentId: appointment.id),
                               ),
                             ),
-                            child: const Text('Join'),
+                            child: Text(strings.raw('Join')),
                           ),
                           const SizedBox(width: 4),
                         ],
@@ -621,7 +630,7 @@ class _AppointmentCard extends StatelessWidget {
                               .cancelAppointment(appointment.id),
                           style: TextButton.styleFrom(
                               foregroundColor: AppColors.error),
-                          child: const Text('Cancel'),
+                          child: Text(strings.raw('Cancel')),
                         ),
                       ],
                     ),

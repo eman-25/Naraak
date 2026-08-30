@@ -30,7 +30,15 @@ flutter:
     - assets/images/service_vaccination.jpg
     - assets/images/service_booking.jpg
     - assets/images/service_medical_reports.jpg
+    - assets/images/Electronic Hajj certificate.jpeg
+    - assets/images/Sehati Card request for newborn.png
+    - assets/images/Medical reports and certificates..png
+    - assets/images/Request mobile unit service.jpg
+    - assets/images/Primary healthcare research applications.jpg
+    - assets/images/Health fee exemption card issuance.jpg
+    - assets/images/Update residential address.jpg
     - assets/images/dashboard_phc_hero.png
+    - assets/images/Primary Healthcare Centers.jpg
     - assets/images/naraak_app_promo.png
     - assets/documents/
   # Fonts are no longer bundled as local assets — google_fonts (added above)

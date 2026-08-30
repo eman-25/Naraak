@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../localization/app_localizations.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import 'naraak_button.dart';
@@ -23,6 +24,9 @@ class NaraakStateView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context);
+    final localizedTitle = strings.raw(title);
+    final localizedMessage = strings.raw(message);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final (icon, color) = switch (type) {
       NaraakStateType.empty => (
@@ -40,7 +44,7 @@ class NaraakStateView extends StatelessWidget {
     };
     return Semantics(
       liveRegion: true,
-      label: '$title. $message',
+      label: '$localizedTitle. $localizedMessage',
       child: Center(
         child: Padding(
           padding: const EdgeInsets.all(32),
@@ -57,9 +61,10 @@ class NaraakStateView extends StatelessWidget {
                 child: Icon(icon, color: color, size: 42),
               ),
               const SizedBox(height: 22),
-              Text(title, style: AppTextStyles.h2, textAlign: TextAlign.center),
+              Text(localizedTitle,
+                  style: AppTextStyles.h2, textAlign: TextAlign.center),
               const SizedBox(height: 8),
-              Text(message,
+              Text(localizedMessage,
                   style: AppTextStyles.bodySecondary,
                   textAlign: TextAlign.center),
               if (actionLabel != null) ...[

@@ -1,5 +1,6 @@
 // lib/widgets/app_button.dart
 import 'package:flutter/material.dart';
+import '../localization/app_localizations.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import '../theme/app_text_styles.dart';
@@ -35,6 +36,7 @@ class AppButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context);
     final primaryColor = AppPaletteExtension.of(context).primary;
     final disabled = onPressed == null || isLoading;
     final content = AnimatedSwitcher(
@@ -56,7 +58,9 @@ class AppButton extends StatelessWidget {
                   Icon(icon, size: 19),
                   const SizedBox(width: 8),
                 ],
-                Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
+                Flexible(
+                    child: Text(strings.raw(label),
+                        overflow: TextOverflow.ellipsis)),
               ],
             ),
     );

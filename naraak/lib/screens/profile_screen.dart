@@ -1,6 +1,7 @@
 // lib/screens/profile_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../localization/app_localizations.dart';
 import '../providers/user_profile_provider.dart';
 import '../providers/app_settings_provider.dart';
 import '../theme/app_colors.dart';
@@ -29,87 +30,91 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context);
     final profile = context.watch<UserProfileProvider>().profile;
     final settings = context.watch<AppSettingsProvider>();
     final palette = settings.palette;
 
     return ResponsivePageFrame(
       child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('YOUR NARAAK PROFILE',
-                style: AppTextStyles.overline.copyWith(color: palette.primary)),
-            const SizedBox(height: 6),
-            Text('Profile & settings',
-                style: AppTextStyles.h1.copyWith(fontSize: 26)),
-            const SizedBox(height: 6),
-            Text('Manage your identity, preferences and family access.',
-                style: AppTextStyles.bodySecondary),
-            const SizedBox(height: 18),
-            Text('PRIMARY MEDICAL THEME', style: AppTextStyles.overline),
-            const SizedBox(height: 10),
-            Row(
-              children: AppPalette.all
-                  .map((p) => Padding(
-                        padding: const EdgeInsets.only(right: 10),
-                        child: _ThemeSwatch(
-                          palette: p,
-                          isActive: settings.paletteId == p.id,
-                          onTap: () => settings.setPalette(p.id),
-                        ),
-                      ))
-                  .toList(),
-            ),
-            const SizedBox(height: 20),
-            _IdentityCard(
-              profile: profile,
-              palette: palette,
-              initials: _initials(profile?.fullName),
-              maskedCpr: _maskCpr(profile?.cpr),
-            ),
-            const SizedBox(height: 24),
-            LayoutBuilder(builder: (context, constraints) {
-              final wide = constraints.maxWidth > 720;
-              final identity = _PersonalHealthIdentityCard(profile: profile);
-              final prefs =
-                  _PreferencesCard(settings: settings, palette: palette);
-              if (!wide) {
-                return Column(
-                    children: [identity, const SizedBox(height: 16), prefs]);
-              }
-              return Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(child: identity),
-                  const SizedBox(width: 16),
-                  Expanded(child: prefs),
-                ],
-              );
-            }),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: TextButton(
-                style: TextButton.styleFrom(
-                  backgroundColor: AppColors.errorSurface,
-                  foregroundColor: AppColors.error,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-                onPressed: () {
-                  context.read<UserProfileProvider>().logout();
-                  Navigator.of(context, rootNavigator: true)
-                      .pushNamedAndRemoveUntil('/login', (_) => false);
-                },
-                child: const Text(
-                  'Sign Out',
-                  style: TextStyle(fontWeight: FontWeight.w700),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(strings.raw('YOUR NARAAK PROFILE'),
+              style: AppTextStyles.overline.copyWith(color: palette.primary)),
+          const SizedBox(height: 6),
+          Text(strings.raw('Profile & settings'),
+              style: AppTextStyles.h1.copyWith(fontSize: 26)),
+          const SizedBox(height: 6),
+          Text(
+              strings
+                  .raw('Manage your identity, preferences and family access.'),
+              style: AppTextStyles.bodySecondary),
+          const SizedBox(height: 18),
+          Text(strings.raw('PRIMARY MEDICAL THEME'),
+              style: AppTextStyles.overline),
+          const SizedBox(height: 10),
+          Row(
+            children: AppPalette.all
+                .map((p) => Padding(
+                      padding: const EdgeInsets.only(right: 10),
+                      child: _ThemeSwatch(
+                        palette: p,
+                        isActive: settings.paletteId == p.id,
+                        onTap: () => settings.setPalette(p.id),
+                      ),
+                    ))
+                .toList(),
+          ),
+          const SizedBox(height: 20),
+          _IdentityCard(
+            profile: profile,
+            palette: palette,
+            initials: _initials(profile?.fullName),
+            maskedCpr: _maskCpr(profile?.cpr),
+          ),
+          const SizedBox(height: 24),
+          LayoutBuilder(builder: (context, constraints) {
+            final wide = constraints.maxWidth > 720;
+            final identity = _PersonalHealthIdentityCard(profile: profile);
+            final prefs =
+                _PreferencesCard(settings: settings, palette: palette);
+            if (!wide) {
+              return Column(
+                  children: [identity, const SizedBox(height: 16), prefs]);
+            }
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: identity),
+                const SizedBox(width: 16),
+                Expanded(child: prefs),
+              ],
+            );
+          }),
+          const SizedBox(height: 24),
+          SizedBox(
+            width: double.infinity,
+            child: TextButton(
+              style: TextButton.styleFrom(
+                backgroundColor: AppColors.errorSurface,
+                foregroundColor: AppColors.error,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
                 ),
               ),
+              onPressed: () {
+                context.read<UserProfileProvider>().logout();
+                Navigator.of(context, rootNavigator: true)
+                    .pushNamedAndRemoveUntil('/login', (_) => false);
+              },
+              child: const Text(
+                'Sign Out',
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
             ),
-          ],
+          ),
+        ],
       ),
     );
   }
@@ -226,7 +231,8 @@ class _IdentityCard extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
-              child: const Text('Edit personal information',
+              child: Text(
+                  AppLocalizations.of(context).raw('Edit personal information'),
                   style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
             ),
           ),
@@ -234,7 +240,6 @@ class _IdentityCard extends StatelessWidget {
       ),
     );
   }
-
 }
 
 class _PersonalHealthIdentityCard extends StatelessWidget {
@@ -350,10 +355,12 @@ class _PreferencesCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('Preferences',
+                    Text(AppLocalizations.of(context).raw('Preferences'),
                         style: AppTextStyles.h3.copyWith(fontSize: 15)),
                     const SizedBox(height: 4),
-                    Text('Make Naraak work better for you',
+                    Text(
+                        AppLocalizations.of(context)
+                            .raw('Make Naraak work better for you'),
                         style: AppTextStyles.bodySecondary),
                   ],
                 ),
@@ -364,13 +371,13 @@ class _PreferencesCard extends StatelessWidget {
           const SizedBox(height: 4),
           _SettingRow(
             icon: Icons.accessibility_new_rounded,
-            title: 'Accessibility',
+            title: AppLocalizations.of(context).raw('Accessibility'),
             detail: 'Text size · Theme color',
             onTap: () => Navigator.pushNamed(context, '/profile/app-settings'),
           ),
           _SettingRow(
             icon: isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
-            title: 'Appearance',
+            title: AppLocalizations.of(context).raw('Appearance'),
             detail: isDark ? 'Dark mode' : 'Light mode',
             trailing: Switch.adaptive(
               value: isDark,
@@ -380,20 +387,20 @@ class _PreferencesCard extends StatelessWidget {
           ),
           _SettingRow(
             icon: Icons.people_alt_rounded,
-            title: 'Family management',
+            title: AppLocalizations.of(context).raw('Family management'),
             detail: 'Manage linked members',
             onTap: () => Navigator.pushNamed(context, '/profile/family'),
           ),
           _SettingRow(
             icon: Icons.shield_rounded,
-            title: 'Privacy & security',
+            title: AppLocalizations.of(context).raw('Privacy & security'),
             detail: 'eKey and data permissions',
             onTap: () =>
                 Navigator.pushNamed(context, '/profile/privacy-security'),
           ),
           _SettingRow(
             icon: Icons.chat_bubble_outline_rounded,
-            title: 'Feedback & support',
+            title: AppLocalizations.of(context).raw('Feedback & support'),
             detail: 'We are here to help',
             onTap: () => Navigator.pushNamed(context, '/profile/help-support'),
             isLast: true,
