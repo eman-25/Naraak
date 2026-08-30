@@ -19,6 +19,14 @@ enum BookingView {
   bookingSuccess,
 }
 
+class _ClosestDoctor {
+  final String name;
+  final String gender;
+  final String time;
+
+  const _ClosestDoctor(this.name, this.gender, this.time);
+}
+
 class BookingAppointmentScreen extends StatefulWidget {
   const BookingAppointmentScreen({super.key});
 
@@ -359,7 +367,8 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
             padding: const EdgeInsets.only(top: 10),
             child: Text(
               'Selected date: ${MaterialLocalizations.of(context).formatFullDate(_selectedDate)}',
-              style: AppTextStyles.body.copyWith(color: themeColor, fontWeight: FontWeight.w700),
+              style: AppTextStyles.body
+                  .copyWith(color: themeColor, fontWeight: FontWeight.w700),
             ),
           ),
           const SizedBox(height: 24),
@@ -434,10 +443,17 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
   // SCREEN 3: AVAILABLE TODAY
   // ==========================================
   Widget _buildScreen3AvailableToday(Color themeColor) {
-    final slots = context.watch<AppointmentProvider>().availableSlots.where((slot) {
+    final slots = context
+        .watch<AppointmentProvider>()
+        .availableSlots
+        .where((slot) {
       final matchesGender = _selectedGenderFilter == 'All' ||
-          slot.doctorGender?.toLowerCase() == _selectedGenderFilter.toLowerCase();
-      return matchesGender && slot.doctorName.toLowerCase().contains(_searchController.text.toLowerCase());
+          slot.doctorGender?.toLowerCase() ==
+              _selectedGenderFilter.toLowerCase();
+      return matchesGender &&
+          slot.doctorName
+              .toLowerCase()
+              .contains(_searchController.text.toLowerCase());
     }).toList()
       ..sort((a, b) => _selectedSortTime == 'Ascending'
           ? a.slotDateTime.compareTo(b.slotDateTime)
@@ -467,7 +483,8 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
               const SizedBox(height: 12),
               Row(
                 children: [
-                  _buildFilterChip('Gender: $_selectedGenderFilter', themeColor, () {
+                  _buildFilterChip('Gender: $_selectedGenderFilter', themeColor,
+                      () {
                     _showGenderFilterModal(themeColor);
                   }),
                   const SizedBox(width: 8),
@@ -483,35 +500,40 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
         // Doctors Cards List
         Expanded(
           child: slots.isEmpty
-              ? const Center(child: Text('No available doctors match these filters.'))
+              ? const Center(
+                  child: Text('No available doctors match these filters.'))
               : ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            children: slots.map((slot) => Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: _buildDoctorTodayCard(
-                doctorName: '${slot.doctorName} (${slot.doctorGender ?? 'Not specified'})',
-                themeColor: themeColor,
-                slots: [MaterialLocalizations.of(context).formatTimeOfDay(TimeOfDay.fromDateTime(slot.slotDateTime))],
-                onSelected: () => setState(() {
-                  _selectedDoctor = slot.doctorName;
-                  _selectedTimeSlot = MaterialLocalizations.of(context).formatTimeOfDay(TimeOfDay.fromDateTime(slot.slotDateTime));
-                  _selectedDate = slot.slotDateTime;
-                  _selectedSlotId = slot.id;
-                  _currentView = BookingView.reviewDetails;
-                }),
-              ),
-            )).toList(),
-          ),
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  children: slots
+                      .map((slot) => Padding(
+                            padding: const EdgeInsets.only(bottom: 16),
+                            child: _buildDoctorTodayCard(
+                              doctorName:
+                                  '${slot.doctorName} (${slot.doctorGender ?? 'Not specified'})',
+                              themeColor: themeColor,
+                              slots: [
+                                MaterialLocalizations.of(context)
+                                    .formatTimeOfDay(TimeOfDay.fromDateTime(
+                                        slot.slotDateTime))
+                              ],
+                              onSelected: () => setState(() {
+                                _selectedDoctor = slot.doctorName;
+                                _selectedTimeSlot =
+                                    MaterialLocalizations.of(context)
+                                        .formatTimeOfDay(TimeOfDay.fromDateTime(
+                                            slot.slotDateTime));
+                                _selectedDate = slot.slotDateTime;
+                                _selectedSlotId = slot.id;
+                                _currentView = BookingView.reviewDetails;
+                              }),
+                            ),
+                          ))
+                      .toList(),
+                ),
         ),
       ],
     );
   }
-
-  static const List<_TodayDoctor> _todayDoctors = [
-    _TodayDoctor('Dr. Fatima Al-Dosari', 'Female', ['10:00', '10:30', '11:00']),
-    _TodayDoctor('Dr. Khalid Al-Mansoori', 'Male', ['11:00', '11:30']),
-    _TodayDoctor('Dr. Hind Al-Zayani', 'Female', ['14:00']),
-  ];
 
   Widget _buildDoctorTodayCard({
     required String doctorName,
@@ -545,14 +567,15 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
               final isSelected =
                   _selectedDoctor == doctorName && _selectedTimeSlot == slot;
               return InkWell(
-                onTap: onSelected ?? () {
-                  setState(() {
-                    _selectedDoctor = doctorName;
-                    _selectedTimeSlot = slot;
-                    _selectedDate = DateTime.now();
-                    _currentView = BookingView.reviewDetails;
-                  });
-                },
+                onTap: onSelected ??
+                    () {
+                      setState(() {
+                        _selectedDoctor = doctorName;
+                        _selectedTimeSlot = slot;
+                        _selectedDate = DateTime.now();
+                        _currentView = BookingView.reviewDetails;
+                      });
+                    },
                 borderRadius: BorderRadius.circular(8),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 150),
@@ -583,22 +606,18 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
   // ==========================================
   // SCREEN 4: CLOSEST AVAILABLE SLOT
   // ==========================================
-  static const List<_ClosestDoctor> _closestDoctors = [
-    _ClosestDoctor('Dr. Hind Al-Zayani', 'Female', '10:00 AM — Today'),
-    _ClosestDoctor('Dr. Khalid Al-Mansoori', 'Male', '10:30 AM — Today'),
-    _ClosestDoctor('Dr. Fatima Al-Dosari', 'Female', '11:00 AM — Today'),
-    _ClosestDoctor('Dr. Mohamed Al-Ansari', 'Male', '11:00 AM — Today'),
-    _ClosestDoctor('Dr. Sara Al-Rumaihi', 'Female', '02:00 PM — Today'),
-  ];
-
   Widget _buildScreen4ClosestSlot(Color themeColor) {
-    final closestSlots = context.watch<AppointmentProvider>().availableSlots
-        .where((slot) => _selectedGenderFilter == 'All' || slot.doctorGender == _selectedGenderFilter)
-        .map((slot) => <String, String>{
-              'doctor': slot.doctorName,
-              'time': '${MaterialLocalizations.of(context).formatMediumDate(slot.slotDateTime)} · ${MaterialLocalizations.of(context).formatTimeOfDay(TimeOfDay.fromDateTime(slot.slotDateTime))}',
-              'id': slot.id,
-            })
+    final closestSlots = context
+        .watch<AppointmentProvider>()
+        .availableSlots
+        .where((slot) =>
+            _selectedGenderFilter == 'All' ||
+            slot.doctorGender == _selectedGenderFilter)
+        .map((slot) => _ClosestDoctor(
+              slot.doctorName,
+              slot.doctorGender ?? 'Not specified',
+              '${MaterialLocalizations.of(context).formatMediumDate(slot.slotDateTime)} · ${MaterialLocalizations.of(context).formatTimeOfDay(TimeOfDay.fromDateTime(slot.slotDateTime))}',
+            ))
         .toList();
     return Column(
       children: [
@@ -611,9 +630,11 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
                 _showNameSortModal(themeColor);
               }),
               const SizedBox(width: 8),
-              _buildFilterChip('Gender: $_selectedGenderFilter', themeColor, () => _showGenderFilterModal(themeColor)),
+              _buildFilterChip('Gender: $_selectedGenderFilter', themeColor,
+                  () => _showGenderFilterModal(themeColor)),
               const SizedBox(width: 8),
-              _buildFilterChip('Time', themeColor, () => _showTimeSortModal(themeColor)),
+              _buildFilterChip(
+                  'Time', themeColor, () => _showTimeSortModal(themeColor)),
             ],
           ),
         ),
@@ -626,76 +647,78 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
                       style: AppTextStyles.bodySecondary),
                 )
               : ListView.separated(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-            itemCount: closestSlots.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 12),
-            itemBuilder: (context, idx) {
-              final item = closestSlots[idx];
-              return Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.ink100),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.02),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            item.name,
-                            style: AppTextStyles.h3.copyWith(fontSize: 15),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  itemCount: closestSlots.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 12),
+                  itemBuilder: (context, idx) {
+                    final item = closestSlots[idx];
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 14),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: AppColors.ink100),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.02),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            item.time,
-                            style: AppTextStyles.caption.copyWith(
-                              color: themeColor,
-                              fontWeight: FontWeight.w600,
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  item.name,
+                                  style:
+                                      AppTextStyles.h3.copyWith(fontSize: 15),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  item.time,
+                                  style: AppTextStyles.caption.copyWith(
+                                    color: themeColor,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          OutlinedButton(
+                            onPressed: () {
+                              setState(() {
+                                _selectedDoctor = item.name;
+                                _selectedTimeSlot = item.time.split(' ')[0];
+                                _selectedDate = DateTime.now();
+                                _selectedSlotId = item.name;
+                                _currentView = BookingView.reviewDetails;
+                              });
+                            },
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide(color: themeColor, width: 1.5),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(24),
+                              ),
+                            ),
+                            child: Text(
+                              'Select',
+                              style: TextStyle(
+                                color: themeColor,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ],
                       ),
-                    ),
-                    OutlinedButton(
-                      onPressed: () {
-                        setState(() {
-                          _selectedDoctor = item['doctor'];
-                          _selectedTimeSlot = item['time']!.split(' ')[0];
-                          _selectedDate = DateTime.now();
-                          _selectedSlotId = item['id'];
-                          _currentView = BookingView.reviewDetails;
-                        });
-                      },
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: themeColor, width: 1.5),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                        child: Text(
-                          'Select',
-                          style: TextStyle(
-                            color: themeColor,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                    );
+                  },
                 ),
-              );
-            },
-          ),
         ),
       ],
     );
@@ -751,7 +774,9 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
               setState(() => _isBooking = true);
               final provider = context.read<AppointmentProvider>();
               final slotId = _selectedSlotId ??
-                  (provider.availableSlots.isNotEmpty ? provider.availableSlots.first.id : null);
+                  (provider.availableSlots.isNotEmpty
+                      ? provider.availableSlots.first.id
+                      : null);
               if (slotId == null) {
                 setState(() => _isBooking = false);
                 return;
@@ -775,6 +800,18 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
   // SUCCESS PASS TICKET SECTION
   // ==========================================
   Widget _buildSuccessPassView(Color themeColor) {
+    final appointment = _confirmedAppointment;
+    final doctorName =
+        appointment?.doctorName ?? _selectedDoctor ?? 'Dr. Fatima Al-Dosari';
+    final timeDisplay = appointment?.slotDateTime != null
+        ? MaterialLocalizations.of(context).formatTimeOfDay(
+            TimeOfDay.fromDateTime(appointment!.slotDateTime),
+          )
+        : (_selectedTimeSlot ?? '09:30 AM');
+    final dateDisplay = appointment?.slotDateTime != null
+        ? '${appointment!.slotDateTime.day}/${appointment.slotDateTime.month}/${appointment.slotDateTime.year}'
+        : '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}';
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -825,7 +862,7 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  _selectedDoctor ?? 'Dr. Fatima Al-Dosari',
+                  doctorName,
                   style: AppTextStyles.h3.copyWith(fontSize: 18),
                 ),
                 const Text('Specialist - Family Medicine',
@@ -845,7 +882,7 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
                 const SizedBox(height: 16),
                 Text('DATE & TIME', style: AppTextStyles.caption),
                 Text(
-                  '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year} - ${_selectedTimeSlot ?? '09:30 AM'}',
+                  '$dateDisplay - $timeDisplay',
                   style:
                       AppTextStyles.body.copyWith(fontWeight: FontWeight.bold),
                 ),

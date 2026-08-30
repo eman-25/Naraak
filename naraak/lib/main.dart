@@ -92,12 +92,11 @@ class NaraakApp extends StatelessWidget {
             '/profile': (_) => const RootShell(initialIndex: 3),
             '/appointments': (_) => const RootShell(initialIndex: 1),
             '/pending-requests': (_) => const PendingRequestsScreen(),
-            '/profile/appearance': (_) => const AppearanceSettingsScreen(),
+            '/profile/appearance': (_) => const AppSettingsScreen(),
             '/profile/family': (_) => const FamilyMembersScreen(),
             '/profile/personal-info': (_) => const PersonalInfoScreen(),
             '/notifications': (_) => const NotificationsScreen(),
             ...AppRouter.routes,
-            '/appointments': (_) => const RootShell(initialIndex: 1),
           },
           onGenerateRoute: (settings) => settings.name == '/'
               ? MaterialPageRoute(builder: (_) => const RootShell())
@@ -142,7 +141,8 @@ class ShellNavigation extends InheritedWidget {
 
   @override
   bool updateShouldNotify(ShellNavigation oldWidget) =>
-      selectTab != oldWidget.selectTab || navigatorKey != oldWidget.navigatorKey;
+      selectTab != oldWidget.selectTab ||
+      navigatorKey != oldWidget.navigatorKey;
 }
 
 class RootShell extends StatefulWidget {
@@ -153,7 +153,10 @@ class RootShell extends StatefulWidget {
 }
 
 class _RootShellState extends State<RootShell> {
+  final ValueNotifier<int> _tabIndex = ValueNotifier<int>(0);
+  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
   late int _index;
+
   static const _screens = [
     HomeScreen(),
     AppointmentsScreen(),
@@ -183,11 +186,9 @@ class _RootShellState extends State<RootShell> {
   };
 
   void _selectTab(int index) {
-    // Tapping a tab returns to that tab's root, matching how the bottom
-    // nav behaves in the wireframes (it's always the 4-tab entry points).
     _navigatorKey.currentState?.popUntil((route) => route.isFirst);
     _tabIndex.value = index;
-    setState(() {});
+    setState(() => _index = index);
   }
 
   @override
@@ -208,7 +209,6 @@ class _RootShellState extends State<RootShell> {
               valueListenable: _tabIndex,
               builder: (_, index, __) {
                 final stack = IndexedStack(index: index, children: screens);
-                // All four root tabs now manage their own width/centering.
                 if (!web || index <= 3) return stack;
                 return Center(
                   child: ConstrainedBox(
@@ -233,34 +233,49 @@ class _RootShellState extends State<RootShell> {
   void initState() {
     super.initState();
     _index = widget.initialIndex;
+    _tabIndex.value = widget.initialIndex;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(index: _index, children: _screens),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _index,
-        onTap: (i) => setState(() => _index = i),
-        items: const [
-          BottomNavigationBarItem(
-              icon: Icon(Icons.home_outlined),
-              activeIcon: Icon(Icons.home),
-              label: 'Home'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.event_note_outlined),
-              activeIcon: Icon(Icons.event_note),
-              label: 'Appointments'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.grid_view_outlined),
-              activeIcon: Icon(Icons.grid_view),
-              label: 'Services'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline),
-              activeIcon: Icon(Icons.person),
-              label: 'Profile'),
-        ],
-      ),
+    final strings = AppLocalizations.of(context);
+    final isWeb = isWebWidth(context);
+    final currentScreens = isWeb ? _webScreens : _screens;
+
+    return ShellNavigation(
+      selectTab: _selectTab,
+      navigatorKey: _navigatorKey,
+      child: Scaffold(
+        appBar: isWeb ? null : const MobileTopBar(),
+        body: _buildNavigator(isWeb, currentScreens),
+        bottomNavigationBar: isWeb
+            ? null
+            : BottomNavigationBar(
+                currentIndex: _index,
+                onTap: (i) => _selectTab(i),
+                items: [
+                  BottomNavigationBarItem(
+                    icon: const Icon(Icons.home_outlined),
+                    activeIcon: const Icon(Icons.home),
+                    label: strings.text('homeTab'),
+                  ),
+                  BottomNavigationBarItem(
+                    icon: const Icon(Icons.event_note_outlined),
+                    activeIcon: const Icon(Icons.event_note),
+                    label: strings.text('appointmentsTab'),
+                  ),
+                  BottomNavigationBarItem(
+                    icon: const Icon(Icons.grid_view_outlined),
+                    activeIcon: const Icon(Icons.grid_view),
+                    label: strings.text('servicesTab'),
+                  ),
+                  BottomNavigationBarItem(
+                    icon: const Icon(Icons.person_outline),
+                    activeIcon: const Icon(Icons.person),
+                    label: strings.text('profileTab'),
+                  ),
+                ],
+              ),
       ),
     );
   }

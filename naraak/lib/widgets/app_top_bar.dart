@@ -6,6 +6,7 @@ import '../providers/user_profile_provider.dart';
 import '../providers/appointment_provider.dart';
 import '../providers/service_request_provider.dart';
 import '../providers/notifications_read_provider.dart';
+import '../localization/app_localizations.dart';
 import '../models/notification_item.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
@@ -30,6 +31,7 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context);
     final palette = AppPaletteExtension.of(context);
     final screenSize = MediaQuery.of(context).size;
     final iconContainerSize = (screenSize.width * 0.1).clamp(38.0, 48.0);
@@ -72,7 +74,7 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
                     children: [
                       // Notifications Button
                       IconButton(
-                        tooltip: 'Notifications',
+                        tooltip: strings.text('notifications'),
                         onPressed: () {
                           Navigator.pushNamed(context, '/notifications');
                         },
@@ -183,13 +185,14 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
                               );
                             }),
                             const PopupMenuDivider(),
-                            const PopupMenuItem<String>(
+                            PopupMenuItem<String>(
                               value: 'organize-family',
                               child: Row(
                                 children: [
-                                  Icon(Icons.family_restroom_rounded, size: 20),
-                                  SizedBox(width: 10),
-                                  Text('Organize Family Members'),
+                                  const Icon(Icons.family_restroom_rounded,
+                                      size: 20),
+                                  const SizedBox(width: 10),
+                                  Text(strings.text('organizeFamilyMembers')),
                                 ],
                               ),
                             ),
@@ -197,8 +200,12 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
                         },
                         child: Consumer<AuthProvider>(
                           builder: (context, auth, _) {
-                            final profileName = context.watch<UserProfileProvider>().profile?.fullName;
-                            final initials = _initials(profileName ?? auth.currentUser?.name);
+                            final profileName = context
+                                .watch<UserProfileProvider>()
+                                .profile
+                                ?.fullName;
+                            final initials = _initials(
+                                profileName ?? auth.currentUser?.name);
                             return Container(
                               width: iconContainerSize,
                               height: iconContainerSize,
@@ -251,8 +258,15 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   String _initials(String? name) {
-    final words = (name ?? '').trim().split(RegExp(r'\s+')).where((word) => word.isNotEmpty).toList();
+    final words = (name ?? '')
+        .trim()
+        .split(RegExp(r'\s+'))
+        .where((word) => word.isNotEmpty)
+        .toList();
     if (words.isEmpty) return '?';
-    return (words.length == 1 ? words.first[0] : '${words.first[0]}${words.last[0]}').toUpperCase();
+    return (words.length == 1
+            ? words.first[0]
+            : '${words.first[0]}${words.last[0]}')
+        .toUpperCase();
   }
 }
