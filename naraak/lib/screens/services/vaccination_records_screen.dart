@@ -16,41 +16,6 @@ class VaccinationRecordsScreen extends StatelessWidget {
   const VaccinationRecordsScreen({super.key});
 
   @override
-  State<VaccinationRecordsScreen> createState() =>
-      _VaccinationRecordsScreenState();
-}
-
-class _VaccinationRecordsScreenState extends State<VaccinationRecordsScreen> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<VaccinationProvider>().loadRecords();
-    });
-  }
-
-  Future<void> _handleDownload(VaccinationRecord record) async {
-    if (record.certificateUrl == null) {
-      _showReportMissingSheet(record);
-      return;
-    }
-    // Certificate URLs are supplied only by the production records service.
-    // Never expose a non-functional placeholder link to the user.
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('A certificate is not available for this record yet.')),
-    );
-  }
-
-  void _showReportMissingSheet(VaccinationRecord record) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (sheetContext) => _ReportMissingSheet(record: record),
-    );
-  }
-
-  @override
   Widget build(BuildContext context) {
     final palette = context.watch<AppSettingsProvider>().palette;
 
