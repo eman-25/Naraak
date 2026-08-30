@@ -6,9 +6,9 @@ import '../../models/vaccination_record.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../theme/app_theme.dart';
-import '../../widgets/app_card.dart';
-import '../../widgets/empty_state.dart';
-import '../../widgets/app_top_bar.dart';
+import '../../widgets/naraak_card.dart';
+import '../../widgets/naraak_app_bar.dart';
+import '../../widgets/state_views.dart';
 
 /// View / Download Records — Phase 3 Figure 38's second screen: a list of
 /// on-file vaccine records, each opening a detail view with a Download
@@ -35,8 +35,11 @@ class _VaccinationRecordsListScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const AppTopBar(title: 'Vaccination Records'),
-      body: Consumer<VaccinationProvider>(
+      appBar: const NaraakAppBar(title: 'Vaccination Records'),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 980),
+          child: Consumer<VaccinationProvider>(
         builder: (context, provider, _) {
           switch (provider.state) {
             case LoadState.idle:
@@ -45,16 +48,14 @@ class _VaccinationRecordsListScreenState
                   child:
                       CircularProgressIndicator(color: AppColors.primaryTeal));
             case LoadState.error:
-              return EmptyStateView(
-                isError: true,
+              return ErrorState(
                 title: 'Could not load records',
                 message: provider.errorMessage ?? 'Please try again.',
                 actionLabel: 'Retry',
                 onAction: () => provider.loadRecords(),
               );
             case LoadState.empty:
-              return const EmptyStateView(
-                icon: Icons.vaccines_outlined,
+              return const EmptyState(
                 title: 'No vaccination records found',
                 message:
                     'Records for you and linked family members will appear here.',
@@ -67,7 +68,7 @@ class _VaccinationRecordsListScreenState
                   final record = provider.records[i];
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 10),
-                    child: AppCard(
+                    child: NaraakCard(
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -114,6 +115,8 @@ class _VaccinationRecordsListScreenState
               );
           }
         },
+          ),
+        ),
       ),
     );
   }
@@ -141,10 +144,13 @@ class VaccinationRecordDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const AppTopBar(title: 'Vaccination Records'),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
+      appBar: const NaraakAppBar(title: 'Vaccination Record'),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 760),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (record.certificateUrl != null)
@@ -170,7 +176,7 @@ class VaccinationRecordDetailScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            AppCard(
+            NaraakCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -188,6 +194,8 @@ class VaccinationRecordDetailScreen extends StatelessWidget {
               ),
             ),
           ],
+            ),
+          ),
         ),
       ),
     );

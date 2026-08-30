@@ -5,9 +5,11 @@ import '../../providers/user_profile_provider.dart';
 import '../../data/naraak_repository.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
-import '../../widgets/app_card.dart';
-import '../../widgets/app_button.dart';
-import '../../widgets/app_top_bar.dart';
+import '../../widgets/app_button.dart' show AppButtonVariant;
+import '../../widgets/naraak_card.dart';
+import '../../widgets/naraak_button.dart';
+import '../../widgets/naraak_app_bar.dart';
+import '../../widgets/responsive_page_frame.dart';
 
 class PhcResearchScreen extends StatefulWidget {
   const PhcResearchScreen({super.key});
@@ -81,12 +83,10 @@ class _PhcResearchScreenState extends State<PhcResearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final profile = context.watch<UserProfileProvider>().profile;
-
     return Scaffold(
-      appBar: const AppTopBar(title: 'Research Application'),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+      appBar: const NaraakAppBar(title: 'Research Application'),
+      body: ResponsivePageFrame(
+        maxWidth: 900,
         child: _isSubmitted
             ? _buildSuccessCard()
             : Column(
@@ -126,7 +126,7 @@ class _PhcResearchScreenState extends State<PhcResearchScreen> {
         ),
         const SizedBox(height: 16),
 
-        AppCard(
+        NaraakCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -166,7 +166,7 @@ class _PhcResearchScreenState extends State<PhcResearchScreen> {
         const SizedBox(height: 20),
         SizedBox(
           width: double.infinity,
-          child: AppButton(
+          child: NaraakButton(
             label: 'Next',
             onPressed: () => setState(() => _currentStep = 2),
           ),
@@ -179,7 +179,7 @@ class _PhcResearchScreenState extends State<PhcResearchScreen> {
   Widget _buildStepTwo() {
     return Column(
       children: [
-        AppCard(
+        NaraakCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -250,15 +250,15 @@ class _PhcResearchScreenState extends State<PhcResearchScreen> {
         Row(
           children: [
             Expanded(
-              child: AppButton(
+              child: NaraakButton(
                 label: 'Back',
-                isOutlined: true,
+                variant: AppButtonVariant.secondary,
                 onPressed: () => setState(() => _currentStep = 1),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: AppButton(
+              child: NaraakButton(
                 label: 'Next',
                 onPressed: () => setState(() => _currentStep = 3),
               ),
@@ -273,7 +273,7 @@ class _PhcResearchScreenState extends State<PhcResearchScreen> {
   Widget _buildStepThree() {
     return Column(
       children: [
-        AppCard(
+        NaraakCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -326,15 +326,15 @@ class _PhcResearchScreenState extends State<PhcResearchScreen> {
         Row(
           children: [
             Expanded(
-              child: AppButton(
+              child: NaraakButton(
                 label: 'Back',
-                isOutlined: true,
+                variant: AppButtonVariant.secondary,
                 onPressed: () => setState(() => _currentStep = 2),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: AppButton(
+              child: NaraakButton(
                 label: 'Submit Application',
                 onPressed: _isConfirmed
                     ? () async {
@@ -381,7 +381,7 @@ class _PhcResearchScreenState extends State<PhcResearchScreen> {
 
   // --- Success State ---
   Widget _buildSuccessCard() {
-    return AppCard(
+    return NaraakCard(
       child: Column(
         children: [
           const Icon(Icons.check_circle, size: 64, color: AppColors.success),
@@ -398,7 +398,7 @@ class _PhcResearchScreenState extends State<PhcResearchScreen> {
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
-            child: AppButton(
+            child: NaraakButton(
               label: 'Back to Services',
               onPressed: () => Navigator.pop(context),
             ),

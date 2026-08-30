@@ -6,15 +6,18 @@ import '../../providers/appointment_provider.dart' show LoadState;
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../theme/app_theme.dart';
-import '../../widgets/app_button.dart';
-import '../../widgets/empty_state.dart';
-import '../../widgets/app_top_bar.dart';
+import '../../widgets/app_button.dart' show AppButtonVariant;
+import '../../widgets/naraak_button.dart';
+import '../../widgets/naraak_app_bar.dart';
+import '../../widgets/progress_stepper.dart';
+import '../../widgets/responsive_page_frame.dart';
+import '../../widgets/state_views.dart';
 
-/// Electronic Hajj Certificate — Phase 3 §3.6/§4.5: a read-only check
+/// Electronic Hajj Certificate â€” Phase 3 Â§3.6/Â§4.5: a read-only check
 /// against a doctor visit logged in the MOH DB, not a form the user fills
 /// in. "I've requested it from my doctor" self-reports that in-person visit
 /// so the request can be tracked through the same Pending Requests
-/// lifecycle as every other service (Requested → Processing → Ready →
+/// lifecycle as every other service (Requested â†’ Processing â†’ Ready â†’
 /// Downloaded).
 class HajjCertificateScreen extends StatefulWidget {
   const HajjCertificateScreen({super.key});
@@ -37,7 +40,7 @@ class _HajjCertificateScreenState extends State<HajjCertificateScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const AppTopBar(title: 'Electronic Hajj Certificate'),
+      appBar: const NaraakAppBar(title: 'Electronic Hajj Certificate'),
       body: Consumer<HajjCertificateProvider>(
         builder: (context, provider, _) {
           if (provider.initState == LoadState.loading ||
@@ -47,8 +50,7 @@ class _HajjCertificateScreenState extends State<HajjCertificateScreen> {
           }
 
           if (provider.initState == LoadState.error) {
-            return EmptyStateView(
-              isError: true,
+            return ErrorState(
               title: 'Error Loading Service',
               message: provider.errorMessage ??
                   'An error occurred while checking existing requests.',
@@ -59,9 +61,11 @@ class _HajjCertificateScreenState extends State<HajjCertificateScreen> {
 
           final request = provider.existingRequest;
 
-          return ListView(
-            padding: const EdgeInsets.all(20),
-            children: [
+          return ResponsivePageFrame(
+            maxWidth: 820,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
               const _PrerequisiteBanner(),
               const SizedBox(height: 20),
               if (request == null)
@@ -82,7 +86,8 @@ class _HajjCertificateScreenState extends State<HajjCertificateScreen> {
                     );
                   },
                 ),
-            ],
+              ],
+            ),
           );
         },
       ),
@@ -131,8 +136,7 @@ class _NoRequestSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const EmptyStateView(
-          icon: Icons.workspace_premium_outlined,
+        const EmptyState(
           title: 'No download available yet',
           message:
               'You haven\'t requested your certificate from your doctor yet. '
@@ -141,7 +145,7 @@ class _NoRequestSection extends StatelessWidget {
         const SizedBox(height: 12),
         SizedBox(
           width: double.infinity,
-          child: AppButton(
+          child: NaraakButton(
             label: 'I\'ve Requested It From My Doctor',
             isLoading: isSubmitting,
             onPressed: isSubmitting ? null : onRequest,
@@ -218,11 +222,14 @@ class _StatusSection extends StatelessWidget {
         const SizedBox(height: 24),
         Text('APPLICATION PROGRESS', style: AppTextStyles.overline),
         const SizedBox(height: 14),
-        _ProgressTracker(currentStep: _currentStep),
+        ProgressStepper(
+          steps: const ['Requested', 'Processing', 'Ready', 'Downloaded'],
+          currentStep: _currentStep,
+        ),
         const SizedBox(height: 28),
         SizedBox(
           width: double.infinity,
-          child: AppButton(
+          child: NaraakButton(
             label: 'Find my health centre',
             variant: AppButtonVariant.secondary,
             onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
@@ -233,7 +240,7 @@ class _StatusSection extends StatelessWidget {
         const SizedBox(height: 12),
         SizedBox(
           width: double.infinity,
-          child: AppButton(
+          child: NaraakButton(
             label: 'Download certificate',
             icon: Icons.download_outlined,
             onPressed: _isReady ? onDownload : null,

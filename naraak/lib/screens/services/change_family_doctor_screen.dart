@@ -6,13 +6,14 @@ import '../../providers/appointment_provider.dart' show LoadState;
 import '../../providers/user_profile_provider.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
-import '../../widgets/app_button.dart';
-import '../../widgets/app_card.dart';
-import '../../widgets/empty_state.dart';
+import '../../widgets/naraak_button.dart';
+import '../../widgets/naraak_card.dart';
 import '../../widgets/external_api_notice.dart';
-import '../../widgets/app_top_bar.dart';
+import '../../widgets/naraak_app_bar.dart';
+import '../../widgets/responsive_page_frame.dart';
+import '../../widgets/state_views.dart';
 
-/// Change Family Doctor — single-screen form matching the approved mockup.
+/// Change Family Doctor â€” single-screen form matching the approved mockup.
 /// Reference Number, Patient CPR, Patient Name, Current Health Center, and
 /// Current Family Doctor are all auto-filled and read-only. Only
 /// "Requested Family Doctor" (scoped to the other doctors at the patient's
@@ -117,7 +118,7 @@ class _ChangeFamilyDoctorScreenState extends State<ChangeFamilyDoctorScreen> {
     final currentCenterName = profile?.assignedHealthCenter;
 
     return Scaffold(
-      appBar: const AppTopBar(title: 'Change Family Doctor'),
+      appBar: const NaraakAppBar(title: 'Change Family Doctor'),
       body: Consumer<ChangeDoctorProvider>(
         builder: (context, provider, _) {
           if (provider.initState == LoadState.idle ||
@@ -126,8 +127,7 @@ class _ChangeFamilyDoctorScreenState extends State<ChangeFamilyDoctorScreen> {
                 child: CircularProgressIndicator(color: AppColors.primaryTeal));
           }
           if (provider.initState == LoadState.error) {
-            return EmptyStateView(
-              isError: true,
+            return ErrorState(
               title: 'Could not check eligibility',
               message: provider.errorMessage ?? 'Please try again.',
               actionLabel: 'Retry',
@@ -136,8 +136,7 @@ class _ChangeFamilyDoctorScreenState extends State<ChangeFamilyDoctorScreen> {
           }
           // Decision point: an open request already exists for this service.
           if (provider.hasPendingRequest) {
-            return EmptyStateView(
-              icon: Icons.hourglass_top,
+            return EmptyState(
               title: 'You already have a pending request',
               message:
                   'A family doctor change request is already being processed. '
@@ -154,8 +153,7 @@ class _ChangeFamilyDoctorScreenState extends State<ChangeFamilyDoctorScreen> {
           // Decision point: profile's assigned center isn't in the transfer
           // directory (or no center has been set yet).
           if (currentCenter == null) {
-            return EmptyStateView(
-              icon: Icons.local_hospital_outlined,
+            return EmptyState(
               title: 'Health center not found',
               message:
                   'We couldn\'t find your assigned health center in the family doctor directory. '
@@ -174,11 +172,11 @@ class _ChangeFamilyDoctorScreenState extends State<ChangeFamilyDoctorScreen> {
               _reasonController.text.trim().isNotEmpty &&
               !provider.isSubmitting;
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+          return ResponsivePageFrame(
+            maxWidth: 820,
             child: Column(
               children: [
-                AppCard(
+                NaraakCard(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -189,11 +187,11 @@ class _ChangeFamilyDoctorScreenState extends State<ChangeFamilyDoctorScreen> {
                       const SizedBox(height: 16),
                       const Text('Patient CPR', style: AppTextStyles.caption),
                       const SizedBox(height: 4),
-                      _buildReadOnlyField(profile?.cpr ?? '—'),
+                      _buildReadOnlyField(profile?.cpr ?? 'â€”'),
                       const SizedBox(height: 16),
                       const Text('Patient Name', style: AppTextStyles.caption),
                       const SizedBox(height: 4),
-                      _buildReadOnlyField(profile?.fullName ?? '—'),
+                      _buildReadOnlyField(profile?.fullName ?? 'â€”'),
                       const SizedBox(height: 16),
                       const Text('Current Health Center',
                           style: AppTextStyles.caption),
@@ -209,8 +207,7 @@ class _ChangeFamilyDoctorScreenState extends State<ChangeFamilyDoctorScreen> {
                           style: AppTextStyles.caption),
                       const SizedBox(height: 4),
                       if (requestableDoctors.isEmpty)
-                        EmptyStateView(
-                          icon: Icons.person_off_outlined,
+                        EmptyState(
                           title: 'No other doctors available',
                           message:
                               '${currentCenter.name} has no other family doctors currently accepting transfers.',
@@ -259,7 +256,7 @@ class _ChangeFamilyDoctorScreenState extends State<ChangeFamilyDoctorScreen> {
                 const SizedBox(height: 20),
                 SizedBox(
                   width: double.infinity,
-                  child: AppButton(
+                  child: NaraakButton(
                     label: 'Submit',
                     isLoading: provider.isSubmitting,
                     onPressed: canSubmit

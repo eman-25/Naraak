@@ -4,9 +4,10 @@ import '../../providers/user_profile_provider.dart';
 import '../../data/naraak_repository.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
-import '../../widgets/app_card.dart';
-import '../../widgets/app_button.dart';
-import '../../widgets/app_top_bar.dart';
+import '../../widgets/naraak_card.dart';
+import '../../widgets/naraak_button.dart';
+import '../../widgets/naraak_app_bar.dart';
+import '../../widgets/responsive_page_frame.dart';
 
 class AddressUpdateScreen extends StatefulWidget {
   const AddressUpdateScreen({super.key});
@@ -37,9 +38,9 @@ class _AddressUpdateScreenState extends State<AddressUpdateScreen> {
     final profile = context.watch<UserProfileProvider>().profile;
 
     return Scaffold(
-      appBar: const AppTopBar(title: 'Update Address'),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+      appBar: const NaraakAppBar(title: 'Update Address'),
+      body: ResponsivePageFrame(
+        maxWidth: 820,
         child: _isSubmitted ? _buildSuccessCard() : _buildFormCard(profile),
       ),
     );
@@ -50,7 +51,7 @@ class _AddressUpdateScreenState extends State<AddressUpdateScreen> {
       key: _formKey,
       child: Column(
         children: [
-          AppCard(
+          NaraakCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -124,7 +125,7 @@ class _AddressUpdateScreenState extends State<AddressUpdateScreen> {
           // Confirm Update Button
           SizedBox(
             width: double.infinity,
-            child: AppButton(
+            child: NaraakButton(
               label: 'Confirm Address Update',
               onPressed: _isCprConfirmed ? _submitForm : null,
             ),
@@ -135,7 +136,7 @@ class _AddressUpdateScreenState extends State<AddressUpdateScreen> {
   }
 
   Widget _buildSuccessCard() {
-    return AppCard(
+    return NaraakCard(
       child: Column(
         children: [
           const Icon(Icons.check_circle, size: 64, color: AppColors.success),
@@ -152,7 +153,7 @@ class _AddressUpdateScreenState extends State<AddressUpdateScreen> {
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
-            child: AppButton(
+            child: NaraakButton(
               label: 'Back to Services',
               onPressed: () => Navigator.pop(context),
             ),

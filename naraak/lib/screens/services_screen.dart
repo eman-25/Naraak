@@ -106,15 +106,15 @@ class _ServicesHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      constraints: const BoxConstraints(minHeight: 190),
+    return SizedBox(
+      height: 190,
+      child: Container(
       decoration: BoxDecoration(
         color: palette.primaryDark,
         borderRadius: BorderRadius.circular(18),
       ),
       clipBehavior: Clip.antiAlias,
-      child: IntrinsicHeight(
-        child: Row(
+      child: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(
@@ -151,7 +151,7 @@ class _ServicesHero extends StatelessWidget {
               ),
             ),
             SizedBox(
-              width: 140,
+              width: 260,
               child: Image.asset(
                 'assets/images/service_booking.jpg',
                 fit: BoxFit.cover,
@@ -187,11 +187,7 @@ class _ServiceGrid extends StatelessWidget {
           crossAxisCount: columns,
           mainAxisSpacing: 11,
           crossAxisSpacing: 11,
-          childAspectRatio: columns == 3
-              ? 3.15
-              : columns == 2
-                  ? 3.6
-                  : 4.2,
+          mainAxisExtent: columns == 1 ? 104 : 112,
         ),
         itemBuilder: (context, i) =>
             _ServiceRow(entry: entries[i], palette: palette),

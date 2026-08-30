@@ -10,7 +10,10 @@ import '../../widgets/app_button.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/external_api_notice.dart';
-import '../../widgets/app_top_bar.dart';
+import '../../widgets/naraak_app_bar.dart';
+import '../../widgets/progress_stepper.dart';
+import '../../widgets/responsive_page_frame.dart';
+import '../../widgets/upload_field.dart';
 
 class FeeExemptionScreen extends StatefulWidget {
   const FeeExemptionScreen({super.key});
@@ -157,7 +160,8 @@ class _FeeExemptionScreenState extends State<FeeExemptionScreen> {
     );
   }
 
-  Widget _buildUploadField(String label, String key, String defaultFileName) {
+  Widget _buildLegacyUploadField(
+      String label, String key, String defaultFileName) {
     final fileName = _uploads[key];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -205,10 +209,28 @@ class _FeeExemptionScreenState extends State<FeeExemptionScreen> {
     );
   }
 
+  Widget _buildUploadField(
+      String label, String key, String defaultFileName) {
+    final provider = context.read<FeeExemptionProvider>();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: UploadField(
+        label: label,
+        fileName: _uploads[key],
+        demoFileName: defaultFileName,
+        validate: provider.validateDocument,
+        onAttached: (name) => setState(() => _uploads[key] = name),
+        onCleared: () => setState(() => _uploads[key] = null),
+        onRejected: (message) => ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(message))),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppTopBar(
+      appBar: NaraakAppBar(
         title: 'Fee Exemption Card',
         onBack: _step == 1 ? () => setState(() => _step = 0) : null,
       ),
@@ -243,11 +265,20 @@ class _FeeExemptionScreenState extends State<FeeExemptionScreen> {
 
           return Form(
             key: _formKey,
-            child: ListView(
-              padding: const EdgeInsets.all(20),
-              children: _step == 0
-                  ? _buildDetailsStep()
-                  : _buildUploadsStep(provider),
+            child: ResponsivePageFrame(
+              maxWidth: 820,
+              child: Column(
+                children: [
+                  ProgressStepper(
+                    steps: const ['Eligibility', 'Documents'],
+                    currentStep: _step,
+                  ),
+                  const SizedBox(height: 24),
+                  ...(_step == 0
+                      ? _buildDetailsStep()
+                      : _buildUploadsStep(provider)),
+                ],
+              ),
             ),
           );
         },

@@ -4,11 +4,12 @@ import '../../providers/user_profile_provider.dart';
 import '../../data/naraak_repository.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
-import '../../widgets/app_card.dart';
-import '../../widgets/app_button.dart';
-import '../../widgets/app_top_bar.dart';
+import '../../widgets/naraak_card.dart';
+import '../../widgets/naraak_button.dart';
+import '../../widgets/naraak_app_bar.dart';
+import '../../widgets/responsive_page_frame.dart';
 
-/// Newborn Sehati Card — single-screen form matching the approved mockup:
+/// Newborn Sehati Card â€” single-screen form matching the approved mockup:
 /// Reference Number is auto-filled and read-only; Newborn CPR, Father CPR,
 /// Mother CPR, and Block are entered by the user. One Submit action leads
 /// to the success confirmation card.
@@ -59,12 +60,10 @@ class _NewbornSehatiCardScreenState extends State<NewbornSehatiCardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final profile = context.watch<UserProfileProvider>().profile;
-
     return Scaffold(
-      appBar: const AppTopBar(title: 'Newborn Sehati Card'),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+      appBar: const NaraakAppBar(title: 'Newborn Sehati Card'),
+      body: ResponsivePageFrame(
+        maxWidth: 820,
         child: _isSubmitted ? _buildSuccessCard() : _buildRequestForm(),
       ),
     );
@@ -75,7 +74,7 @@ class _NewbornSehatiCardScreenState extends State<NewbornSehatiCardScreen> {
       key: _formKey,
       child: Column(
         children: [
-          AppCard(
+          NaraakCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -135,7 +134,7 @@ class _NewbornSehatiCardScreenState extends State<NewbornSehatiCardScreen> {
           const SizedBox(height: 20),
           SizedBox(
             width: double.infinity,
-            child: AppButton(
+            child: NaraakButton(
               label: 'Submit',
               onPressed: _submitForm,
             ),
@@ -146,7 +145,7 @@ class _NewbornSehatiCardScreenState extends State<NewbornSehatiCardScreen> {
   }
 
   Widget _buildSuccessCard() {
-    return AppCard(
+    return NaraakCard(
       child: Column(
         children: [
           const Icon(Icons.check_circle, size: 64, color: AppColors.success),
@@ -163,7 +162,7 @@ class _NewbornSehatiCardScreenState extends State<NewbornSehatiCardScreen> {
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
-            child: AppButton(
+            child: NaraakButton(
               label: 'Back to Services',
               onPressed: () => Navigator.pop(context),
             ),

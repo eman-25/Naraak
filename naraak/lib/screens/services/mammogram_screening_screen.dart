@@ -4,11 +4,12 @@ import '../../providers/user_profile_provider.dart';
 import '../../data/naraak_repository.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
-import '../../widgets/app_card.dart';
-import '../../widgets/app_button.dart';
-import '../../widgets/app_top_bar.dart';
+import '../../widgets/naraak_card.dart';
+import '../../widgets/naraak_button.dart';
+import '../../widgets/naraak_app_bar.dart';
+import '../../widgets/responsive_page_frame.dart';
 
-/// Mammogram Screening — Phase 3 §4.9: age/gender eligibility gate, then a
+/// Mammogram Screening â€” Phase 3 Â§4.9: age/gender eligibility gate, then a
 /// real branching question (tested in the last 2 years?) with its own stop
 /// state, not a single self-attest checkbox.
 class MammogramScreeningScreen extends StatefulWidget {
@@ -73,9 +74,11 @@ class _MammogramScreeningScreenState extends State<MammogramScreeningScreen> {
     final bool isEligible = _apiEligible ?? false;
 
     return Scaffold(
-      appBar: const AppTopBar(title: 'Mammogram Screening'),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+      appBar: const NaraakAppBar(title: 'Mammogram Screening'),
+      body: _apiEligible == null
+          ? const Center(child: CircularProgressIndicator())
+          : ResponsivePageFrame(
+        maxWidth: 820,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -120,7 +123,7 @@ class _MammogramScreeningScreenState extends State<MammogramScreeningScreen> {
 
   Widget _buildIneligibilityCard(
       dynamic profile, bool isGenderOk, bool isAgeOk) {
-    return AppCard(
+    return NaraakCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -164,7 +167,7 @@ class _MammogramScreeningScreenState extends State<MammogramScreeningScreen> {
 
   // --- Branching question: tested in the last 2 years? ---
   Widget _buildEligibilityQuestion() {
-    return AppCard(
+    return NaraakCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -205,7 +208,7 @@ class _MammogramScreeningScreenState extends State<MammogramScreeningScreen> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Not eligible yet — too soon since your last mammogram.',
+                      'Not eligible yet â€” too soon since your last mammogram.',
                       style: AppTextStyles.body.copyWith(
                           color: AppColors.bahrainAccent,
                           fontWeight: FontWeight.bold),
@@ -272,7 +275,7 @@ class _MammogramScreeningScreenState extends State<MammogramScreeningScreen> {
           const SizedBox(height: 20),
           SizedBox(
             width: double.infinity,
-            child: AppButton(
+            child: NaraakButton(
               label: 'Submit Request',
               onPressed: _submitForm,
             ),
@@ -283,7 +286,7 @@ class _MammogramScreeningScreenState extends State<MammogramScreeningScreen> {
   }
 
   Widget _buildSuccessCard() {
-    return AppCard(
+    return NaraakCard(
       child: Column(
         children: [
           const Icon(Icons.check_circle, size: 60, color: AppColors.success),
@@ -296,7 +299,7 @@ class _MammogramScreeningScreenState extends State<MammogramScreeningScreen> {
             style: AppTextStyles.bodySecondary,
           ),
           const SizedBox(height: 20),
-          AppButton(
+          NaraakButton(
             label: 'Back to Services',
             onPressed: () => Navigator.pop(context),
           ),

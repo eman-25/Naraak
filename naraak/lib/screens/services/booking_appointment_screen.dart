@@ -7,8 +7,8 @@ import '../../providers/app_settings_provider.dart';
 import '../../models/appointment.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
-import '../../widgets/app_button.dart';
-import '../../widgets/app_top_bar.dart';
+import '../../widgets/naraak_button.dart';
+import '../../widgets/naraak_app_bar.dart';
 
 enum BookingView {
   chooseMethod,
@@ -111,9 +111,9 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
     final userProfile = context.watch<UserProfileProvider>().profile;
 
     return Scaffold(
-      appBar: AppTopBar(
+      appBar: NaraakAppBar(
         title: _getAppBarTitle(),
-        showBackButton: _currentView != BookingView.bookingSuccess,
+        showBack: _currentView != BookingView.bookingSuccess,
         onBack: _handleBack,
       ),
       body: SafeArea(
@@ -124,7 +124,16 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
           // its narrowest content instead of filling the screen. Force it
           // full-size here instead of relying on every view to do it.
           child: SizedBox.expand(
-            child: _buildCurrentScreenView(themeColor, userProfile),
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 980),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: _buildCurrentScreenView(themeColor, userProfile),
+                ),
+              ),
+            ),
           ),
         ),
       ),
@@ -160,43 +169,61 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Center(
-            child: Text(
-              'How would you like to book?',
-              style: AppTextStyles.bodySecondary.copyWith(
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+          Text('Choose how you want to book',
+              style: AppTextStyles.h2.copyWith(fontSize: 24)),
+          const SizedBox(height: 6),
+          Text(
+            'Select the option that works best for you.',
+            style: AppTextStyles.bodySecondary.copyWith(fontSize: 14),
           ),
           const SizedBox(height: 24),
-          _buildMethodCard(
-            themeColor: themeColor,
-            icon: Icons.calendar_month_outlined,
-            title: 'By date & doctor',
-            description: 'Choose a specific doctor and date',
-            onTap: () {
-              setState(() => _currentView = BookingView.bookByDateDoctor);
-            },
-          ),
-          const SizedBox(height: 16),
-          _buildMethodCard(
-            themeColor: themeColor,
-            icon: Icons.access_time_rounded,
-            title: 'Available today',
-            description: 'See who can see you today',
-            onTap: () {
-              setState(() => _currentView = BookingView.availableToday);
-            },
-          ),
-          const SizedBox(height: 16),
-          _buildMethodCard(
-            themeColor: themeColor,
-            icon: Icons.bolt_outlined,
-            title: 'Closest Available Slot',
-            description: 'Soonest available appointment anywhere',
-            onTap: () {
-              setState(() => _currentView = BookingView.closestSlot);
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final cards = [
+                _buildMethodCard(
+                  themeColor: themeColor,
+                  icon: Icons.calendar_month_outlined,
+                  title: 'By date & doctor',
+                  description: 'Choose a specific doctor and date',
+                  onTap: () => setState(() =>
+                      _currentView = BookingView.bookByDateDoctor),
+                ),
+                _buildMethodCard(
+                  themeColor: themeColor,
+                  icon: Icons.access_time_rounded,
+                  title: 'Available today',
+                  description: 'See who can see you today',
+                  onTap: () => setState(
+                      () => _currentView = BookingView.availableToday),
+                ),
+                _buildMethodCard(
+                  themeColor: themeColor,
+                  icon: Icons.bolt_outlined,
+                  title: 'Closest available slot',
+                  description: 'Find the soonest appointment',
+                  onTap: () => setState(
+                      () => _currentView = BookingView.closestSlot),
+                ),
+              ];
+              if (constraints.maxWidth < 760) {
+                return Column(children: [
+                  for (var index = 0; index < cards.length; index++) ...[
+                    cards[index],
+                    if (index < cards.length - 1)
+                      const SizedBox(height: 14),
+                  ],
+                ]);
+              }
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (var index = 0; index < cards.length; index++) ...[
+                    Expanded(child: cards[index]),
+                    if (index < cards.length - 1)
+                      const SizedBox(width: 14),
+                  ],
+                ],
+              );
             },
           ),
         ],
@@ -215,11 +242,14 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: Container(
+        constraints: const BoxConstraints(minHeight: 108),
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.ink100, width: 1.2),
+          border: Border.all(
+              color: Theme.of(context).colorScheme.outlineVariant,
+              width: 1.2),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.03),
@@ -406,7 +436,7 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
           const SizedBox(height: 28),
 
           // Continue Button
-          AppButton(
+          NaraakButton(
             label: 'Continue',
             onPressed: (_selectedDoctor != null && _selectedTimeSlot != null)
                 ? () {
@@ -756,7 +786,7 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
             ),
           ),
           const SizedBox(height: 28),
-          AppButton(
+          NaraakButton(
             label: 'Confirm Booking',
             isLoading: _isBooking,
             onPressed: () async {
@@ -862,7 +892,7 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
             ),
           ),
           const SizedBox(height: 28),
-          AppButton(
+          NaraakButton(
             label: 'View My Appointments',
             onPressed: () => Navigator.pushNamed(context, '/appointments'),
           ),

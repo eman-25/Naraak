@@ -8,7 +8,6 @@ import '../providers/user_profile_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_theme.dart';
-import '../widgets/dashboard/dashboard_widgets.dart';
 import '../widgets/naraak_logo.dart';
 import '../widgets/state_views.dart';
 
@@ -216,27 +215,142 @@ class _UpcomingAppointmentPanel extends StatelessWidget {
     const weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     final hour = date.hour % 12 == 0 ? 12 : date.hour % 12;
     final time = '$hour:${date.minute.toString().padLeft(2, '0')} ${date.hour >= 12 ? 'PM' : 'AM'}';
+    final colors = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(18), border: Border.all(color: Theme.of(context).dividerColor)),
-      child: Row(children: [
-        CircleAvatar(radius: 31, backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: .12), child: Icon(Icons.person_rounded, size: 36, color: Theme.of(context).colorScheme.primary)),
-        const SizedBox(width: 14),
-        Expanded(flex: 3, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(appointment.doctorName, style: AppTextStyles.label), const SizedBox(height: 4), Text(appointment.clinic ?? 'General Practitioner', style: AppTextStyles.bodySecondary), Text(appointment.centerName, style: AppTextStyles.caption)])),
-        const VerticalDivider(),
-        Expanded(flex: 2, child: _AppointmentFact(icon: Icons.calendar_month_outlined, title: '${date.day} ${months[date.month - 1]} ${date.year}', subtitle: weekdays[date.weekday - 1])),
-        const VerticalDivider(),
-        Expanded(child: _AppointmentFact(icon: Icons.schedule_rounded, title: time)),
-        const VerticalDivider(),
-        Expanded(child: _AppointmentFact(title: 'Type', subtitle: appointment.isTele ? 'Tele-Appointment' : 'In-center')),
-        const VerticalDivider(),
-        Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), decoration: BoxDecoration(color: AppColors.success.withValues(alpha: .12), borderRadius: BorderRadius.circular(10)), child: const Row(children: [Icon(Icons.check_circle_outline, color: AppColors.success, size: 17), SizedBox(width: 5), Text('Upcoming', style: TextStyle(color: AppColors.success, fontWeight: FontWeight.w700))])),
-        const SizedBox(width: 18),
-        SizedBox(width: 190, child: Column(children: [
-          SizedBox(width: double.infinity, child: FilledButton(onPressed: () => ShellNavigation.of(context)?.selectTab(1), child: const Text('View Details'))),
-          const SizedBox(height: 8),
-          SizedBox(width: double.infinity, child: OutlinedButton(onPressed: () => ShellNavigation.of(context)?.selectTab(1), child: const Text('View All Appointments'))),
-        ])),
+      padding: const EdgeInsetsDirectional.fromSTEB(18, 15, 18, 17),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: .06),
+            blurRadius: 18,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text('Upcoming Appointment',
+            style: AppTextStyles.h3.copyWith(fontSize: 18)),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 100,
+          child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          Expanded(
+            child: Container(
+              constraints: const BoxConstraints(minHeight: 100),
+              padding:
+                  const EdgeInsetsDirectional.fromSTEB(14, 11, 12, 11),
+              decoration: BoxDecoration(
+                color: colors.surface,
+                border: Border.all(color: colors.outlineVariant),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(children: [
+                CircleAvatar(
+                  radius: 29,
+                  backgroundColor: colors.primary.withValues(alpha: .11),
+                  child: Icon(Icons.person_rounded,
+                      size: 34, color: colors.primary),
+                ),
+                const SizedBox(width: 13),
+                Expanded(
+                  flex: 28,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(appointment.doctorName,
+                          style: AppTextStyles.label,
+                          overflow: TextOverflow.ellipsis),
+                      const SizedBox(height: 2),
+                      Text(appointment.clinic ?? 'General Practitioner',
+                          style: AppTextStyles.caption,
+                          overflow: TextOverflow.ellipsis),
+                      const SizedBox(height: 2),
+                      Text(appointment.centerName,
+                          style: AppTextStyles.caption,
+                          overflow: TextOverflow.ellipsis),
+                    ],
+                  ),
+                ),
+                const _AppointmentDivider(),
+                Expanded(
+                  flex: 23,
+                  child: _AppointmentFact(
+                    icon: Icons.calendar_month_outlined,
+                    title: '${date.day} ${months[date.month - 1]} ${date.year}',
+                    subtitle: weekdays[date.weekday - 1],
+                  ),
+                ),
+                const _AppointmentDivider(),
+                Expanded(
+                  flex: 16,
+                  child: _AppointmentFact(
+                      icon: Icons.schedule_rounded, title: time),
+                ),
+                const _AppointmentDivider(),
+                Expanded(
+                  flex: 15,
+                  child: _AppointmentFact(
+                    title: 'Type',
+                    subtitle:
+                        appointment.isTele ? 'Tele-Appointment' : 'In-center',
+                  ),
+                ),
+                const _AppointmentDivider(),
+                Expanded(
+                  flex: 15,
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 7),
+                      decoration: BoxDecoration(
+                        color: AppColors.success.withValues(alpha: .12),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Text('Upcoming',
+                          style: TextStyle(
+                              color: AppColors.success,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 12)),
+                    ),
+                  ),
+                ),
+              ]),
+            ),
+          ),
+          Container(
+            width: 1,
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            color: colors.outlineVariant,
+          ),
+          SizedBox(
+            width: 176,
+            child: Column(children: [
+              SizedBox(
+                width: double.infinity,
+                height: 44,
+                child: FilledButton(
+                  onPressed: () =>
+                      ShellNavigation.of(context)?.selectTab(1),
+                  child: const Text('View Details'),
+                ),
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                height: 44,
+                child: OutlinedButton(
+                  onPressed: () =>
+                      ShellNavigation.of(context)?.selectTab(1),
+                  child: const Text('View All Appointments'),
+                ),
+              ),
+            ]),
+          ),
+          ]),
+        ),
       ]),
     );
   }
@@ -246,6 +360,17 @@ class _AppointmentFact extends StatelessWidget {
   const _AppointmentFact({this.icon, required this.title, this.subtitle});
   final IconData? icon; final String title; final String? subtitle;
   @override Widget build(BuildContext context) => Row(mainAxisSize: MainAxisSize.min, children: [if (icon != null) ...[Icon(icon, size: 24), const SizedBox(width: 9)], Flexible(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: AppTextStyles.label), if (subtitle != null) Text(subtitle!, style: AppTextStyles.caption)]))]);
+}
+
+class _AppointmentDivider extends StatelessWidget {
+  const _AppointmentDivider();
+  @override
+  Widget build(BuildContext context) => Container(
+        width: 1,
+        height: 52,
+        margin: const EdgeInsets.symmetric(horizontal: 12),
+        color: Theme.of(context).colorScheme.outlineVariant,
+      );
 }
 
 class _FamilyDoctorCard extends StatelessWidget {
@@ -461,24 +586,46 @@ class _AppPromo extends StatelessWidget {
 class _HealthTip extends StatelessWidget {
   const _HealthTip();
   @override
-  Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-        decoration: BoxDecoration(
-            border: Border.all(
-                color: Theme.of(context)
-                    .colorScheme
-                    .primary
-                    .withValues(alpha: .28)),
-            borderRadius: BorderRadius.circular(40)),
-        child: const Row(children: [
-          Icon(Icons.favorite_border_rounded),
-          SizedBox(width: 12),
-          Text('Health Tip', style: AppTextStyles.label),
-          VerticalDivider(),
-          Expanded(
-              child: Text(
-                  'Drink plenty of water, eat balanced meals, and get enough sleep. Small daily habits lead to a healthier you.',
-                  style: AppTextStyles.bodySecondary))
-        ]),
-      );
+  Widget build(BuildContext context) {
+    final primary = Theme.of(context).colorScheme.primary;
+    return Container(
+      constraints: const BoxConstraints(minHeight: 68),
+      padding: const EdgeInsetsDirectional.fromSTEB(28, 10, 22, 10),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        border: Border.all(color: primary.withValues(alpha: .22)),
+        borderRadius: BorderRadius.circular(38),
+      ),
+      child: Row(children: [
+        Container(
+          width: 46,
+          height: 46,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: primary.withValues(alpha: .06),
+            border: Border.all(color: primary.withValues(alpha: .35)),
+          ),
+          child: Icon(Icons.health_and_safety_outlined,
+              color: primary, size: 24),
+        ),
+        const SizedBox(width: 22),
+        Text('Health Tip',
+            style: AppTextStyles.label.copyWith(fontWeight: FontWeight.w800)),
+        const SizedBox(width: 24),
+        Container(width: 1, height: 25, color: primary.withValues(alpha: .3)),
+        const SizedBox(width: 24),
+        const Expanded(
+          child: Text(
+            'Drink plenty of water, eat balanced meals, and get enough sleep. Small daily habits lead to a healthier you.',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTextStyles.bodySecondary,
+          ),
+        ),
+        const SizedBox(width: 18),
+        Icon(Icons.monitor_heart_outlined,
+            color: primary.withValues(alpha: .12), size: 46),
+      ]),
+    );
+  }
 }
