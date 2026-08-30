@@ -11,6 +11,7 @@ import '../../widgets/naraak_card.dart';
 import '../../widgets/external_api_notice.dart';
 import '../../widgets/naraak_app_bar.dart';
 import '../../widgets/responsive_page_frame.dart';
+import '../../widgets/service_hero.dart';
 import '../../widgets/state_views.dart';
 
 /// Change Family Doctor â€” single-screen form matching the approved mockup.
@@ -162,10 +163,11 @@ class _ChangeFamilyDoctorScreenState extends State<ChangeFamilyDoctorScreen> {
           }
 
           final currentDoctor = currentCenter.doctors.isNotEmpty
-              ? currentCenter.doctors.first
+              ? currentCenter.doctors.first.name
               : 'Not assigned';
-          final requestableDoctors =
-              currentCenter.doctors.where((d) => d != currentDoctor).toList();
+          final requestableDoctors = currentCenter.doctors
+              .where((d) => d.name != currentDoctor)
+              .toList();
 
           final canSubmit = _confirmed &&
               _selectedDoctor != null &&
@@ -176,6 +178,13 @@ class _ChangeFamilyDoctorScreenState extends State<ChangeFamilyDoctorScreen> {
             maxWidth: 820,
             child: Column(
               children: [
+                const ServiceHero(
+                  imageAsset: 'assets/images/family_doctor_card.jpeg',
+                  title: 'Change Family Doctor',
+                  description:
+                      'Choose a new family doctor at your health center.',
+                ),
+                const SizedBox(height: 20),
                 NaraakCard(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -213,16 +222,33 @@ class _ChangeFamilyDoctorScreenState extends State<ChangeFamilyDoctorScreen> {
                               '${currentCenter.name} has no other family doctors currently accepting transfers.',
                         )
                       else
-                        DropdownButtonFormField<String>(
-                          initialValue: _selectedDoctor,
-                          hint: const Text('Select doctor'),
-                          items: requestableDoctors
-                              .map((d) =>
-                                  DropdownMenuItem(value: d, child: Text(d)))
-                              .toList(),
-                          onChanged: (d) => setState(() => _selectedDoctor = d),
-                          decoration: const InputDecoration(
-                              border: OutlineInputBorder()),
+                        Column(
+                          children: [
+                            for (final doctor in requestableDoctors)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 10),
+                                child: _DoctorOptionCard(
+                                  doctor: doctor,
+                                  healthCenter: currentCenter.name,
+                                  selected: _selectedDoctor == doctor.name,
+                                  onTap: doctor.capacityAvailable
+                                      ? () => setState(
+                                          () => _selectedDoctor = doctor.name)
+                                      : null,
+                                ),
+                              ),
+                            if (requestableDoctors
+                                .every((d) => !d.capacityAvailable))
+                              Padding(
+                                padding: const EdgeInsets.only(top: 4, bottom: 4),
+                                child: Text(
+                                  'None of the doctors at this center currently '
+                                  'have capacity. Please check back later.',
+                                  style: AppTextStyles.caption
+                                      .copyWith(color: AppColors.warning),
+                                ),
+                              ),
+                          ],
                         ),
                       const SizedBox(height: 16),
                       const Text('Reason for Request *',
@@ -283,6 +309,96 @@ class _ChangeFamilyDoctorScreenState extends State<ChangeFamilyDoctorScreen> {
       ),
       child: Text(text,
           style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
+    );
+  }
+}
+
+/// Phase 3 §29 doctor card: name, gender, specialty, health center,
+/// available quota, and a distinct disabled/no-capacity state.
+class _DoctorOptionCard extends StatelessWidget {
+  final FamilyDoctorOption doctor;
+  final String healthCenter;
+  final bool selected;
+  final VoidCallback? onTap;
+  const _DoctorOptionCard({
+    required this.doctor,
+    required this.healthCenter,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final unavailable = !doctor.capacityAvailable;
+
+    return Opacity(
+      opacity: unavailable ? 0.6 : 1,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(13),
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(13),
+            color: selected
+                ? AppColors.primaryTeal.withValues(alpha: isDark ? 0.2 : 0.08)
+                : (isDark ? AppColors.darkSurface2 : Colors.white),
+            border: Border.all(
+              color: selected
+                  ? AppColors.primaryTeal
+                  : (isDark ? AppColors.darkOutline : AppColors.outline),
+            ),
+          ),
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 22,
+                backgroundColor:
+                    AppColors.primaryTeal.withValues(alpha: isDark ? 0.24 : 0.12),
+                child: Icon(
+                  doctor.gender.toLowerCase() == 'female'
+                      ? Icons.face_3_rounded
+                      : Icons.face_6_rounded,
+                  color: AppColors.primaryTeal,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(doctor.name,
+                        style: AppTextStyles.body
+                            .copyWith(fontWeight: FontWeight.w700)),
+                    const SizedBox(height: 2),
+                    Text('${doctor.specialty} · ${doctor.gender}',
+                        style: AppTextStyles.caption),
+                    Text(healthCenter, style: AppTextStyles.caption),
+                    const SizedBox(height: 4),
+                    unavailable
+                        ? Text(
+                            'This doctor currently has no available capacity.',
+                            style: AppTextStyles.caption
+                                .copyWith(color: AppColors.warning),
+                          )
+                        : Text(
+                            'Available quota: ${doctor.availableQuota}',
+                            style: AppTextStyles.caption.copyWith(
+                                color: AppColors.success,
+                                fontWeight: FontWeight.w700),
+                          ),
+                  ],
+                ),
+              ),
+              Icon(
+                selected ? Icons.check_circle_rounded : Icons.chevron_right_rounded,
+                color: selected ? AppColors.primaryTeal : AppColors.ink300,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

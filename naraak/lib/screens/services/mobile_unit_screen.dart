@@ -7,8 +7,10 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../widgets/naraak_card.dart';
 import '../../widgets/naraak_button.dart';
+import '../../widgets/confirmation_dialog.dart';
 import '../../widgets/naraak_app_bar.dart';
 import '../../widgets/responsive_page_frame.dart';
+import '../../widgets/service_hero.dart';
 
 class MobileUnitScreen extends StatefulWidget {
   const MobileUnitScreen({super.key});
@@ -52,15 +54,43 @@ class _MobileUnitScreenState extends State<MobileUnitScreen> {
     super.dispose();
   }
 
+  bool get _hasUnsavedChanges =>
+      !_isSubmitted &&
+      (_selectedBlock != null ||
+          _selectedCondition != null ||
+          _addressController.text.isNotEmpty ||
+          _reasonController.text.isNotEmpty);
+
   @override
   Widget build(BuildContext context) {
     final profile = context.watch<UserProfileProvider>().profile;
 
-    return Scaffold(
+    return PopScope(
+      canPop: !_hasUnsavedChanges,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        final leave = await confirmUnsavedChanges(context);
+        if (leave && context.mounted) Navigator.of(context).pop();
+      },
+      child: Scaffold(
       appBar: const NaraakAppBar(title: 'Request Mobile Unit'),
       body: ResponsivePageFrame(
         maxWidth: 820,
-        child: _isSubmitted ? _buildSuccessCard() : _buildRequestForm(profile),
+        child: Column(
+          children: [
+            if (!_isSubmitted) ...[
+              const ServiceHero(
+                icon: Icons.airport_shuttle_rounded,
+                accent: Color(0xFF2D6CDF),
+                title: 'Mobile Unit Service',
+                description: 'Healthcare at your doorstep.',
+              ),
+              const SizedBox(height: 20),
+            ],
+            _isSubmitted ? _buildSuccessCard() : _buildRequestForm(profile),
+          ],
+        ),
+      ),
       ),
     );
   }
@@ -231,9 +261,4 @@ class _MobileUnitScreenState extends State<MobileUnitScreen> {
     }
   }
 
-  String _getInitials(String name) {
-    final parts = name.trim().split(' ');
-    if (parts.length >= 2) return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
-    return name.isNotEmpty ? name[0].toUpperCase() : 'EK';
-  }
 }

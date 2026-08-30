@@ -6,7 +6,6 @@ import '../providers/app_settings_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_palette.dart';
 import '../theme/app_text_styles.dart';
-import '../widgets/app_card.dart';
 import '../widgets/responsive_page_frame.dart';
 
 /// Profile tab — pure content (no Scaffold/AppBar; the shell renders the
@@ -236,87 +235,6 @@ class _IdentityCard extends StatelessWidget {
     );
   }
 
-  void _showHelp(BuildContext context) {
-    showDialog<void>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Help & User Inquiries'),
-        content: const Text(
-          'For appointments, choose Book Appointment from Services. For account or record questions, contact the PHC support team through your registered health center.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showFeedbackForm(BuildContext context, {required bool isComplaint}) {
-    final controller = TextEditingController();
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      builder: (sheetContext) => Padding(
-        padding: EdgeInsets.fromLTRB(
-          20,
-          20,
-          20,
-          MediaQuery.of(sheetContext).viewInsets.bottom + 20,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              isComplaint ? 'Submit a Complaint' : 'Service Evaluation',
-              style: AppTextStyles.h2,
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: controller,
-              maxLines: 4,
-              decoration: InputDecoration(
-                hintText: isComplaint
-                    ? 'Describe the issue and the service involved.'
-                    : 'Tell us about the service you received.',
-              ),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: () {
-                  if (controller.text.trim().isEmpty) {
-                    ScaffoldMessenger.of(sheetContext).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                            'Please enter your feedback before submitting.'),
-                      ),
-                    );
-                    return;
-                  }
-                  Navigator.pop(sheetContext);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        isComplaint
-                            ? 'Your complaint has been submitted for review.'
-                            : 'Thank you. Your evaluation has been submitted.',
-                      ),
-                    ),
-                  );
-                },
-                child: const Text('Submit'),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 class _PersonalHealthIdentityCard extends StatelessWidget {
@@ -481,94 +399,6 @@ class _PreferencesCard extends StatelessWidget {
             isLast: true,
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _PlainMenuRow extends StatelessWidget {
-  final String label;
-  final VoidCallback onTap;
-
-  const _PlainMenuRow({required this.label, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(
-                label,
-                style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600),
-              ),
-            ),
-            const Icon(Icons.chevron_right_rounded,
-                color: AppColors.ink300, size: 20),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _MenuRow extends StatelessWidget {
-  final IconData icon;
-  final Color color;
-  final String label;
-  final String subtitle;
-  final VoidCallback onTap;
-
-  const _MenuRow({
-    required this.icon,
-    required this.color,
-    required this.label,
-    required this.subtitle,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        child: Row(
-          children: [
-            Container(
-              width: 34,
-              height: 34,
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(icon, color: color, size: 18),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    label,
-                    style: AppTextStyles.body
-                        .copyWith(fontWeight: FontWeight.w700),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: AppTextStyles.caption.copyWith(fontSize: 10.5),
-                  ),
-                ],
-              ),
-            ),
-            const Icon(Icons.chevron_right_rounded,
-                color: AppColors.ink300, size: 20),
-          ],
-        ),
       ),
     );
   }

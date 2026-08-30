@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../main.dart' show ShellNavigation;
+import '../../api/naraak_api.dart' show NaraakApiException;
+import '../../data/naraak_repository.dart';
 import '../../providers/appointment_provider.dart';
 import '../../theme/app_text_styles.dart';
 import '../../widgets/form_section.dart';
@@ -23,12 +25,24 @@ class _TeleAppointmentScreenState extends State<TeleAppointmentScreen> {
 
   Future<void> _handleBook() async {
     setState(() => _isBooking = true);
-    final appointment = await context.read<AppointmentProvider>().bookTeleAppointment();
-    if (!mounted) return;
-    setState(() {
-      _isBooking = false;
-      _doctorName = appointment.doctorName;
-    });
+    try {
+      final appointment =
+          await context.read<AppointmentProvider>().bookTeleAppointment();
+      if (!mounted) return;
+      setState(() {
+        _isBooking = false;
+        _doctorName = appointment.doctorName;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => _isBooking = false);
+      final repository = context.read<NaraakRepository>();
+      final message = error is NaraakApiException
+          ? repository.friendlyError(error, arabic: false)
+          : error.toString().replaceFirst('StateError: ', '');
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(message)));
+    }
   }
 
   void _showAppointments() {

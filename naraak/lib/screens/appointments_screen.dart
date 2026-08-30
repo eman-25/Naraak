@@ -126,16 +126,226 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
             if (filtered.isEmpty)
               _EmptyState(filter: _filter)
             else
-              Column(
-                children: filtered
-                    .map((a) => Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: _AppointmentCard(appointment: a),
-                        ))
-                    .toList(),
-              ),
+              LayoutBuilder(builder: (context, constraints) {
+                if (constraints.maxWidth > 860) {
+                  return _AppointmentTable(appointments: filtered);
+                }
+                return Column(
+                  children: filtered
+                      .map((a) => Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: _AppointmentCard(appointment: a),
+                          ))
+                      .toList(),
+                );
+              }),
           ],
       ),
+    );
+  }
+}
+
+class _AppointmentTable extends StatelessWidget {
+  final List<Appointment> appointments;
+  const _AppointmentTable({required this.appointments});
+
+  AppStatus _statusFor(String status) => switch (status) {
+        'completed' => AppStatus.completed,
+        'cancelled' => AppStatus.cancelled,
+        _ => AppStatus.confirmed,
+      };
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final localizations = MaterialLocalizations.of(context);
+
+    final headerRow = Container(
+      color: isDark ? AppColors.darkSurface2 : AppColors.ink050,
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+      child: Row(
+        children: const [
+          _HeaderCell('Doctor', flex: 3),
+          _HeaderCell('Clinic', flex: 2),
+          _HeaderCell('Health Center', flex: 3),
+          _HeaderCell('Date & Time', flex: 3),
+          _HeaderCell('Type', flex: 2),
+          _HeaderCell('Status', flex: 2),
+          _HeaderCell('Actions', flex: 2),
+        ],
+      ),
+    );
+
+    final dataRows = <Widget>[
+      for (var i = 0; i < appointments.length; i++)
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+          decoration: BoxDecoration(
+            border: i == appointments.length - 1
+                ? null
+                : Border(
+                    bottom: BorderSide(
+                      color: isDark ? AppColors.darkOutline : AppColors.outline,
+                    ),
+                  ),
+          ),
+          child: _AppointmentRow(
+            appointment: appointments[i],
+            status: _statusFor(appointments[i].status),
+            localizations: localizations,
+          ),
+        ),
+    ];
+
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkSurface : Colors.white,
+        border: Border.all(
+            color: isDark ? AppColors.darkOutline : AppColors.outline),
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.22 : 0.05),
+            blurRadius: 14,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: LayoutBuilder(
+        builder: (context, outer) {
+          // A horizontal SingleChildScrollView hands its child unbounded
+          // width, so `ConstrainedBox(minWidth: 860)` alone leaves maxWidth
+          // at infinity — and `Column(crossAxisAlignment: stretch)` then
+          // tries to stretch to that infinite width. Pin an explicit,
+          // finite width instead (at least 860, or the available width if
+          // wider) so the column always has something concrete to stretch
+          // to.
+          final tableWidth = outer.maxWidth > 860 ? outer.maxWidth : 860.0;
+          return SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: SizedBox(
+              width: tableWidth,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [headerRow, ...dataRows],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _HeaderCell extends StatelessWidget {
+  final String label;
+  final int flex;
+  const _HeaderCell(this.label, {required this.flex});
+
+  @override
+  Widget build(BuildContext context) => Expanded(
+        flex: flex,
+        child: Padding(
+          padding: const EdgeInsets.only(right: 12),
+          child: Text(label,
+              style: AppTextStyles.overline.copyWith(fontSize: 10.5)),
+        ),
+      );
+}
+
+class _AppointmentRow extends StatelessWidget {
+  final Appointment appointment;
+  final AppStatus status;
+  final MaterialLocalizations localizations;
+  const _AppointmentRow({
+    required this.appointment,
+    required this.status,
+    required this.localizations,
+  });
+
+  Widget _cell({required int flex, required Widget child}) => Expanded(
+        flex: flex,
+        child: Padding(
+          padding: const EdgeInsets.only(right: 12),
+          child: child,
+        ),
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        _cell(
+          flex: 3,
+          child: Text(appointment.doctorName,
+              style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w700),
+              overflow: TextOverflow.ellipsis),
+        ),
+        _cell(
+          flex: 2,
+          child: Text(appointment.clinic ?? 'General Clinic',
+              style: AppTextStyles.bodySecondary,
+              overflow: TextOverflow.ellipsis),
+        ),
+        _cell(
+          flex: 3,
+          child: Text(appointment.centerName,
+              style: AppTextStyles.bodySecondary,
+              overflow: TextOverflow.ellipsis),
+        ),
+        _cell(
+          flex: 3,
+          child: Text(
+            '${localizations.formatMediumDate(appointment.slotDateTime)} · '
+            '${localizations.formatTimeOfDay(TimeOfDay.fromDateTime(appointment.slotDateTime))}',
+            style: AppTextStyles.bodySecondary,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        _cell(
+          flex: 2,
+          child: Text(appointment.isTele ? 'Tele' : 'In-center',
+              style: AppTextStyles.bodySecondary),
+        ),
+        _cell(flex: 2, child: StatusBadge(status: status)),
+        _cell(
+          flex: 2,
+          child: appointment.status != 'confirmed'
+              ? const SizedBox.shrink()
+              : Wrap(
+                  spacing: 4,
+                  children: [
+                    if (appointment.isTele)
+                      TextButton(
+                        style: TextButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            minimumSize: const Size(44, 32)),
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => JoinAppointmentScreen(
+                                doctorName: appointment.doctorName,
+                                appointmentId: appointment.id),
+                          ),
+                        ),
+                        child: const Text('Join'),
+                      ),
+                    TextButton(
+                      style: TextButton.styleFrom(
+                          padding: EdgeInsets.zero,
+                          minimumSize: const Size(44, 32),
+                          foregroundColor: AppColors.error),
+                      onPressed: () => context
+                          .read<AppointmentProvider>()
+                          .cancelAppointment(appointment.id),
+                      child: const Text('Cancel'),
+                    ),
+                  ],
+                ),
+        ),
+      ],
     );
   }
 }

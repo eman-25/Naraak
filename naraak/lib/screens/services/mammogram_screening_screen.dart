@@ -8,6 +8,7 @@ import '../../widgets/naraak_card.dart';
 import '../../widgets/naraak_button.dart';
 import '../../widgets/naraak_app_bar.dart';
 import '../../widgets/responsive_page_frame.dart';
+import '../../widgets/service_hero.dart';
 
 /// Mammogram Screening â€” Phase 3 Â§4.9: age/gender eligibility gate, then a
 /// real branching question (tested in the last 2 years?) with its own stop
@@ -82,6 +83,14 @@ class _MammogramScreeningScreenState extends State<MammogramScreeningScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const ServiceHero(
+              imageAsset: 'assets/images/service_mammogram.jpg',
+              title: 'Mammogram Screening',
+              description:
+                  'Early detection saves lives. Check your eligibility and book your screening.',
+              accent: Color(0xFFB04855),
+            ),
+            const SizedBox(height: 20),
             // Informational Notice Banner
             Container(
               padding: const EdgeInsets.all(14),

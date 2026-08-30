@@ -4,15 +4,18 @@ import '../../providers/user_profile_provider.dart';
 import '../../data/naraak_repository.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
+import '../../widgets/form_section.dart';
 import '../../widgets/naraak_card.dart';
 import '../../widgets/naraak_button.dart';
 import '../../widgets/naraak_app_bar.dart';
+import '../../widgets/progress_stepper.dart';
 import '../../widgets/responsive_page_frame.dart';
+import '../../widgets/confirmation_dialog.dart';
+import '../../widgets/service_hero.dart';
+import '../../widgets/upload_field.dart';
 
-/// Newborn Sehati Card â€” single-screen form matching the approved mockup:
-/// Reference Number is auto-filled and read-only; Newborn CPR, Father CPR,
-/// Mother CPR, and Block are entered by the user. One Submit action leads
-/// to the success confirmation card.
+/// Newborn Sehati Card — Phase 3 §23: Check Eligibility → Newborn
+/// Information → Required Documents → Review → Submit → Status.
 class NewbornSehatiCardScreen extends StatefulWidget {
   const NewbornSehatiCardScreen({super.key});
 
@@ -22,20 +25,26 @@ class NewbornSehatiCardScreen extends StatefulWidget {
 }
 
 class _NewbornSehatiCardScreenState extends State<NewbornSehatiCardScreen> {
-  final _formKey = GlobalKey<FormState>();
+  int _step = 0; // 0 eligibility, 1 information, 2 documents, 3 review
+  bool _isSubmitted = false;
+  bool _loadingRegistry = true;
 
   final _newbornCprController = TextEditingController();
   final _fatherCprController = TextEditingController();
   final _motherCprController = TextEditingController();
   final _blockController = TextEditingController();
-
-  bool _isSubmitted = false;
+  late final TextEditingController _contactController;
+  final _notesController = TextEditingController();
+  String? _documentName;
 
   static const _referenceNumber = 'NRK-NSC-2026-092';
 
   @override
   void initState() {
     super.initState();
+    final profile = context.read<UserProfileProvider>().profile;
+    _contactController =
+        TextEditingController(text: profile?.mobileNumber ?? '');
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final repository = context.read<NaraakRepository>();
       final response = await repository.api.getDummyNewbornRegistryData(
@@ -46,6 +55,7 @@ class _NewbornSehatiCardScreenState extends State<NewbornSehatiCardScreen> {
       _fatherCprController.text = data['fatherCpr'] as String;
       _motherCprController.text = data['motherCpr'] as String;
       _blockController.text = data['residentialBlock'] as String;
+      setState(() => _loadingRegistry = false);
     });
   }
 
@@ -55,93 +65,104 @@ class _NewbornSehatiCardScreenState extends State<NewbornSehatiCardScreen> {
     _fatherCprController.dispose();
     _motherCprController.dispose();
     _blockController.dispose();
+    _contactController.dispose();
+    _notesController.dispose();
     super.dispose();
   }
 
+  void _handleBack() {
+    if (_step == 0) {
+      Navigator.of(context).pop();
+      return;
+    }
+    setState(() => _step -= 1);
+  }
+
+  bool get _hasUnsavedChanges => !_isSubmitted && _step > 0;
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: const NaraakAppBar(title: 'Newborn Sehati Card'),
+    return PopScope(
+      canPop: !_hasUnsavedChanges,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        final leave = await confirmUnsavedChanges(context);
+        if (leave && context.mounted) Navigator.of(context).pop();
+      },
+      child: Scaffold(
+      appBar: NaraakAppBar(
+        title: 'Newborn Sehati Card',
+        onBack: _isSubmitted ? null : _handleBack,
+      ),
       body: ResponsivePageFrame(
         maxWidth: 820,
-        child: _isSubmitted ? _buildSuccessCard() : _buildRequestForm(),
+        child: Column(
+          children: [
+            if (!_isSubmitted) ...[
+              const ServiceHero(
+                icon: Icons.crib_rounded,
+                accent: Color(0xFFC97A93),
+                title: 'Newborn Sehati Card',
+                description:
+                    'Register your newborn and request their health card.',
+              ),
+              const SizedBox(height: 20),
+              ProgressStepper(
+                steps: const [
+                  'Eligibility',
+                  'Information',
+                  'Documents',
+                  'Review'
+                ],
+                currentStep: _step,
+              ),
+              const SizedBox(height: 24),
+            ],
+            _isSubmitted ? _buildSuccessCard() : _buildStep(),
+          ],
+        ),
+      ),
       ),
     );
   }
 
-  Widget _buildRequestForm() {
-    return Form(
-      key: _formKey,
-      child: Column(
-        children: [
-          NaraakCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Reference Number', style: AppTextStyles.caption),
-                const SizedBox(height: 4),
-                _buildReadOnlyField(_referenceNumber),
-                const SizedBox(height: 16),
-                const Text('Newborn CPR *', style: AppTextStyles.caption),
-                const SizedBox(height: 4),
-                TextFormField(
-                  controller: _newbornCprController,
-                  keyboardType: TextInputType.number,
-                  decoration:
-                      const InputDecoration(border: OutlineInputBorder()),
-                  validator: (val) => val == null || val.trim().isEmpty
-                      ? 'Please enter the newborn\'s CPR'
-                      : null,
-                ),
-                const SizedBox(height: 16),
-                const Text('Father CPR *', style: AppTextStyles.caption),
-                const SizedBox(height: 4),
-                TextFormField(
-                  controller: _fatherCprController,
-                  keyboardType: TextInputType.number,
-                  decoration:
-                      const InputDecoration(border: OutlineInputBorder()),
-                  validator: (val) => val == null || val.trim().isEmpty
-                      ? 'Please enter the father\'s CPR'
-                      : null,
-                ),
-                const SizedBox(height: 16),
-                const Text('Mother CPR *', style: AppTextStyles.caption),
-                const SizedBox(height: 4),
-                TextFormField(
-                  controller: _motherCprController,
-                  keyboardType: TextInputType.number,
-                  decoration:
-                      const InputDecoration(border: OutlineInputBorder()),
-                  validator: (val) => val == null || val.trim().isEmpty
-                      ? 'Please enter the mother\'s CPR'
-                      : null,
-                ),
-                const SizedBox(height: 16),
-                const Text('Block *', style: AppTextStyles.caption),
-                const SizedBox(height: 4),
-                TextFormField(
-                  controller: _blockController,
-                  decoration:
-                      const InputDecoration(border: OutlineInputBorder()),
-                  validator: (val) => val == null || val.trim().isEmpty
-                      ? 'Please enter your residential block'
-                      : null,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-          SizedBox(
-            width: double.infinity,
-            child: NaraakButton(
-              label: 'Submit',
-              onPressed: _submitForm,
-            ),
-          ),
-        ],
-      ),
-    );
+  Widget _buildStep() {
+    switch (_step) {
+      case 0:
+        return _EligibilityStep(
+          loading: _loadingRegistry,
+          newbornCpr: _newbornCprController.text,
+          onContinue: () => setState(() => _step = 1),
+        );
+      case 1:
+        return _InformationStep(
+          newbornCprController: _newbornCprController,
+          fatherCprController: _fatherCprController,
+          motherCprController: _motherCprController,
+          contactController: _contactController,
+          notesController: _notesController,
+          onNext: () => setState(() => _step = 2),
+        );
+      case 2:
+        return _DocumentsStep(
+          documentName: _documentName,
+          onAttached: (name) => setState(() => _documentName = name),
+          onCleared: () => setState(() => _documentName = null),
+          onNext: () => setState(() => _step = 3),
+        );
+      default:
+        return _ReviewStep(
+          newbornCpr: _newbornCprController.text,
+          fatherCpr: _fatherCprController.text,
+          motherCpr: _motherCprController.text,
+          contact: _contactController.text,
+          block: _blockController.text,
+          notes: _notesController.text,
+          documentName: _documentName,
+          onBack: () => setState(() => _step = 2),
+          onSubmit: _submitForm,
+        );
+    }
   }
 
   Widget _buildSuccessCard() {
@@ -189,30 +210,245 @@ class _NewbornSehatiCardScreenState extends State<NewbornSehatiCardScreen> {
   }
 
   Future<void> _submitForm() async {
-    if (!(_formKey.currentState?.validate() ?? false)) return;
     final repository = context.read<NaraakRepository>();
-    final profile = context.read<UserProfileProvider>().profile;
     try {
       await repository.api.submitNewbornCard(
           patientId: repository.requirePatientId,
           newbornCpr: _newbornCprController.text,
           fatherCpr: _fatherCprController.text,
           motherCpr: _motherCprController.text,
-          contactNumber: profile?.mobileNumber ?? '',
+          contactNumber: _contactController.text,
           residentialBlock: _blockController.text);
       if (mounted) setState(() => _isSubmitted = true);
     } catch (error) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text(repository.friendlyError(error,
                 arabic:
                     Localizations.localeOf(context).languageCode == 'ar'))));
+      }
     }
   }
+}
 
-  String _getInitials(String name) {
-    final parts = name.trim().split(' ');
-    if (parts.length >= 2) return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
-    return name.isNotEmpty ? name[0].toUpperCase() : 'EK';
+class _EligibilityStep extends StatelessWidget {
+  final bool loading;
+  final String newbornCpr;
+  final VoidCallback onContinue;
+  const _EligibilityStep(
+      {required this.loading,
+      required this.newbornCpr,
+      required this.onContinue});
+
+  @override
+  Widget build(BuildContext context) {
+    if (loading) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 60),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+    return FormSection(
+      title: 'Check eligibility',
+      description:
+          'We matched a newborn registry record linked to your CPR.',
+      children: [
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.successSurface,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.verified_rounded, color: AppColors.success),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Registry match found',
+                        style: AppTextStyles.body),
+                    Text('Newborn CPR: $newbornCpr',
+                        style: AppTextStyles.caption),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 22),
+        NaraakButton(
+            label: 'Continue',
+            icon: Icons.arrow_forward_rounded,
+            onPressed: onContinue),
+      ],
+    );
   }
+}
+
+class _InformationStep extends StatelessWidget {
+  final TextEditingController newbornCprController;
+  final TextEditingController fatherCprController;
+  final TextEditingController motherCprController;
+  final TextEditingController contactController;
+  final TextEditingController notesController;
+  final VoidCallback onNext;
+  const _InformationStep({
+    required this.newbornCprController,
+    required this.fatherCprController,
+    required this.motherCprController,
+    required this.contactController,
+    required this.notesController,
+    required this.onNext,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return FormSection(
+      title: 'Newborn information',
+      description: 'Confirm the family details for this registration.',
+      children: [
+        const Text('Newborn CPR', style: AppTextStyles.caption),
+        const SizedBox(height: 4),
+        TextField(
+          controller: newbornCprController,
+          keyboardType: TextInputType.number,
+          decoration: const InputDecoration(border: OutlineInputBorder()),
+        ),
+        const SizedBox(height: 16),
+        const Text('Father CPR', style: AppTextStyles.caption),
+        const SizedBox(height: 4),
+        TextField(
+          controller: fatherCprController,
+          keyboardType: TextInputType.number,
+          decoration: const InputDecoration(border: OutlineInputBorder()),
+        ),
+        const SizedBox(height: 16),
+        const Text('Mother CPR', style: AppTextStyles.caption),
+        const SizedBox(height: 4),
+        TextField(
+          controller: motherCprController,
+          keyboardType: TextInputType.number,
+          decoration: const InputDecoration(border: OutlineInputBorder()),
+        ),
+        const SizedBox(height: 16),
+        const Text('Contact', style: AppTextStyles.caption),
+        const SizedBox(height: 4),
+        TextField(
+          controller: contactController,
+          keyboardType: TextInputType.phone,
+          decoration: const InputDecoration(border: OutlineInputBorder()),
+        ),
+        const SizedBox(height: 16),
+        const Text('Notes (optional)', style: AppTextStyles.caption),
+        const SizedBox(height: 4),
+        TextField(
+          controller: notesController,
+          maxLines: 3,
+          decoration: const InputDecoration(border: OutlineInputBorder()),
+        ),
+        const SizedBox(height: 22),
+        NaraakButton(
+            label: 'Continue', icon: Icons.arrow_forward_rounded, onPressed: onNext),
+      ],
+    );
+  }
+}
+
+class _DocumentsStep extends StatelessWidget {
+  final String? documentName;
+  final ValueChanged<String> onAttached;
+  final VoidCallback onCleared;
+  final VoidCallback onNext;
+  const _DocumentsStep({
+    required this.documentName,
+    required this.onAttached,
+    required this.onCleared,
+    required this.onNext,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return FormSection(
+      title: 'Required documents',
+      description: 'Attach the hospital birth notification if available.',
+      children: [
+        UploadField(
+          label: 'Birth Notification',
+          fileName: documentName,
+          demoFileName: 'birth_notification.pdf',
+          validate: (_) => null,
+          onAttached: onAttached,
+          onCleared: onCleared,
+          onRejected: (_) {},
+        ),
+        const SizedBox(height: 22),
+        NaraakButton(
+            label: 'Continue', icon: Icons.arrow_forward_rounded, onPressed: onNext),
+      ],
+    );
+  }
+}
+
+class _ReviewStep extends StatelessWidget {
+  final String newbornCpr;
+  final String fatherCpr;
+  final String motherCpr;
+  final String contact;
+  final String block;
+  final String notes;
+  final String? documentName;
+  final VoidCallback onBack;
+  final VoidCallback onSubmit;
+  const _ReviewStep({
+    required this.newbornCpr,
+    required this.fatherCpr,
+    required this.motherCpr,
+    required this.contact,
+    required this.block,
+    required this.notes,
+    required this.documentName,
+    required this.onBack,
+    required this.onSubmit,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return FormSection(
+      title: 'Review your request',
+      description: 'Confirm the details before submitting.',
+      children: [
+        _ReviewRow(label: 'Newborn CPR', value: newbornCpr),
+        _ReviewRow(label: 'Father CPR', value: fatherCpr),
+        _ReviewRow(label: 'Mother CPR', value: motherCpr),
+        _ReviewRow(label: 'Contact', value: contact),
+        _ReviewRow(label: 'Block', value: block),
+        _ReviewRow(label: 'Notes', value: notes.isEmpty ? '—' : notes),
+        _ReviewRow(label: 'Document', value: documentName ?? 'Not attached'),
+        const SizedBox(height: 18),
+        Row(children: [
+          Expanded(child: NaraakButton(label: 'Back', onPressed: onBack)),
+          const SizedBox(width: 12),
+          Expanded(
+              child: NaraakButton(label: 'Submit', onPressed: onSubmit)),
+        ]),
+      ],
+    );
+  }
+}
+
+class _ReviewRow extends StatelessWidget {
+  const _ReviewRow({required this.label, required this.value});
+  final String label;
+  final String value;
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          SizedBox(width: 110, child: Text(label, style: AppTextStyles.bodySecondary)),
+          Expanded(child: Text(value, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w700))),
+        ]),
+      );
 }

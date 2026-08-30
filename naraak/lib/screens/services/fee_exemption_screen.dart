@@ -11,8 +11,10 @@ import '../../widgets/app_card.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/external_api_notice.dart';
 import '../../widgets/naraak_app_bar.dart';
+import '../../widgets/confirmation_dialog.dart';
 import '../../widgets/progress_stepper.dart';
 import '../../widgets/responsive_page_frame.dart';
+import '../../widgets/service_hero.dart';
 import '../../widgets/upload_field.dart';
 
 class FeeExemptionScreen extends StatefulWidget {
@@ -87,16 +89,6 @@ class _FeeExemptionScreenState extends State<FeeExemptionScreen> {
     super.dispose();
   }
 
-  void _simulateUpload(String key, String defaultFileName) {
-    final provider = context.read<FeeExemptionProvider>();
-    final err = provider.validateDocument(defaultFileName);
-    if (err != null) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(err)));
-      return;
-    }
-    setState(() => _uploads[key] = defaultFileName);
-  }
-
   Future<void> _handleSubmit() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -160,55 +152,6 @@ class _FeeExemptionScreenState extends State<FeeExemptionScreen> {
     );
   }
 
-  Widget _buildLegacyUploadField(
-      String label, String key, String defaultFileName) {
-    final fileName = _uploads[key];
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: AppTextStyles.label),
-        const SizedBox(height: 6),
-        InkWell(
-          onTap: () => _simulateUpload(key, defaultFileName),
-          borderRadius: BorderRadius.circular(10),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            decoration: BoxDecoration(
-              color: AppColors.ink050,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: fileName != null ? AppColors.primary : AppColors.ink500,
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  fileName ?? '[Tap to upload]',
-                  style: AppTextStyles.bodySecondary.copyWith(
-                    color:
-                        fileName != null ? AppColors.ink900 : AppColors.ink500,
-                  ),
-                ),
-                Icon(
-                  fileName != null
-                      ? Icons.check_circle_rounded
-                      : Icons.add_rounded,
-                  color:
-                      fileName != null ? AppColors.primary : AppColors.ink500,
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text('PDF · max 5 MB',
-            style: AppTextStyles.caption.copyWith(color: AppColors.ink500)),
-        const SizedBox(height: 16),
-      ],
-    );
-  }
-
   Widget _buildUploadField(
       String label, String key, String defaultFileName) {
     final provider = context.read<FeeExemptionProvider>();
@@ -227,9 +170,18 @@ class _FeeExemptionScreenState extends State<FeeExemptionScreen> {
     );
   }
 
+  bool get _hasUnsavedChanges => _step > 0;
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope(
+      canPop: !_hasUnsavedChanges,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        final leave = await confirmUnsavedChanges(context);
+        if (leave && context.mounted) Navigator.of(context).pop();
+      },
+      child: Scaffold(
       appBar: NaraakAppBar(
         title: 'Fee Exemption Card',
         onBack: _step == 1 ? () => setState(() => _step = 0) : null,
@@ -269,6 +221,14 @@ class _FeeExemptionScreenState extends State<FeeExemptionScreen> {
               maxWidth: 820,
               child: Column(
                 children: [
+                  const ServiceHero(
+                    icon: Icons.shield_rounded,
+                    accent: Color(0xFFB45309),
+                    title: 'Health Fee Exemption Card',
+                    description:
+                        'Apply for health fee exemption based on your entitlement.',
+                  ),
+                  const SizedBox(height: 20),
                   ProgressStepper(
                     steps: const ['Eligibility', 'Documents'],
                     currentStep: _step,
@@ -282,6 +242,7 @@ class _FeeExemptionScreenState extends State<FeeExemptionScreen> {
             ),
           );
         },
+      ),
       ),
     );
   }

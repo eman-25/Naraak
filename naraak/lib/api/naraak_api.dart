@@ -263,6 +263,8 @@ class NaraakDummyApi {
       'healthCenter': 'Naim Health Center',
       'certificateReference': 'assets/documents/vaccination_certificate_2025.pdf',
       'missing': false,
+      'dose': 'Annual dose',
+      'category': 'Adult',
     },
     {
       'recordId': 'VAC-002',
@@ -272,6 +274,52 @@ class NaraakDummyApi {
       'healthCenter': 'Naim Health Center',
       'certificateReference': 'assets/documents/vaccination_certificate_2024.pdf',
       'missing': false,
+      'dose': 'Booster dose',
+      'category': 'Adult',
+    },
+    {
+      'recordId': 'VAC-003',
+      'patientId': 'PAT-001',
+      'vaccineName': 'MMR (Measles, Mumps, Rubella)',
+      'vaccinationDate': '2015-05-02',
+      'healthCenter': 'Hoora Health Center',
+      'certificateReference': 'assets/documents/vaccination_certificate_2025.pdf',
+      'missing': false,
+      'dose': 'Dose 2 of 2',
+      'category': 'Childhood',
+    },
+    {
+      'recordId': 'VAC-004',
+      'patientId': 'PAT-001',
+      'vaccineName': 'DTaP (Diphtheria, Tetanus, Pertussis)',
+      'vaccinationDate': '2013-09-18',
+      'healthCenter': 'Hoora Health Center',
+      'certificateReference': 'assets/documents/vaccination_certificate_2025.pdf',
+      'missing': false,
+      'dose': 'Dose 5 of 5',
+      'category': 'Childhood',
+    },
+    {
+      'recordId': 'VAC-005',
+      'patientId': 'PAT-001',
+      'vaccineName': 'Yellow Fever',
+      'vaccinationDate': '2023-07-04',
+      'healthCenter': 'Naim Health Center',
+      'certificateReference': 'assets/documents/vaccination_certificate_2024.pdf',
+      'missing': false,
+      'dose': 'Single dose',
+      'category': 'Travel',
+    },
+    {
+      'recordId': 'VAC-006',
+      'patientId': 'PAT-001',
+      'vaccineName': 'Hepatitis B — 3rd dose',
+      'vaccinationDate': '2024-01-20',
+      'healthCenter': 'Naim Health Center',
+      'certificateReference': null,
+      'missing': true,
+      'dose': 'Dose 3 of 3',
+      'category': 'Adult',
     },
   ];
 
@@ -313,6 +361,21 @@ class NaraakDummyApi {
     'General Clinic': [
       {'consultantId': 'DOC-001', 'consultantName': 'Dr. Noor Al Khalifa', 'gender': 'Female'},
       {'consultantId': 'DOC-002', 'consultantName': 'Dr. Layla Hassan', 'gender': 'Female'},
+    ],
+    'Dental': [
+      {'consultantId': 'DOC-020', 'consultantName': 'Dr. Yousif Al Ansari', 'gender': 'Male'},
+    ],
+    'Cardiology': [
+      {'consultantId': 'DOC-021', 'consultantName': 'Dr. Maryam Al Sayed', 'gender': 'Female'},
+    ],
+    'Orthopedics': [
+      {'consultantId': 'DOC-022', 'consultantName': 'Dr. Khalid Bu Ali', 'gender': 'Male'},
+    ],
+    'Dermatology': [
+      {'consultantId': 'DOC-023', 'consultantName': 'Dr. Reem Al Doseri', 'gender': 'Female'},
+    ],
+    'ENT': [
+      {'consultantId': 'DOC-024', 'consultantName': 'Dr. Ahmed Salman', 'gender': 'Male'},
     ],
   };
 

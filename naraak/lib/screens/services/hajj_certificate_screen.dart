@@ -11,6 +11,7 @@ import '../../widgets/naraak_button.dart';
 import '../../widgets/naraak_app_bar.dart';
 import '../../widgets/progress_stepper.dart';
 import '../../widgets/responsive_page_frame.dart';
+import '../../widgets/service_hero.dart';
 import '../../widgets/state_views.dart';
 
 /// Electronic Hajj Certificate â€” Phase 3 Â§3.6/Â§4.5: a read-only check
@@ -66,6 +67,14 @@ class _HajjCertificateScreenState extends State<HajjCertificateScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+              const ServiceHero(
+                icon: Icons.mosque_rounded,
+                accent: Color(0xFF0B4F54),
+                title: 'Electronic Hajj Certificate',
+                description:
+                    'Download your Hajj health certificate once your pre-travel visit is on file.',
+              ),
+              const SizedBox(height: 20),
               const _PrerequisiteBanner(),
               const SizedBox(height: 20),
               if (request == null)
@@ -149,6 +158,17 @@ class _NoRequestSection extends StatelessWidget {
             label: 'I\'ve Requested It From My Doctor',
             isLoading: isSubmitting,
             onPressed: isSubmitting ? null : onRequest,
+          ),
+        ),
+        const SizedBox(height: 10),
+        SizedBox(
+          width: double.infinity,
+          child: NaraakButton(
+            label: 'Find Nearest Health Center',
+            variant: AppButtonVariant.secondary,
+            onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Not available in this demo.')),
+            ),
           ),
         ),
       ],
@@ -255,78 +275,6 @@ class _StatusSection extends StatelessWidget {
           ),
         ],
       ],
-    );
-  }
-}
-
-class _ProgressTracker extends StatelessWidget {
-  final int currentStep;
-  const _ProgressTracker({required this.currentStep});
-
-  static const _labels = ['Requested', 'Processing', 'Ready', 'Downloaded'];
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: List.generate(_labels.length * 2 - 1, (i) {
-        if (i.isOdd) {
-          final segmentDone = (i - 1) ~/ 2 < currentStep;
-          return Expanded(
-            child: Container(
-              margin: const EdgeInsets.only(bottom: 22),
-              height: 2,
-              color: segmentDone ? AppColors.primary : AppColors.ink100,
-            ),
-          );
-        }
-        final stepIndex = i ~/ 2;
-        final done = stepIndex < currentStep;
-        final active = stepIndex == currentStep;
-        return SizedBox(
-          width: 76,
-          child: Column(
-            children: [
-              Container(
-                width: 28,
-                height: 28,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: done ? AppColors.primary : AppColors.surface,
-                  border: Border.all(
-                    color:
-                        done || active ? AppColors.primary : AppColors.ink100,
-                    width: active ? 2 : 1,
-                  ),
-                ),
-                child: Center(
-                  child: done
-                      ? const Icon(Icons.check, size: 15, color: Colors.white)
-                      : Text(
-                          '${stepIndex + 1}',
-                          style: AppTextStyles.caption.copyWith(
-                            color:
-                                active ? AppColors.primary : AppColors.ink300,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                _labels[stepIndex],
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                style: AppTextStyles.caption.copyWith(
-                  fontSize: 11,
-                  color: done || active ? AppColors.ink900 : AppColors.ink500,
-                  fontWeight: active ? FontWeight.w700 : FontWeight.normal,
-                ),
-              ),
-            ],
-          ),
-        );
-      }),
     );
   }
 }

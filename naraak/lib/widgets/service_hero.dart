@@ -3,16 +3,27 @@ import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_theme.dart';
 
+/// Phase 3 §11 Service Hero Template: every service opens with a visual
+/// hero — a relevant image, title and short description, dark gradient
+/// overlay so the text stays readable.
+///
+/// When no photography asset exists yet for a service, pass [icon] instead
+/// of [imageAsset]: the hero falls back to a gradient + large icon motif,
+/// which Phase 3 §2 explicitly allows ("abstract healthcare illustrations")
+/// in place of real photography.
 class ServiceHero extends StatelessWidget {
   const ServiceHero({
     super.key,
-    required this.imageAsset,
+    this.imageAsset,
+    this.icon,
     required this.title,
     required this.description,
     this.accent,
-  });
+  }) : assert(imageAsset != null || icon != null,
+            'ServiceHero needs either imageAsset or icon');
 
-  final String imageAsset;
+  final String? imageAsset;
+  final IconData? icon;
   final String title;
   final String description;
   final Color? accent;
@@ -31,7 +42,15 @@ class ServiceHero extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              Image.asset(imageAsset, fit: BoxFit.cover),
+              if (imageAsset != null)
+                Image.asset(
+                  imageAsset!,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) =>
+                      _IllustratedBackground(icon: icon ?? Icons.favorite_rounded, accent: overlay),
+                )
+              else
+                _IllustratedBackground(icon: icon!, accent: overlay),
               DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -69,6 +88,39 @@ class ServiceHero extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _IllustratedBackground extends StatelessWidget {
+  final IconData icon;
+  final Color accent;
+  const _IllustratedBackground({required this.icon, required this.accent});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [accent.withValues(alpha: 0.75), accent],
+        ),
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            right: -30,
+            top: -30,
+            child: Icon(icon, size: 220, color: Colors.white.withValues(alpha: 0.14)),
+          ),
+          Positioned(
+            left: -20,
+            bottom: -40,
+            child: Icon(icon, size: 140, color: Colors.white.withValues(alpha: 0.08)),
+          ),
+        ],
       ),
     );
   }

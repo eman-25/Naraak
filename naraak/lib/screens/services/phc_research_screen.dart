@@ -10,6 +10,7 @@ import '../../widgets/naraak_card.dart';
 import '../../widgets/naraak_button.dart';
 import '../../widgets/naraak_app_bar.dart';
 import '../../widgets/responsive_page_frame.dart';
+import '../../widgets/service_hero.dart';
 
 class PhcResearchScreen extends StatefulWidget {
   const PhcResearchScreen({super.key});
@@ -91,6 +92,14 @@ class _PhcResearchScreenState extends State<PhcResearchScreen> {
             ? _buildSuccessCard()
             : Column(
                 children: [
+                  const ServiceHero(
+                    icon: Icons.biotech_rounded,
+                    accent: Color(0xFF7C6FE0),
+                    title: 'PHC Research Application',
+                    description:
+                        'Apply to conduct research studies at PHC centers.',
+                  ),
+                  const SizedBox(height: 20),
                   _buildStepperHeader(),
                   const SizedBox(height: 16),
                   if (_currentStep == 1) _buildStepOne(),
@@ -561,9 +570,4 @@ class _PhcResearchScreenState extends State<PhcResearchScreen> {
     );
   }
 
-  String _getInitials(String name) {
-    final parts = name.trim().split(' ');
-    if (parts.length >= 2) return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
-    return name.isNotEmpty ? name[0].toUpperCase() : 'EK';
-  }
 }

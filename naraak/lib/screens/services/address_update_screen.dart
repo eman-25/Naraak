@@ -6,8 +6,10 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../widgets/naraak_card.dart';
 import '../../widgets/naraak_button.dart';
+import '../../widgets/confirmation_dialog.dart';
 import '../../widgets/naraak_app_bar.dart';
 import '../../widgets/responsive_page_frame.dart';
+import '../../widgets/service_hero.dart';
 
 class AddressUpdateScreen extends StatefulWidget {
   const AddressUpdateScreen({super.key});
@@ -33,15 +35,39 @@ class _AddressUpdateScreenState extends State<AddressUpdateScreen> {
     'Block 602 - Sitra',
   ];
 
+  bool get _hasUnsavedChanges =>
+      !_isSubmitted && (_selectedNewBlock != null || _isCprConfirmed);
+
   @override
   Widget build(BuildContext context) {
     final profile = context.watch<UserProfileProvider>().profile;
 
-    return Scaffold(
+    return PopScope(
+      canPop: !_hasUnsavedChanges,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        final leave = await confirmUnsavedChanges(context);
+        if (leave && context.mounted) Navigator.of(context).pop();
+      },
+      child: Scaffold(
       appBar: const NaraakAppBar(title: 'Update Address'),
       body: ResponsivePageFrame(
         maxWidth: 820,
-        child: _isSubmitted ? _buildSuccessCard() : _buildFormCard(profile),
+        child: Column(
+          children: [
+            if (!_isSubmitted) ...[
+              const ServiceHero(
+                imageAsset: 'assets/images/dashboard_phc_hero.png',
+                title: 'Update Residential Address',
+                description:
+                    'Update your block and see your newly assigned health center.',
+              ),
+              const SizedBox(height: 20),
+            ],
+            _isSubmitted ? _buildSuccessCard() : _buildFormCard(profile),
+          ],
+        ),
+      ),
       ),
     );
   }
@@ -198,9 +224,4 @@ class _AddressUpdateScreenState extends State<AddressUpdateScreen> {
     }
   }
 
-  String _getInitials(String name) {
-    final parts = name.trim().split(' ');
-    if (parts.length >= 2) return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
-    return name.isNotEmpty ? name[0].toUpperCase() : 'EK';
-  }
 }

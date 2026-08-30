@@ -4,13 +4,14 @@ import 'package:provider/provider.dart';
 import '../../providers/appointment_provider.dart';
 import '../../providers/user_profile_provider.dart';
 import '../../providers/app_settings_provider.dart';
-import '../../models/appointment.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../widgets/naraak_button.dart';
 import '../../widgets/naraak_app_bar.dart';
+import '../../widgets/progress_stepper.dart';
 
 enum BookingView {
+  chooseClinic,
   chooseMethod,
   bookByDateDoctor,
   availableToday,
@@ -28,7 +29,17 @@ class BookingAppointmentScreen extends StatefulWidget {
 }
 
 class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
-  BookingView _currentView = BookingView.chooseMethod;
+  BookingView _currentView = BookingView.chooseClinic;
+  String? _selectedClinic;
+
+  static const _clinics = [
+    (
+      'General Clinic',
+      Icons.local_hospital_rounded,
+      'General consultations and check-ups.'
+    ),
+    ('Dental', Icons.medical_information_rounded, 'Dental care and check-ups.'),
+  ];
 
   // Form State for "Book by Date & Doctor"
   String? _selectedDoctor;
@@ -40,7 +51,6 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
   String _selectedGenderFilter = 'All';
   String _selectedSortTime = 'Ascending';
   String? _selectedSortName;
-  Appointment? _confirmedAppointment;
   bool _isBooking = false;
 
   final List<String> _mockDoctors = [
@@ -75,12 +85,14 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
   }
 
   void _handleBack() {
-    if (_currentView == BookingView.chooseMethod) {
+    if (_currentView == BookingView.chooseClinic) {
       Navigator.of(context).pop();
       return;
     }
     setState(() {
-      if (_currentView == BookingView.reviewDetails) {
+      if (_currentView == BookingView.chooseMethod) {
+        _currentView = BookingView.chooseClinic;
+      } else if (_currentView == BookingView.reviewDetails) {
         _currentView = BookingView.bookByDateDoctor;
       } else if (_currentView != BookingView.bookingSuccess) {
         _currentView = BookingView.chooseMethod;
@@ -90,6 +102,8 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
 
   String _getAppBarTitle() {
     switch (_currentView) {
+      case BookingView.chooseClinic:
+        return 'Select Clinic';
       case BookingView.chooseMethod:
         return 'Choose Booking Method';
       case BookingView.bookByDateDoctor:
@@ -105,6 +119,23 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
     }
   }
 
+  int _stepperIndex() {
+    switch (_currentView) {
+      case BookingView.chooseClinic:
+        return 0;
+      case BookingView.chooseMethod:
+        return 1;
+      case BookingView.bookByDateDoctor:
+      case BookingView.availableToday:
+      case BookingView.closestSlot:
+        return 2;
+      case BookingView.reviewDetails:
+        return 3;
+      case BookingView.bookingSuccess:
+        return 4;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final themeColor = context.watch<AppSettingsProvider>().palette.primary;
@@ -117,24 +148,45 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
         onBack: _handleBack,
       ),
       body: SafeArea(
-        child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 250),
-          // AnimatedSwitcher stacks its child without forcing tight width,
-          // so a bare Column (like the slot-list screens) shrink-wraps to
-          // its narrowest content instead of filling the screen. Force it
-          // full-size here instead of relying on every view to do it.
-          child: SizedBox.expand(
-            child: Align(
-              alignment: Alignment.topCenter,
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 980),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: _buildCurrentScreenView(themeColor, userProfile),
+        child: Column(
+          children: [
+            if (_currentView != BookingView.bookingSuccess)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 620),
+                    child: ProgressStepper(
+                      steps: const ['Clinic', 'Method', 'Slot', 'Review'],
+                      currentStep: _stepperIndex(),
+                    ),
+                  ),
+                ),
+              ),
+            Expanded(
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 250),
+                // AnimatedSwitcher stacks its child without forcing tight
+                // width, so a bare Column (like the slot-list screens)
+                // shrink-wraps to its narrowest content instead of filling
+                // the screen. Force it full-size here instead of relying on
+                // every view to do it.
+                child: SizedBox.expand(
+                  child: Align(
+                    alignment: Alignment.topCenter,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 980),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: _buildCurrentScreenView(themeColor, userProfile),
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -148,6 +200,7 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
     return KeyedSubtree(
       key: ValueKey(_currentView),
       child: switch (_currentView) {
+        BookingView.chooseClinic => _buildScreen0ChooseClinic(themeColor),
         BookingView.chooseMethod => _buildScreen1ChooseMethod(themeColor),
         BookingView.bookByDateDoctor =>
           _buildScreen2BookByDateDoctor(themeColor, profile),
@@ -157,6 +210,61 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
           _buildReviewDetailsView(themeColor, profile),
         BookingView.bookingSuccess => _buildSuccessPassView(themeColor),
       },
+    );
+  }
+
+  // ==========================================
+  // SCREEN 0: SELECT CLINIC
+  // ==========================================
+  Widget _buildScreen0ChooseClinic(Color themeColor) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Select a clinic', style: AppTextStyles.h2.copyWith(fontSize: 24)),
+          const SizedBox(height: 6),
+          Text(
+            'Choose the clinic you would like to book with.',
+            style: AppTextStyles.bodySecondary.copyWith(fontSize: 14),
+          ),
+          const SizedBox(height: 24),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final cards = [
+                for (final (name, icon, description) in _clinics)
+                  _buildMethodCard(
+                    themeColor: themeColor,
+                    icon: icon,
+                    title: name,
+                    description: description,
+                    onTap: () => setState(() {
+                      _selectedClinic = name;
+                      _currentView = BookingView.chooseMethod;
+                    }),
+                  ),
+              ];
+              if (constraints.maxWidth < 760) {
+                return Column(children: [
+                  for (var index = 0; index < cards.length; index++) ...[
+                    cards[index],
+                    if (index < cards.length - 1) const SizedBox(height: 14),
+                  ],
+                ]);
+              }
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (var index = 0; index < cards.length; index++) ...[
+                    Expanded(child: cards[index]),
+                    if (index < cards.length - 1) const SizedBox(width: 14),
+                  ],
+                ],
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 
@@ -747,6 +855,7 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
   // REVIEW DETAILS SECTION
   // ==========================================
   Widget _buildReviewDetailsView(Color themeColor, dynamic profile) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -760,15 +869,29 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: isDark ? AppColors.darkSurface : Colors.white,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.ink100),
+              border: Border.all(
+                  color: isDark ? AppColors.darkOutline : AppColors.ink100),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.22 : 0.05),
+                  blurRadius: 14,
+                  offset: const Offset(0, 5),
+                ),
+              ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                _buildSummaryRow(Icons.badge_outlined, 'Patient',
+                    profile?.fullName ?? 'Fatima Ahmed', themeColor),
+                const Divider(height: 24),
                 _buildSummaryRow(Icons.person_outline, 'Doctor',
                     _selectedDoctor ?? 'Dr. Fatima Al-Dosari', themeColor),
+                const Divider(height: 24),
+                _buildSummaryRow(Icons.local_hospital_outlined, 'Clinic',
+                    _selectedClinic ?? 'General Clinic', themeColor),
                 const Divider(height: 24),
                 _buildSummaryRow(
                     Icons.location_on_outlined,
@@ -782,6 +905,9 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
                   '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year} at ${_selectedTimeSlot ?? '09:30 AM'}',
                   themeColor,
                 ),
+                const Divider(height: 24),
+                _buildSummaryRow(Icons.event_available_outlined,
+                    'Appointment Type', 'In-Center', themeColor),
               ],
             ),
           ),
@@ -799,7 +925,6 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
               setState(() => _isBooking = false);
               if (success) {
                 setState(() {
-                  _confirmedAppointment = provider.myAppointments.last;
                   _currentView = BookingView.bookingSuccess;
                 });
               }

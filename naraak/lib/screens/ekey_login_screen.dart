@@ -45,14 +45,20 @@ class _EkeyLoginScreenState extends State<EkeyLoginScreen> {
       );
       return;
     }
-    await Future.wait([
-      context.read<AuthProvider>().loadUsers(),
-      context.read<FamilyProvider>().loadMembers(),
-      context.read<ClinicalDataProvider>().loadNotifications(),
-    ]);
-    if (mounted) {
-      Navigator.pushReplacementNamed(context, '/profile-setup');
+    try {
+      await Future.wait([
+        context.read<AuthProvider>().loadUsers(),
+        context.read<FamilyProvider>().loadMembers(),
+        context.read<ClinicalDataProvider>().loadNotifications(),
+      ]);
+    } catch (_) {
+      // Individual providers already record a friendly errorMessage and
+      // return false/empty state instead of rethrowing — this catch only
+      // guards against something unexpected so _loading never gets stuck.
     }
+    if (!mounted) return;
+    setState(() => _loading = false);
+    Navigator.pushReplacementNamed(context, '/profile-setup');
   }
 
   @override

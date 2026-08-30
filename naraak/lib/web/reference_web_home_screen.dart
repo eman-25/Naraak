@@ -340,11 +340,20 @@ class _UpcomingAppointmentPanel extends StatelessWidget {
               const SizedBox(height: 8),
               SizedBox(
                 width: double.infinity,
-                height: 44,
                 child: OutlinedButton(
                   onPressed: () =>
                       ShellNavigation.of(context)?.selectTab(1),
-                  child: const Text('View All Appointments'),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(44),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                    textStyle: const TextStyle(
+                        fontSize: 12, fontWeight: FontWeight.w700),
+                  ),
+                  child: const Text(
+                    'View All Appointments',
+                    textAlign: TextAlign.center,
+                  ),
                 ),
               ),
             ]),
