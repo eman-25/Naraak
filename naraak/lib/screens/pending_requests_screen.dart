@@ -1,25 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../providers/app_settings_provider.dart';
 import '../providers/service_request_provider.dart';
 import '../providers/appointment_provider.dart' show LoadState;
 import '../models/service_request.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
-import '../widgets/app_card.dart';
-import '../widgets/status_badge.dart';
 import '../widgets/empty_state.dart';
-import '../widgets/app_top_bar.dart';
 import 'request_detail_screen.dart';
 
 enum _RequestFilter { all, inProgress, completed, actionNeeded }
 
-/// Pending Requests — a single aggregated view across every request-based
-/// service (Hajj Certificate, Fee Exemption, Mobile Unit, PHC Research,
-/// Newborn Sehati Card, Mammogram, Change Doctor), all sharing the
-/// requestId/status shape from Phase 5 §3. Resolves the same "where did my
-/// request go" visibility gap flagged in Phase 1/3 for individual services,
-/// but as one consolidated list instead of hunting through each service.
-/// Filterable by status per Phase 6 §5 request-tracking requirements.
+/// Pending Requests — pure content (no Scaffold/AppBar; the shell renders
+/// the top bar). A single aggregated view across every request-based
+/// service, matching the reference's page title + filter tabs + progress
+/// tracker card list.
 class PendingRequestsScreen extends StatefulWidget {
   const PendingRequestsScreen({super.key});
 
@@ -38,21 +33,6 @@ class _PendingRequestsScreenState extends State<PendingRequestsScreen> {
     });
   }
 
-  AppStatus _statusFor(String status) {
-    switch (status) {
-      case 'approved':
-      case 'ready':
-        return AppStatus.approved;
-      case 'rejected':
-        return AppStatus.rejected;
-      case 'processing':
-        return AppStatus.inProgress;
-      case 'submitted':
-      default:
-        return AppStatus.pending;
-    }
-  }
-
   List<ServiceRequest> _applyFilter(List<ServiceRequest> requests) {
     switch (_filter) {
       case _RequestFilter.inProgress:
@@ -68,153 +48,331 @@ class _PendingRequestsScreenState extends State<PendingRequestsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: const AppTopBar(title: 'Pending Requests'),
-      body: Consumer<ServiceRequestProvider>(
-        builder: (context, provider, _) {
-          switch (provider.state) {
-            case LoadState.idle:
-            case LoadState.loading:
-              return const Center(
-                  child:
-                      CircularProgressIndicator(color: AppColors.primaryTeal));
-            case LoadState.error:
-              return EmptyStateView(
-                isError: true,
-                title: 'Could not load your requests',
-                message: provider.errorMessage ?? 'Please try again.',
-                actionLabel: 'Retry',
-                onAction: () => provider.loadRequests(),
-              );
-            case LoadState.empty:
-              return const EmptyStateView(
-                icon: Icons.inbox_outlined,
-                title: 'No pending requests',
-                message:
-                    'Requests you submit for services \n'
-                    'will appear here.',
-              );
-            case LoadState.success:
-              final filtered = _applyFilter(provider.requests);
-              return Column(
-                children: [
-                  _buildFilterBar(),
-                  Expanded(
-                    child: filtered.isEmpty
-                        ? EmptyStateView(
+    final palette = context.watch<AppSettingsProvider>().palette;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 920),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextButton.icon(
+              onPressed: () => Navigator.of(context).pop(),
+              style: TextButton.styleFrom(
+                foregroundColor: palette.primary,
+                padding: EdgeInsets.zero,
+              ),
+              icon: const Icon(Icons.arrow_back_rounded, size: 16),
+              label: const Text('Back',
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
+            ),
+            const SizedBox(height: 12),
+            Text('TRACK PROGRESS',
+                style: AppTextStyles.overline.copyWith(color: palette.primary)),
+            const SizedBox(height: 6),
+            Text('Pending requests', style: AppTextStyles.h1.copyWith(fontSize: 26)),
+            const SizedBox(height: 6),
+            Text('See what is happening with your applications.',
+                style: AppTextStyles.bodySecondary),
+            const SizedBox(height: 20),
+            Consumer<ServiceRequestProvider>(
+              builder: (context, provider, _) {
+                switch (provider.state) {
+                  case LoadState.idle:
+                  case LoadState.loading:
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 60),
+                      child: Center(
+                          child: CircularProgressIndicator(
+                              color: AppColors.primaryTeal)),
+                    );
+                  case LoadState.error:
+                    return EmptyStateView(
+                      isError: true,
+                      title: 'Could not load your requests',
+                      message: provider.errorMessage ?? 'Please try again.',
+                      actionLabel: 'Retry',
+                      onAction: () => provider.loadRequests(),
+                    );
+                  case LoadState.empty:
+                    return const EmptyStateView(
+                      icon: Icons.inbox_outlined,
+                      title: 'No pending requests',
+                      message: 'Requests you submit for services \n'
+                          'will appear here.',
+                    );
+                  case LoadState.success:
+                    final all = provider.requests;
+                    final filtered = _applyFilter(all);
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _FilterTabs(
+                          filter: _filter,
+                          allCount: all.length,
+                          onChanged: (f) => setState(() => _filter = f),
+                        ),
+                        const SizedBox(height: 16),
+                        if (filtered.isEmpty)
+                          const EmptyStateView(
                             icon: Icons.filter_alt_off_outlined,
                             title: 'No requests in this filter',
                             message:
                                 'Try a different filter, or check back once you\'ve submitted a request.',
                           )
-                        : RefreshIndicator(
-                            color: AppColors.primaryTeal,
-                            onRefresh: () => provider.loadRequests(),
-                            child: ListView.builder(
-                              padding: const EdgeInsets.all(16),
-                              itemCount: filtered.length,
-                              itemBuilder: (context, i) {
-                                final req = filtered[i];
-                                return Padding(
-                                  padding: const EdgeInsets.only(bottom: 10),
-                                  child: AppCard(
-                                      onTap: () => Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (_) =>
-                                                  RequestDetailScreen(
-                                                      request: req),
-                                            ),
-                                          ),
-                                      child: _RequestRow(
-                                          request: req,
-                                          status: _statusFor(req.status))),
-                                );
-                              },
-                            ),
-                          ),
-                  ),
-                ],
-              );
-          }
-        },
-      ),
-    );
-  }
-
-  Widget _buildFilterBar() {
-    final chips = <(_RequestFilter, String)>[
-      (_RequestFilter.all, 'All'),
-      (_RequestFilter.inProgress, 'In Progress'),
-      (_RequestFilter.completed, 'Completed'),
-      (_RequestFilter.actionNeeded, 'Action Needed'),
-    ];
-    return SizedBox(
-      height: 44,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        itemCount: chips.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
-        itemBuilder: (context, i) {
-          final (value, label) = chips[i];
-          final selected = _filter == value;
-          return ChoiceChip(
-            label: Text(label),
-            selected: selected,
-            onSelected: (_) => setState(() => _filter = value),
-            selectedColor: AppColors.primaryTeal,
-            backgroundColor: AppColors.secondaryIce,
-            labelStyle: AppTextStyles.caption.copyWith(
-              color: selected ? Colors.white : AppColors.neutralDark,
-              fontWeight: FontWeight.w600,
+                        else
+                          ...filtered.map((r) => Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: _RequestCard(request: r, palette: palette),
+                              )),
+                      ],
+                    );
+                }
+              },
             ),
-            side: BorderSide.none,
-          );
-        },
+          ],
+        ),
       ),
     );
   }
 }
 
-class _RequestRow extends StatelessWidget {
-  final ServiceRequest request;
-  final AppStatus status;
-  const _RequestRow({required this.request, required this.status});
+class _FilterTabs extends StatelessWidget {
+  final _RequestFilter filter;
+  final int allCount;
+  final ValueChanged<_RequestFilter> onChanged;
+  const _FilterTabs(
+      {required this.filter, required this.allCount, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    final palette = context.watch<AppSettingsProvider>().palette;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final tabs = [
+      (_RequestFilter.all, 'All', allCount),
+      (_RequestFilter.inProgress, 'In progress', null),
+      (_RequestFilter.actionNeeded, 'Action needed', null),
+      (_RequestFilter.completed, 'Completed', null),
+    ];
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: tabs.map((t) {
+          final (value, label, count) = t;
+          final active = value == filter;
+          return Padding(
+            padding: const EdgeInsets.only(right: 6),
+            child: InkWell(
+              onTap: () => onChanged(value),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: active ? palette.primary : Colors.transparent,
+                      width: 2,
+                    ),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(label,
+                        style: AppTextStyles.body.copyWith(
+                          fontSize: 12,
+                          fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+                          color: active
+                              ? palette.primaryDark
+                              : (isDark
+                                  ? AppColors.darkTextSecondary
+                                  : AppColors.ink500),
+                        )),
+                    if (count != null) ...[
+                      const SizedBox(width: 6),
+                      Container(
+                        padding:
+                            const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: palette.primary.withValues(alpha: isDark ? 0.16 : 0.08),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text('$count',
+                            style: TextStyle(
+                                color: palette.primary,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700)),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
+class _RequestCard extends StatelessWidget {
+  final ServiceRequest request;
+  final dynamic palette;
+  const _RequestCard({required this.request, required this.palette});
+
+  int get _stage {
+    switch (request.status) {
+      case 'submitted':
+        return 1;
+      case 'processing':
+        return 2;
+      case 'approved':
+      case 'ready':
+        return 4;
+      case 'rejected':
+        return 2;
+      default:
+        return 1;
+    }
+  }
+
+  Color get _statusColor {
+    switch (request.status) {
+      case 'approved':
+      case 'ready':
+        return AppColors.success;
+      case 'rejected':
+        return AppColors.error;
+      case 'processing':
+        return AppColors.warning;
+      default:
+        return AppColors.warning;
+    }
+  }
+
+  String get _statusLabel {
+    switch (request.status) {
+      case 'approved':
+      case 'ready':
+        return 'Approved';
+      case 'rejected':
+        return 'Action Needed';
+      case 'processing':
+        return 'Processing';
+      default:
+        return 'Submitted';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final labels = ['Submitted', 'Review', 'Decision', 'Complete'];
+
+    return InkWell(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => RequestDetailScreen(request: request)),
+      ),
+      borderRadius: BorderRadius.circular(15),
+      child: Container(
+        padding: const EdgeInsets.all(17),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.darkSurface : Colors.white,
+          border: Border.all(
+              color: isDark ? AppColors.darkOutline : AppColors.outline),
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(child: Text(request.serviceName, style: AppTextStyles.h3)),
-            StatusBadge(status: status),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: palette.primary.withValues(alpha: isDark ? 0.18 : 0.1),
+                    borderRadius: BorderRadius.circular(11),
+                  ),
+                  child: Icon(Icons.description_outlined,
+                      color: palette.primary, size: 18),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(request.serviceName,
+                                style: AppTextStyles.body.copyWith(
+                                    fontWeight: FontWeight.w700, fontSize: 13)),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: _statusColor.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(_statusLabel,
+                                style: TextStyle(
+                                    color: _statusColor,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700)),
+                          ),
+                        ],
+                      ),
+                      if (request.note != null) ...[
+                        const SizedBox(height: 5),
+                        Text(request.note!,
+                            style: AppTextStyles.caption.copyWith(fontSize: 11),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis),
+                      ],
+                      const SizedBox(height: 5),
+                      Text('${request.id} · Submitted ${_formatDate(request.submittedAt)}',
+                          style: AppTextStyles.caption.copyWith(fontSize: 10)),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.chevron_right_rounded, color: AppColors.ink300, size: 18),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: List.generate(4, (i) {
+                final done = i < _stage;
+                return Expanded(
+                  child: Container(
+                    height: 5,
+                    margin: EdgeInsets.only(right: i == 3 ? 0 : 4),
+                    decoration: BoxDecoration(
+                      color: done
+                          ? palette.primary
+                          : (isDark ? AppColors.darkOutline : const Color(0xFFE3EBEB)),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                );
+              }),
+            ),
+            const SizedBox(height: 6),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: labels
+                  .map((l) => Text(l,
+                      style: AppTextStyles.caption.copyWith(fontSize: 9)))
+                  .toList(),
+            ),
           ],
         ),
-        const SizedBox(height: 6),
-        Text(
-          'Submitted ${_formatDate(request.submittedAt)}',
-          style: AppTextStyles.caption,
-        ),
-        if (request.attachmentName != null) ...[
-          const SizedBox(height: 4),
-          Row(
-            children: [
-              const Icon(Icons.attach_file,
-                  size: 14, color: AppColors.neutralGray),
-              const SizedBox(width: 4),
-              Text(request.attachmentName!, style: AppTextStyles.caption),
-            ],
-          ),
-        ],
-        if (request.note != null) ...[
-          const SizedBox(height: 4),
-          Text(request.note!, style: AppTextStyles.bodySecondary),
-        ],
-      ],
+      ),
     );
   }
 

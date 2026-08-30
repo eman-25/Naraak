@@ -1,15 +1,13 @@
 // lib/screens/notifications_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../providers/app_settings_provider.dart';
 import '../providers/appointment_provider.dart';
 import '../providers/service_request_provider.dart';
 import '../providers/notifications_read_provider.dart';
 import '../models/notification_item.dart';
 import '../theme/app_colors.dart';
-import '../theme/app_theme.dart';
 import '../theme/app_text_styles.dart';
-import '../widgets/app_card.dart';
-import '../widgets/app_top_bar.dart';
 import '../main.dart' show ShellNavigation;
 import 'request_detail_screen.dart';
 
@@ -21,9 +19,6 @@ class NotificationsScreen extends StatefulWidget {
 }
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
-  final ScrollController _scrollController = ScrollController();
-  bool _didScrollToLatest = false;
-
   @override
   void initState() {
     super.initState();
@@ -31,12 +26,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       context.read<AppointmentProvider>().loadMyAppointments();
       context.read<ServiceRequestProvider>().loadRequests();
     });
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
   }
 
   IconData _getNotificationIcon(NotificationType type) {
@@ -54,23 +43,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     }
   }
 
-  void _scrollToLatestWhenReady(List<NotificationItem> notifications) {
-    if (notifications.isEmpty || _didScrollToLatest) return;
-    _didScrollToLatest = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!_scrollController.hasClients) return;
-      _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
-    });
-  }
-
-  /// Phase 3 §2.5: tapping a notification routes by type instead of doing
-  /// nothing. Appointment notifications go to the Appointments tab; request
-  /// notifications go to that request's detail screen.
   void _handleTap(NotificationItem item, List requests) {
     context.read<NotificationsReadProvider>().markRead(item.id);
 
     if (item.type == NotificationType.appointment) {
-      Navigator.of(context).popUntil((route) => route.isFirst);
+      Navigator.of(context).pop();
       ShellNavigation.of(context)?.selectTab(1);
       return;
     }
@@ -89,9 +66,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final palette = AppPaletteExtension.of(context);
-    final screenSize = MediaQuery.of(context).size;
-    final iconBoxSize = (screenSize.width * 0.11).clamp(42.0, 52.0);
+    final palette = context.watch<AppSettingsProvider>().palette;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final appointmentProvider = context.watch<AppointmentProvider>();
     final requestProvider = context.watch<ServiceRequestProvider>();
     final readProvider = context.watch<NotificationsReadProvider>();
@@ -100,151 +76,199 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       appointmentProvider.myAppointments,
       requestProvider.requests,
     );
-    _scrollToLatestWhenReady(notifications);
-    final isLoading = appointmentProvider.slotsState == LoadState.loading ||
-        requestProvider.state == LoadState.loading;
-    final unreadCount =
-        readProvider.unreadCount(notifications.map((n) => n.id));
+    final unreadCount = readProvider.unreadCount(notifications.map((n) => n.id));
 
-    return Scaffold(
-      appBar: const AppTopBar(title: 'Notifications'),
-      body: Column(
-        children: [
-          if (!isLoading && notifications.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    unreadCount > 0 ? '$unreadCount unread' : 'All caught up',
-                    style:
-                        AppTextStyles.caption.copyWith(color: AppColors.ink500),
-                  ),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 860),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextButton.icon(
+              onPressed: () => Navigator.of(context).pop(),
+              style: TextButton.styleFrom(
+                foregroundColor: palette.primary,
+                padding: EdgeInsets.zero,
+              ),
+              icon: const Icon(Icons.arrow_back_rounded, size: 16),
+              label: const Text('Back',
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
+            ),
+            const SizedBox(height: 12),
+            Text('STAY UP TO DATE',
+                style: AppTextStyles.overline.copyWith(color: palette.primary)),
+            const SizedBox(height: 6),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Notifications', style: AppTextStyles.h1.copyWith(fontSize: 26)),
+                if (notifications.isNotEmpty)
                   TextButton(
                     onPressed: unreadCount == 0
                         ? null
                         : () => readProvider
                             .markAllRead(notifications.map((n) => n.id)),
-                    child: const Text('Mark all read'),
+                    style: TextButton.styleFrom(foregroundColor: palette.primary),
+                    child: const Text('Mark all read',
+                        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text('Important updates from your care team and health center.',
+                style: AppTextStyles.bodySecondary),
+            const SizedBox(height: 22),
+            if (notifications.isEmpty)
+              _EmptyNotifications()
+            else ...[
+              ...notifications.map((item) => Padding(
+                    padding: const EdgeInsets.only(bottom: 11),
+                    child: _NotificationItemRow(
+                      item: item,
+                      isRead: readProvider.isRead(item.id),
+                      icon: _getNotificationIcon(item.type),
+                      palette: palette,
+                      onTap: () => _handleTap(item, requestProvider.requests),
+                    ),
+                  )),
+              const SizedBox(height: 6),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(17),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? const Color(0xFF12241A)
+                      : const Color(0xFFF4FBF6),
+                  border: Border.all(
+                      color: const Color(0xFF1E9E6B).withValues(alpha: 0.35)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: const [
+                    Icon(Icons.check_rounded, size: 18, color: Color(0xFF1E9E6B)),
+                    SizedBox(width: 8),
+                    Text("You're all caught up for now.",
+                        style: TextStyle(
+                            color: Color(0xFF1E9E6B),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600)),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _EmptyNotifications extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 48),
+      alignment: Alignment.center,
+      child: Column(
+        children: const [
+          Icon(Icons.notifications_none_rounded, size: 56, color: AppColors.ink300),
+          SizedBox(height: 12),
+          Text('No notifications yet', style: AppTextStyles.h3),
+        ],
+      ),
+    );
+  }
+}
+
+class _NotificationItemRow extends StatelessWidget {
+  final NotificationItem item;
+  final bool isRead;
+  final IconData icon;
+  final dynamic palette;
+  final VoidCallback onTap;
+  const _NotificationItemRow({
+    required this.item,
+    required this.isRead,
+    required this.icon,
+    required this.palette,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.darkSurface : Colors.white,
+          border: Border.all(
+              color: isDark ? AppColors.darkOutline : AppColors.outline),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: palette.primary.withValues(alpha: isDark ? 0.18 : 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: palette.primary, size: 19),
+            ),
+            const SizedBox(width: 13),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(item.title,
+                            style: AppTextStyles.body
+                                .copyWith(fontWeight: FontWeight.w700, fontSize: 13)),
+                      ),
+                      Text(item.timeAgo,
+                          style: AppTextStyles.caption.copyWith(fontSize: 10)),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(item.message,
+                      style: AppTextStyles.bodySecondary.copyWith(fontSize: 12)),
+                  const SizedBox(height: 9),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('View details',
+                          style: TextStyle(
+                              color: palette.primary,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700)),
+                      const SizedBox(width: 4),
+                      Icon(Icons.arrow_forward_rounded, size: 13, color: palette.primary),
+                    ],
                   ),
                 ],
               ),
             ),
-          Expanded(
-            child: isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : notifications.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(
-                              Icons.notifications_none_rounded,
-                              size: 64,
-                              color: AppColors.ink500,
-                            ),
-                            const SizedBox(height: 12),
-                            Text('No notifications yet',
-                                style: AppTextStyles.h3),
-                          ],
-                        ),
-                      )
-                    : ListView.separated(
-                        controller: _scrollController,
-                        padding: EdgeInsets.symmetric(
-                          horizontal:
-                              (screenSize.width * 0.04).clamp(16.0, 24.0),
-                          vertical: 16,
-                        ),
-                        itemCount: notifications.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 12),
-                        itemBuilder: (context, index) {
-                          final item = notifications[index];
-                          final isRead = readProvider.isRead(item.id);
-                          final iconColor = palette.primary;
-
-                          return AppCard(
-                            onTap: () =>
-                                _handleTap(item, requestProvider.requests),
-                            padding: EdgeInsets.all(
-                              (screenSize.width * 0.04).clamp(14.0, 20.0),
-                            ),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  width: iconBoxSize,
-                                  height: iconBoxSize,
-                                  decoration: BoxDecoration(
-                                    color: iconColor.withValues(
-                                        alpha: isRead ? 0.05 : 0.1),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Icon(
-                                    _getNotificationIcon(item.type),
-                                    color:
-                                        isRead ? AppColors.ink500 : iconColor,
-                                    size:
-                                        (iconBoxSize * 0.48).clamp(20.0, 26.0),
-                                  ),
-                                ),
-                                const SizedBox(width: 14),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Text(
-                                            item.title,
-                                            style:
-                                                AppTextStyles.caption.copyWith(
-                                              fontWeight: FontWeight.bold,
-                                              color: AppColors.ink500,
-                                              letterSpacing: 0.5,
-                                            ),
-                                          ),
-                                          if (!isRead) ...[
-                                            const SizedBox(width: 6),
-                                            Container(
-                                              width: 7,
-                                              height: 7,
-                                              decoration: const BoxDecoration(
-                                                color: AppColors.bahrainAccent,
-                                                shape: BoxShape.circle,
-                                              ),
-                                            ),
-                                          ],
-                                        ],
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        item.message,
-                                        style: AppTextStyles.body.copyWith(
-                                          fontWeight: isRead
-                                              ? FontWeight.normal
-                                              : FontWeight.w500,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 6),
-                                      Text(
-                                        item.timeAgo,
-                                        style: AppTextStyles.caption.copyWith(
-                                          color: AppColors.ink500,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-          ),
-        ],
+            if (!isRead) ...[
+              const SizedBox(width: 8),
+              Container(
+                width: 7,
+                height: 7,
+                margin: const EdgeInsets.only(top: 4),
+                decoration: BoxDecoration(color: palette.primary, shape: BoxShape.circle),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
