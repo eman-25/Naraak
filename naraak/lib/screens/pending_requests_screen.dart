@@ -9,6 +9,7 @@ import '../widgets/app_card.dart';
 import '../widgets/status_badge.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/app_top_bar.dart';
+import 'request_detail_screen.dart';
 
 enum _RequestFilter { all, inProgress, completed, actionNeeded }
 
@@ -90,8 +91,8 @@ class _PendingRequestsScreenState extends State<PendingRequestsScreen> {
                 icon: Icons.inbox_outlined,
                 title: 'No pending requests',
                 message:
-                    'Requests you submit for services like the Hajj Certificate\n'
-                    'or Fee Exemption Card will appear here with live status.',
+                    'Requests you submit for services \n'
+                    'will appear here.',
               );
             case LoadState.success:
               final filtered = _applyFilter(provider.requests);
@@ -117,6 +118,14 @@ class _PendingRequestsScreenState extends State<PendingRequestsScreen> {
                                 return Padding(
                                   padding: const EdgeInsets.only(bottom: 10),
                                   child: AppCard(
+                                      onTap: () => Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) =>
+                                                  RequestDetailScreen(
+                                                      request: req),
+                                            ),
+                                          ),
                                       child: _RequestRow(
                                           request: req,
                                           status: _statusFor(req.status))),

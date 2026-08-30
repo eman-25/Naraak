@@ -44,6 +44,11 @@ class AppLocalizations {
       'mammogram': 'Mammogram Appointment Requests',
       'newborn': 'Sehati Card for Newborns',
       'research': 'PHC Research Applications',
+      'catAppointments': 'Appointments & Consultation',
+      'catRecords': 'My Records',
+      'catAdmin': 'Administrative Services',
+      'catResearch': 'Research Applications',
+      'allServices': 'All Services',
     },
     'ar': {
       'appName': 'نراك',
@@ -82,6 +87,11 @@ class AppLocalizations {
       'mammogram': 'طلبات مواعيد فحص الثدي',
       'newborn': 'بطاقة صحتي لحديثي الولادة',
       'research': 'طلبات أبحاث الرعاية الأولية',
+      'catAppointments': 'المواعيد والاستشارات',
+      'catRecords': 'سجلاتي',
+      'catAdmin': 'الخدمات الإدارية',
+      'catResearch': 'طلبات الأبحاث',
+      'allServices': 'جميع الخدمات',
     },
   };
 

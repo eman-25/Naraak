@@ -41,6 +41,7 @@ class MockAppointmentService {
   ];
 
   final List<Appointment> _myAppointments = [];
+  int _teleCounter = 0;
 
   /// GET /api/v1/appointments
   Future<List<Appointment>> getAvailableSlots({
@@ -71,6 +72,25 @@ class MockAppointmentService {
 
     final booked = _slots[index].copyWith(status: 'confirmed');
     _slots[index] = booked;
+    _myAppointments.add(booked);
+    return booked;
+  }
+
+  /// Tele appointments are booked by phone call to the health center, not
+  /// through the slot list — Phase 3 §3.1/§4.1. A staff member calls back
+  /// to confirm; this simulates that outcome landing directly in "my
+  /// appointments" a moment later.
+  Future<Appointment> bookTeleAppointment() async {
+    await Future.delayed(const Duration(milliseconds: 700));
+    _teleCounter++;
+    final booked = Appointment(
+      id: 'tele_$_teleCounter',
+      centerName: 'Naim Health Center',
+      doctorName: 'Dr. Hind Al-Zayani',
+      slotDateTime: DateTime.now().add(const Duration(days: 2, hours: 1)),
+      status: 'confirmed',
+      isTele: true,
+    );
     _myAppointments.add(booked);
     return booked;
   }

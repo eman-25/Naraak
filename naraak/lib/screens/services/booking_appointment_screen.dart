@@ -40,6 +40,7 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _selectedGenderFilter = 'All';
   String _selectedSortTime = 'Ascending';
+  String? _selectedSortName;
   Appointment? _confirmedAppointment;
   bool _isBooking = false;
 
@@ -75,11 +76,14 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
   }
 
   void _handleBack() {
+    if (_currentView == BookingView.chooseMethod) {
+      Navigator.of(context).pop();
+      return;
+    }
     setState(() {
       if (_currentView == BookingView.reviewDetails) {
         _currentView = BookingView.bookByDateDoctor;
-      } else if (_currentView != BookingView.chooseMethod &&
-          _currentView != BookingView.bookingSuccess) {
+      } else if (_currentView != BookingView.bookingSuccess) {
         _currentView = BookingView.chooseMethod;
       }
     });
@@ -110,35 +114,42 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
     return Scaffold(
       appBar: AppTopBar(
         title: _getAppBarTitle(),
-        showBackButton: _currentView != BookingView.chooseMethod &&
-            _currentView != BookingView.bookingSuccess,
+        showBackButton: _currentView != BookingView.bookingSuccess,
         onBack: _handleBack,
       ),
       body: SafeArea(
         child: AnimatedSwitcher(
           duration: const Duration(milliseconds: 250),
-          child: _buildCurrentScreenView(themeColor, userProfile),
+          // AnimatedSwitcher stacks its child without forcing tight width,
+          // so a bare Column (like the slot-list screens) shrink-wraps to
+          // its narrowest content instead of filling the screen. Force it
+          // full-size here instead of relying on every view to do it.
+          child: SizedBox.expand(
+            child: _buildCurrentScreenView(themeColor, userProfile),
+          ),
         ),
       ),
-      bottomNavigationBar: _buildGlobalBottomNav(themeColor),
     );
   }
 
   Widget _buildCurrentScreenView(Color themeColor, dynamic profile) {
-    switch (_currentView) {
-      case BookingView.chooseMethod:
-        return _buildScreen1ChooseMethod(themeColor);
-      case BookingView.bookByDateDoctor:
-        return _buildScreen2BookByDateDoctor(themeColor, profile);
-      case BookingView.availableToday:
-        return _buildScreen3AvailableToday(themeColor);
-      case BookingView.closestSlot:
-        return _buildScreen4ClosestSlot(themeColor);
-      case BookingView.reviewDetails:
-        return _buildReviewDetailsView(themeColor, profile);
-      case BookingView.bookingSuccess:
-        return _buildSuccessPassView(themeColor);
-    }
+    // AnimatedSwitcher needs a distinct key per view, otherwise it can't
+    // tell the outgoing/incoming children apart and lays out mid-crossfade
+    // with squashed constraints (this is what caused the doctor-name text
+    // on Closest Slot to wrap one character per line).
+    return KeyedSubtree(
+      key: ValueKey(_currentView),
+      child: switch (_currentView) {
+        BookingView.chooseMethod => _buildScreen1ChooseMethod(themeColor),
+        BookingView.bookByDateDoctor =>
+          _buildScreen2BookByDateDoctor(themeColor, profile),
+        BookingView.availableToday => _buildScreen3AvailableToday(themeColor),
+        BookingView.closestSlot => _buildScreen4ClosestSlot(themeColor),
+        BookingView.reviewDetails =>
+          _buildReviewDetailsView(themeColor, profile),
+        BookingView.bookingSuccess => _buildSuccessPassView(themeColor),
+      },
+    );
   }
 
   // ==========================================
@@ -274,7 +285,9 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Health Center Label & Field
-          Text('Health Center', style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.bold)),
+          Text('Health Center',
+              style:
+                  AppTextStyles.caption.copyWith(fontWeight: FontWeight.bold)),
           const SizedBox(height: 6),
           Container(
             width: double.infinity,
@@ -292,7 +305,9 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
           const SizedBox(height: 20),
 
           // Doctor Selection Dropdown
-          Text('Doctor', style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.bold)),
+          Text('Doctor',
+              style:
+                  AppTextStyles.caption.copyWith(fontWeight: FontWeight.bold)),
           const SizedBox(height: 6),
           DropdownButtonFormField<String>(
             value: _selectedDoctor,
@@ -300,7 +315,8 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
             decoration: InputDecoration(
               filled: true,
               fillColor: Colors.white,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: const BorderSide(color: AppColors.ink050),
@@ -322,7 +338,9 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
           const SizedBox(height: 20),
 
           // Date Selection Calendar
-          Text('SELECT DATE', style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.bold, letterSpacing: 0.8)),
+          Text('SELECT DATE',
+              style: AppTextStyles.caption
+                  .copyWith(fontWeight: FontWeight.bold, letterSpacing: 0.8)),
           const SizedBox(height: 8),
           Container(
             decoration: BoxDecoration(
@@ -347,7 +365,9 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
           const SizedBox(height: 24),
 
           // Available Time Slots Section
-          Text('AVAILABLE TIME SLOTS', style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.bold, letterSpacing: 0.8)),
+          Text('AVAILABLE TIME SLOTS',
+              style: AppTextStyles.caption
+                  .copyWith(fontWeight: FontWeight.bold, letterSpacing: 0.8)),
           const SizedBox(height: 12),
           GridView.builder(
             shrinkWrap: true,
@@ -380,8 +400,10 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
                     child: Text(
                       slot,
                       style: AppTextStyles.body.copyWith(
-                        color: isSelected ? Colors.white : AppColors.neutralDark,
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                        color:
+                            isSelected ? Colors.white : AppColors.neutralDark,
+                        fontWeight:
+                            isSelected ? FontWeight.bold : FontWeight.w500,
                       ),
                     ),
                   ),
@@ -485,6 +507,12 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
     );
   }
 
+  static const List<_TodayDoctor> _todayDoctors = [
+    _TodayDoctor('Dr. Fatima Al-Dosari', 'Female', ['10:00', '10:30', '11:00']),
+    _TodayDoctor('Dr. Khalid Al-Mansoori', 'Male', ['11:00', '11:30']),
+    _TodayDoctor('Dr. Hind Al-Zayani', 'Female', ['14:00']),
+  ];
+
   Widget _buildDoctorTodayCard({
     required String doctorName,
     required Color themeColor,
@@ -514,7 +542,8 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
             spacing: 10,
             runSpacing: 8,
             children: slots.map((slot) {
-              final isSelected = _selectedDoctor == doctorName && _selectedTimeSlot == slot;
+              final isSelected =
+                  _selectedDoctor == doctorName && _selectedTimeSlot == slot;
               return InkWell(
                 onTap: onSelected ?? () {
                   setState(() {
@@ -527,11 +556,13 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
                 borderRadius: BorderRadius.circular(8),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 150),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
                     color: isSelected ? themeColor : Colors.white,
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: isSelected ? themeColor : AppColors.ink500),
+                    border: Border.all(
+                        color: isSelected ? themeColor : AppColors.ink500),
                   ),
                   child: Text(
                     slot,
@@ -552,6 +583,14 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
   // ==========================================
   // SCREEN 4: CLOSEST AVAILABLE SLOT
   // ==========================================
+  static const List<_ClosestDoctor> _closestDoctors = [
+    _ClosestDoctor('Dr. Hind Al-Zayani', 'Female', '10:00 AM — Today'),
+    _ClosestDoctor('Dr. Khalid Al-Mansoori', 'Male', '10:30 AM — Today'),
+    _ClosestDoctor('Dr. Fatima Al-Dosari', 'Female', '11:00 AM — Today'),
+    _ClosestDoctor('Dr. Mohamed Al-Ansari', 'Male', '11:00 AM — Today'),
+    _ClosestDoctor('Dr. Sara Al-Rumaihi', 'Female', '02:00 PM — Today'),
+  ];
+
   Widget _buildScreen4ClosestSlot(Color themeColor) {
     final closestSlots = context.watch<AppointmentProvider>().availableSlots
         .where((slot) => _selectedGenderFilter == 'All' || slot.doctorGender == _selectedGenderFilter)
@@ -568,7 +607,9 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
           child: Row(
             children: [
-              _buildFilterChip('Name', themeColor, () {}),
+              _buildFilterChip('Name', themeColor, () {
+                _showNameSortModal(themeColor);
+              }),
               const SizedBox(width: 8),
               _buildFilterChip('Gender: $_selectedGenderFilter', themeColor, () => _showGenderFilterModal(themeColor)),
               const SizedBox(width: 8),
@@ -579,14 +620,20 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
 
         // List of Closest Available Doctor Slots
         Expanded(
-          child: ListView.separated(
+          child: closestSlots.isEmpty
+              ? Center(
+                  child: Text('No doctors match your filters',
+                      style: AppTextStyles.bodySecondary),
+                )
+              : ListView.separated(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
             itemCount: closestSlots.length,
             separatorBuilder: (_, __) => const SizedBox(height: 12),
             itemBuilder: (context, idx) {
               final item = closestSlots[idx];
               return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
@@ -606,12 +653,12 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            item['doctor']!,
+                            item.name,
                             style: AppTextStyles.h3.copyWith(fontSize: 15),
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            item['time']!,
+                            item.time,
                             style: AppTextStyles.caption.copyWith(
                               color: themeColor,
                               fontWeight: FontWeight.w600,
@@ -635,13 +682,12 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(24),
                         ),
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                      ),
-                      child: Text(
-                        'Select',
-                        style: TextStyle(
-                          color: themeColor,
-                          fontWeight: FontWeight.bold,
+                        child: Text(
+                          'Select',
+                          style: TextStyle(
+                            color: themeColor,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
@@ -679,9 +725,14 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildSummaryRow(Icons.person_outline, 'Doctor', _selectedDoctor ?? 'Dr. Fatima Al-Dosari', themeColor),
+                _buildSummaryRow(Icons.person_outline, 'Doctor',
+                    _selectedDoctor ?? 'Dr. Fatima Al-Dosari', themeColor),
                 const Divider(height: 24),
-                _buildSummaryRow(Icons.location_on_outlined, 'Health Center', profile?.assignedHealthCenter ?? 'Naim Health Center', themeColor),
+                _buildSummaryRow(
+                    Icons.location_on_outlined,
+                    'Health Center',
+                    profile?.assignedHealthCenter ?? 'Naim Health Center',
+                    themeColor),
                 const Divider(height: 24),
                 _buildSummaryRow(
                   Icons.calendar_today_rounded,
@@ -734,7 +785,8 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
               color: AppColors.success,
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.check_rounded, size: 48, color: Colors.white),
+            child:
+                const Icon(Icons.check_rounded, size: 48, color: Colors.white),
           ),
           const SizedBox(height: 16),
           Text('Booking Confirmed!', style: AppTextStyles.h2),
@@ -759,7 +811,8 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('APPOINTMENT PASS', style: AppTextStyles.caption),
+                    const Text('APPOINTMENT PASS',
+                        style: AppTextStyles.caption),
                     Text(
                       'APPROVED',
                       style: TextStyle(
@@ -775,7 +828,8 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
                   _selectedDoctor ?? 'Dr. Fatima Al-Dosari',
                   style: AppTextStyles.h3.copyWith(fontSize: 18),
                 ),
-                const Text('Specialist - Family Medicine', style: AppTextStyles.caption),
+                const Text('Specialist - Family Medicine',
+                    style: AppTextStyles.caption),
                 const SizedBox(height: 16),
                 Row(
                   children: List.generate(
@@ -792,7 +846,8 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
                 Text('DATE & TIME', style: AppTextStyles.caption),
                 Text(
                   '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year} - ${_selectedTimeSlot ?? '09:30 AM'}',
-                  style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold),
+                  style:
+                      AppTextStyles.body.copyWith(fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -824,7 +879,9 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
       label: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+          Text(label,
+              style:
+                  const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
           const SizedBox(width: 4),
           const Icon(Icons.keyboard_arrow_down_rounded, size: 16),
         ],
@@ -835,7 +892,8 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
     );
   }
 
-  Widget _buildSummaryRow(IconData icon, String label, String val, Color themeColor) {
+  Widget _buildSummaryRow(
+      IconData icon, String label, String val, Color themeColor) {
     return Row(
       children: [
         Icon(icon, color: themeColor, size: 22),
@@ -845,7 +903,9 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(label, style: AppTextStyles.caption),
-              Text(val, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
+              Text(val,
+                  style:
+                      AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
             ],
           ),
         ),
@@ -867,7 +927,9 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
             children: ['All', 'Female', 'Male'].map((g) {
               return ListTile(
                 title: Text(g),
-                trailing: _selectedGenderFilter == g ? Icon(Icons.check, color: themeColor) : null,
+                trailing: _selectedGenderFilter == g
+                    ? Icon(Icons.check, color: themeColor)
+                    : null,
                 onTap: () {
                   setState(() => _selectedGenderFilter = g);
                   Navigator.pop(ctx);
@@ -894,7 +956,9 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
             children: ['Ascending', 'Descending'].map((t) {
               return ListTile(
                 title: Text(t),
-                trailing: _selectedSortTime == t ? Icon(Icons.check, color: themeColor) : null,
+                trailing: _selectedSortTime == t
+                    ? Icon(Icons.check, color: themeColor)
+                    : null,
                 onTap: () {
                   setState(() => _selectedSortTime = t);
                   Navigator.pop(ctx);
@@ -907,43 +971,32 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
     );
   }
 
-  // Unified Application Bottom Navigation Bar
-  Widget _buildGlobalBottomNav(Color themeColor) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: AppColors.ink100, width: 1)),
+  void _showNameSortModal(Color themeColor) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      child: BottomNavigationBar(
-        currentIndex: 1, // Appointments Tab Active
-        selectedItemColor: themeColor,
-        unselectedItemColor: AppColors.ink500,
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.white,
-        elevation: 0,
-        onTap: (index) {
-          switch (index) {
-            case 0:
-              Navigator.pushReplacementNamed(context, '/home');
-              break;
-            case 1:
-              setState(() => _currentView = BookingView.chooseMethod);
-              break;
-            case 2:
-              Navigator.pushReplacementNamed(context, '/services-tab');
-              break;
-            case 3:
-              Navigator.pushReplacementNamed(context, '/profile');
-              break;
-          }
-        },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home_rounded), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.calendar_today_outlined), activeIcon: Icon(Icons.calendar_today_rounded), label: 'Appts'),
-          BottomNavigationBarItem(icon: Icon(Icons.grid_view_outlined), activeIcon: Icon(Icons.grid_view_rounded), label: 'Services'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person_rounded), label: 'Profile'),
-        ],
-      ),
+      builder: (ctx) {
+        return Container(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: ['A-Z', 'Z-A'].map((t) {
+              return ListTile(
+                title: Text(t),
+                trailing: _selectedSortName == t
+                    ? Icon(Icons.check, color: themeColor)
+                    : null,
+                onTap: () {
+                  setState(() => _selectedSortName = t);
+                  Navigator.pop(ctx);
+                },
+              );
+            }).toList(),
+          ),
+        );
+      },
     );
   }
 }

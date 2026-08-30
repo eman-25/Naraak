@@ -11,7 +11,10 @@ import '../providers/app_settings_provider.dart';
 import '../providers/service_request_provider.dart';
 import '../providers/appointment_provider.dart';
 import '../providers/auth_provider.dart';
+import '../providers/notifications_read_provider.dart';
+import '../models/notification_item.dart';
 import '../localization/app_localizations.dart';
+import '../main.dart' show ShellNavigation;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -93,6 +96,16 @@ class _HeroHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final notifications = buildNotifications(
+      context,
+      context.watch<AppointmentProvider>().myAppointments,
+      context.watch<ServiceRequestProvider>().requests,
+    );
+    final hasUnread = context
+            .watch<NotificationsReadProvider>()
+            .unreadCount(notifications.map((n) => n.id)) >
+        0;
+
     return DecoratedBox(
       decoration: BoxDecoration(
         gradient: palette.heroGradient,
@@ -140,18 +153,19 @@ class _HeroHeader extends StatelessWidget {
                           Icons.notifications_none_rounded,
                           color: Colors.white,
                         ),
-                        Positioned(
-                          right: -1,
-                          top: -1,
-                          child: Container(
-                            width: 8,
-                            height: 8,
-                            decoration: const BoxDecoration(
-                              color: AppColors.error,
-                              shape: BoxShape.circle,
+                        if (hasUnread)
+                          Positioned(
+                            right: -1,
+                            top: -1,
+                            child: Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                color: AppColors.error,
+                                shape: BoxShape.circle,
+                              ),
                             ),
                           ),
-                        ),
                       ],
                     ),
                   ),
@@ -210,13 +224,7 @@ class _HeroHeader extends StatelessWidget {
               ),
               const SizedBox(height: 18),
               Text(
-                '${strings.text('welcome') == 'Welcome back' ? 'Good Morning' : strings.text('welcome')},',
-                style: AppTextStyles.bodySecondary.copyWith(
-                  color: Colors.white70,
-                ),
-              ),
-              Text(
-                name ?? strings.text('guest'),
+                '${strings.text('welcome') == 'Welcome back' ? 'Good Morning' : strings.text('welcome')}, ${name ?? strings.text('guest')}',
                 style: AppTextStyles.h1.copyWith(
                   color: Colors.white,
                   fontSize: 26,
@@ -536,9 +544,19 @@ class _PendingRequestsCard extends StatelessWidget {
     final rejected = needsAttention;
     final pendingBase =
         (total - inProgress - completed - rejected).clamp(0, total);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return AppCard(
       onTap: () => Navigator.pushNamed(context, '/pending-requests'),
+      // A flat dark card here read as "still not themed" next to the
+      // translucent accent-tinted accessibility bar above it — blending
+      // the palette accent into the dark surface (rather than a raw alpha
+      // overlay, which would just look muddy) gives it the same glassy
+      // feel while keeping text contrast solid.
+      color: isDark
+          ? Color.alphaBlend(
+              palette.primary.withValues(alpha: 0.20), AppColors.darkSurface)
+          : null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -720,8 +738,7 @@ class _TopServicesGrid extends StatelessWidget {
         return AppCard(
           onTap: () {
             if (t.route == '/services-tab') {
-              DefaultTabController.maybeOf(context);
-              Navigator.of(context).popUntil((r) => r.isFirst);
+              ShellNavigation.of(context)?.selectTab(2);
             } else {
               Navigator.pushNamed(context, t.route);
             }

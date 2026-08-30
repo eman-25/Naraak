@@ -9,6 +9,7 @@ import '../theme/app_text_styles.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_card.dart';
 import '../widgets/app_top_bar.dart';
+import 'add_family_member_screen.dart';
 
 class FamilyMembersScreen extends StatelessWidget {
   const FamilyMembersScreen({super.key});
@@ -20,51 +21,18 @@ class FamilyMembersScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: const AppTopBar(title: 'Family Members'),
-      body: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: Container(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
-              decoration: BoxDecoration(
-                gradient: palette.heroGradient,
-                borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(28),
-                    bottomRight: Radius.circular(28)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text('Family Members',
-                          style: AppTextStyles.h1
-                              .copyWith(color: Colors.white, fontSize: 24)),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 4),
-                    child: Text('Manage dependents and act on their behalf',
-                        style: AppTextStyles.bodySecondary
-                            .copyWith(color: Colors.white70)),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          SliverPadding(
-            padding: const EdgeInsets.all(20),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate([
-                ...members.map((m) => Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: _MemberCard(member: m, palette: palette),
-                    )),
-                const SizedBox(height: 4),
-                _AddMemberButton(palette: palette),
-              ]),
-            ),
-          ),
+      body: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          Text('Manage dependents and act on their behalf',
+              style: AppTextStyles.bodySecondary),
+          const SizedBox(height: 16),
+          ...members.map((m) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _MemberCard(member: m, palette: palette),
+              )),
+          const SizedBox(height: 4),
+          _AddMemberButton(palette: palette),
         ],
       ),
     );
@@ -153,7 +121,10 @@ class _AddMemberButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => _showAddMemberSheet(context),
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const AddFamilyMemberScreen()),
+      ),
       borderRadius: BorderRadius.circular(AppTheme.radiusMd),
       child: DottedBorderBox(
         color: palette.primary,
@@ -169,42 +140,6 @@ class _AddMemberButton extends StatelessWidget {
                       color: palette.primary, fontWeight: FontWeight.w700)),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  void _showAddMemberSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (sheetContext) => Padding(
-        padding: EdgeInsets.only(
-          left: 20,
-          right: 20,
-          top: 20,
-          bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 20,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Add Family Member', style: AppTextStyles.h2),
-            const SizedBox(height: 8),
-            Text(
-              'New members authenticate via eKey to verify the family relationship, per Phase 3 §2.6.',
-              style: AppTextStyles.bodySecondary,
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: () => Navigator.pop(sheetContext),
-                child: const Text('Continue with eKey (Demo)'),
-              ),
-            ),
-          ],
         ),
       ),
     );

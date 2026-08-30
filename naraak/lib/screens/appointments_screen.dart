@@ -10,6 +10,7 @@ import '../widgets/app_card.dart';
 import '../widgets/app_button.dart';
 import '../widgets/status_badge.dart';
 import '../widgets/app_top_bar.dart';
+import 'services/join_appointment_screen.dart';
 
 class AppointmentsScreen extends StatefulWidget {
   const AppointmentsScreen({super.key});
@@ -100,8 +101,29 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Expanded(
-                              child: Text(apt.doctorName,
-                                  style: AppTextStyles.h3)),
+                            child: Row(
+                              children: [
+                                if (apt.isTele) ...[
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.secondarySurface,
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Text('Tele',
+                                        style: AppTextStyles.caption.copyWith(
+                                            color: AppColors.secondary,
+                                            fontWeight: FontWeight.w700)),
+                                  ),
+                                  const SizedBox(width: 8),
+                                ],
+                                Expanded(
+                                    child: Text(apt.doctorName,
+                                        style: AppTextStyles.h3)),
+                              ],
+                            ),
+                          ),
                           StatusBadge(status: _statusFor(apt.status)),
                         ],
                       ),
@@ -113,17 +135,34 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                         '${apt.slotDateTime.hour.toString().padLeft(2, '0')}:${apt.slotDateTime.minute.toString().padLeft(2, '0')}',
                         style: AppTextStyles.caption,
                       ),
-                      const SizedBox(height: 12),
-                      if (apt.status == 'confirmed')
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: TextButton(
-                            onPressed: () => provider.cancelAppointment(apt.id),
-                            style: TextButton.styleFrom(
-                                foregroundColor: AppColors.error),
-                            child: const Text('Cancel'),
-                          ),
+                      if (apt.status == 'confirmed') ...[
+                        const SizedBox(height: 12),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            if (apt.isTele) ...[
+                              TextButton(
+                                onPressed: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => JoinAppointmentScreen(
+                                        doctorName: apt.doctorName),
+                                  ),
+                                ),
+                                child: const Text('Join'),
+                              ),
+                              const SizedBox(width: 4),
+                            ],
+                            TextButton(
+                              onPressed: () =>
+                                  provider.cancelAppointment(apt.id),
+                              style: TextButton.styleFrom(
+                                  foregroundColor: AppColors.error),
+                              child: const Text('Cancel'),
+                            ),
+                          ],
                         ),
+                      ],
                     ],
                   ),
                 ),

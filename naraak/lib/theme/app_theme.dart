@@ -111,21 +111,43 @@ class AppTheme {
 
   static ThemeData dark(AppPalette palette) {
     final base = light(palette);
+    // Regenerated from scratch for dark brightness rather than copyWith'ing
+    // the light scheme's brightness flag — a flag flip alone doesn't
+    // recompute onSurface/onBackground, which is why icons (back button,
+    // bell, etc.) stayed near-black-on-black even after text was fixed.
+    final scheme = ColorScheme.fromSeed(
+      seedColor: AppColors.darkAccent,
+      brightness: Brightness.dark,
+      primary: AppColors.darkAccent,
+      secondary: palette.secondary,
+      error: AppColors.darkError,
+      surface: AppColors.darkSurface,
+      onSurface: AppColors.darkTextPrimary,
+    );
+
     return base.copyWith(
       brightness: Brightness.dark,
       scaffoldBackgroundColor: AppColors.darkBg,
-      colorScheme: base.colorScheme.copyWith(brightness: Brightness.dark, surface: AppColors.darkSurface),
+      colorScheme: scheme,
+      iconTheme: const IconThemeData(color: AppColors.darkTextPrimary),
       appBarTheme: base.appBarTheme.copyWith(
         backgroundColor: AppColors.darkBg,
-        foregroundColor: Colors.white,
-        titleTextStyle: AppTextStyles.h2.copyWith(color: Colors.white),
+        foregroundColor: AppColors.darkTextPrimary,
+        titleTextStyle: AppTextStyles.h2.copyWith(color: AppColors.darkTextPrimary),
+        iconTheme: const IconThemeData(color: AppColors.darkTextPrimary),
       ),
-      cardTheme: base.cardTheme.copyWith(color: AppColors.darkSurface2),
+      cardTheme: base.cardTheme.copyWith(color: AppColors.darkSurface),
       inputDecorationTheme: base.inputDecorationTheme.copyWith(fillColor: AppColors.darkSurface2),
       dividerTheme: const DividerThemeData(color: AppColors.darkOutline),
-      bottomNavigationBarTheme:
-          base.bottomNavigationBarTheme.copyWith(backgroundColor: AppColors.darkSurface, unselectedItemColor: AppColors.ink500),
-      textTheme: base.textTheme.apply(bodyColor: Colors.white, displayColor: Colors.white),
+      bottomNavigationBarTheme: base.bottomNavigationBarTheme.copyWith(
+        backgroundColor: AppColors.darkSurface2,
+        selectedItemColor: AppColors.darkAccent,
+        unselectedItemColor: AppColors.darkTextSecondary,
+      ),
+      textTheme: base.textTheme.apply(
+        bodyColor: AppColors.darkTextPrimary,
+        displayColor: AppColors.darkTextPrimary,
+      ),
     );
   }
 }

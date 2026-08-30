@@ -6,6 +6,7 @@ class Appointment {
   final String? doctorGender; // 'Male' | 'Female'
   final DateTime slotDateTime;
   final String status; // 'available' | 'confirmed' | 'cancelled' | 'completed'
+  final bool isTele;
 
   const Appointment({
     required this.id,
@@ -14,6 +15,7 @@ class Appointment {
     this.doctorGender,
     required this.slotDateTime,
     required this.status,
+    this.isTele = false,
   });
 
   Appointment copyWith({
@@ -31,6 +33,7 @@ class Appointment {
       doctorGender: doctorGender ?? this.doctorGender,
       slotDateTime: slotDateTime ?? this.slotDateTime,
       status: status ?? this.status,
+      isTele: isTele,
     );
   }
 
@@ -42,6 +45,7 @@ class Appointment {
       doctorGender: json['doctorGender'] as String?,
       slotDateTime: DateTime.parse(json['slotDateTime'] as String),
       status: json['status'] as String,
+      isTele: json['isTele'] as bool? ?? false,
     );
   }
 
@@ -52,5 +56,6 @@ class Appointment {
         'doctorGender': doctorGender,
         'slotDateTime': slotDateTime.toIso8601String(),
         'status': status,
+        'isTele': isTele,
       };
 }

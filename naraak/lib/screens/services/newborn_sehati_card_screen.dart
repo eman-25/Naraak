@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/user_profile_provider.dart';
+import '../../services_mock/repository/request_repository.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../widgets/app_card.dart';
@@ -174,6 +175,11 @@ class _NewbornSehatiCardScreenState extends State<NewbornSehatiCardScreen> {
 
   void _submitForm() {
     if (_formKey.currentState?.validate() ?? false) {
+      RequestRepository.instance.addRequest(
+        serviceName: 'Newborn Sehati Card',
+        status: 'submitted',
+        note: 'Block ${_blockController.text}',
+      );
       setState(() => _isSubmitted = true);
     }
   }

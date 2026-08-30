@@ -40,7 +40,7 @@ class _AppCardState extends State<AppCard> {
       child: Container(
         padding: widget.padding,
         decoration: BoxDecoration(
-          color: widget.color ?? (isDark ? AppColors.darkSurface2 : AppColors.surface),
+          color: widget.color ?? (isDark ? AppColors.darkSurface : AppColors.surface),
           borderRadius: BorderRadius.circular(AppTheme.radiusMd),
           boxShadow: isDark
               ? null

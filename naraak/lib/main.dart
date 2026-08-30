@@ -15,6 +15,7 @@ import 'providers/fee_exemption_provider.dart';
 import 'providers/hajj_certificate_provider.dart';
 import 'providers/family_provider.dart';
 import 'providers/auth_provider.dart';
+import 'providers/notifications_read_provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/services_screen.dart';
 import 'screens/profile_screen.dart';
@@ -22,10 +23,13 @@ import 'screens/appointments_screen.dart';
 import 'screens/pending_requests_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/profile_setup_screen.dart';
-import 'screens/appearance_settings_screen.dart';
 import 'screens/family_members_screen.dart';
 import 'screens/personal_info_screen.dart';
 import 'screens/notifications_screen.dart';
+import 'screens/app_settings_screen.dart';
+import 'screens/privacy_security_screen.dart';
+import 'screens/help_support_screen.dart';
+import 'screens/splash_screen.dart';
 
 void main() => runApp(const NaraakApp());
 
@@ -46,6 +50,7 @@ class NaraakApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => HajjCertificateProvider()),
         ChangeNotifierProvider(create: (_) => FamilyProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => NotificationsReadProvider()),
       ],
       child: Consumer<AppSettingsProvider>(
         builder: (context, settings, _) => MaterialApp(
@@ -67,7 +72,13 @@ class NaraakApp extends StatelessWidget {
                 .copyWith(textScaler: TextScaler.linear(settings.textScale)),
             child: child!,
           ),
-          home: const LoginScreen(),
+          home: const SplashScreen(),
+          // Only pre-shell routes live here. Everything reachable once
+          // inside the app (services, pending requests, notifications,
+          // profile sub-pages) is registered on RootShell's own nested
+          // Navigator below, so the bottom nav — and a working back
+          // button — stay visible on every one of those screens, per the
+          // Phase 3 wireframes (every mockup screen keeps the 4-tab bar).
           routes: {
             '/login': (_) => const LoginScreen(),
             '/profile-setup': (_) => const ProfileSetupScreen(),
@@ -92,6 +103,22 @@ class NaraakApp extends StatelessWidget {
   }
 }
 
+/// Lets any screen nested inside [RootShell] switch bottom-nav tabs
+/// (e.g. the Home tab's "All Services" tile jumping to the Services tab)
+/// without needing a route name for something that isn't a route.
+class ShellNavigation extends InheritedWidget {
+  final ValueChanged<int> selectTab;
+
+  const ShellNavigation(
+      {super.key, required this.selectTab, required super.child});
+
+  static ShellNavigation? of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<ShellNavigation>();
+
+  @override
+  bool updateShouldNotify(ShellNavigation oldWidget) => false;
+}
+
 class RootShell extends StatefulWidget {
   final int initialIndex;
   const RootShell({super.key, this.initialIndex = 0});
@@ -107,6 +134,31 @@ class _RootShellState extends State<RootShell> {
     ServicesScreen(),
     ProfileScreen()
   ];
+
+  static final Map<String, WidgetBuilder> _shellRoutes = {
+    '/pending-requests': (_) => const PendingRequestsScreen(),
+    '/profile/family': (_) => const FamilyMembersScreen(),
+    '/profile/personal-info': (_) => const PersonalInfoScreen(),
+    '/profile/app-settings': (_) => const AppSettingsScreen(),
+    '/profile/privacy-security': (_) => const PrivacySecurityScreen(),
+    '/profile/help-support': (_) => const HelpSupportScreen(),
+    '/notifications': (_) => const NotificationsScreen(),
+    ...AppRouter.routes,
+  };
+
+  void _selectTab(int index) {
+    // Tapping a tab returns to that tab's root, matching how the bottom
+    // nav behaves in the wireframes (it's always the 4-tab entry points).
+    _navigatorKey.currentState?.popUntil((route) => route.isFirst);
+    _tabIndex.value = index;
+    setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _tabIndex.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {

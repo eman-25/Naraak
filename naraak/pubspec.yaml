@@ -25,6 +25,7 @@ flutter:
   assets:
     - assets/images/naraak_logo.png
     - assets/images/family_doctor_card.jpeg
+    - assets/images/splash.jpg
   # Fonts are no longer bundled as local assets — google_fonts (added above)
   # fetches Noto Sans / Noto Sans Arabic from Google's CDN at runtime and
   # caches them on-device. See lib/theme/app_text_styles.dart.
