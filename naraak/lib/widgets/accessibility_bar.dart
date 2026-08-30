@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:provider/provider.dart';
+import '../localization/app_localizations.dart';
 import '../providers/app_settings_provider.dart';
 import '../theme/app_text_styles.dart';
 
@@ -14,6 +15,7 @@ class AccessibilityBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<AppSettingsProvider>();
+    final strings = AppLocalizations.of(context);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -27,31 +29,39 @@ class AccessibilityBar extends StatelessWidget {
         children: [
           _TextStepButton(
             label: 'A-',
-            onTap: settings.textScale > AppSettingsProvider.minScale ? settings.decreaseTextSize : null,
+            onTap: settings.textScale > AppSettingsProvider.minScale
+                ? settings.decreaseTextSize
+                : null,
           ),
           const SizedBox(width: 2),
           _TextStepButton(
             label: 'A+',
-            onTap: settings.textScale < AppSettingsProvider.maxScale ? settings.increaseTextSize : null,
+            onTap: settings.textScale < AppSettingsProvider.maxScale
+                ? settings.increaseTextSize
+                : null,
           ),
           _Divider(),
           _LangToggle(settings: settings),
           _Divider(),
           _IconTap(
-            icon: settings.themeMode == ThemeMode.dark ? Icons.dark_mode_rounded : Icons.dark_mode_outlined,
+            icon: settings.themeMode == ThemeMode.dark
+                ? Icons.dark_mode_rounded
+                : Icons.dark_mode_outlined,
             onTap: settings.toggleTheme,
-            tooltip: 'Toggle dark mode',
+            tooltip: strings.text('toggleDarkMode'),
           ),
           _IconTap(
             icon: Icons.record_voice_over_rounded,
-            tooltip: 'Read screen aloud',
+            tooltip: strings.text('readScreenAloud'),
             onTap: () {
               SemanticsService.announce(
-                'Good Morning, screen reader activated for this demo.',
+                strings.text('screenReaderAnnouncement'),
                 Directionality.of(context),
               );
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Screen reader announced (demo).'), duration: Duration(seconds: 2)),
+                SnackBar(
+                    content: Text(strings.text('screenReaderDemo')),
+                    duration: Duration(seconds: 2)),
               );
             },
           ),
@@ -93,10 +103,13 @@ class _LangToggle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => settings.setLocale(settings.isArabic ? const Locale('en') : const Locale('ar')),
+      onTap: () => settings.setLocale(
+          settings.isArabic ? const Locale('en') : const Locale('ar')),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 3),
-        decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(20)),
+        decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(20)),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -139,7 +152,8 @@ class _IconTap extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
   final String tooltip;
-  const _IconTap({required this.icon, required this.onTap, required this.tooltip});
+  const _IconTap(
+      {required this.icon, required this.onTap, required this.tooltip});
 
   @override
   Widget build(BuildContext context) {

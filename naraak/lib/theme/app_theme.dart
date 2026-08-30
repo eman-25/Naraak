@@ -42,7 +42,8 @@ class AppTheme {
         color: AppColors.surface,
         elevation: 0,
         margin: EdgeInsets.zero,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radiusMd)),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(radiusMd)),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -51,18 +52,22 @@ class AppTheme {
           disabledBackgroundColor: AppColors.ink100,
           disabledForegroundColor: AppColors.ink500,
           padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radiusSm)),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(radiusSm)),
           textStyle: AppTextStyles.buttonLabel,
           minimumSize: const Size.fromHeight(52),
           elevation: 0,
-        ).copyWith(overlayColor: WidgetStateProperty.all(Colors.white.withValues(alpha: 0.08))),
+        ).copyWith(
+            overlayColor:
+                WidgetStateProperty.all(Colors.white.withValues(alpha: 0.08))),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: palette.primary,
           side: const BorderSide(color: AppColors.outline, width: 1.4),
           padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radiusSm)),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(radiusSm)),
           minimumSize: const Size.fromHeight(52),
           textStyle: AppTextStyles.buttonLabel.copyWith(color: palette.primary),
         ),
@@ -72,9 +77,14 @@ class AppTheme {
         fillColor: AppColors.ink050,
         hintStyle: AppTextStyles.body.copyWith(color: AppColors.ink500),
         labelStyle: AppTextStyles.body.copyWith(color: AppColors.ink500),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(radiusSm), borderSide: BorderSide.none),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(radiusSm), borderSide: BorderSide.none),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(radiusSm),
+            borderSide: BorderSide.none),
+        enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(radiusSm),
+            borderSide: BorderSide.none),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radiusSm),
           borderSide: BorderSide(color: palette.primary, width: 1.8),
@@ -84,16 +94,40 @@ class AppTheme {
           borderSide: const BorderSide(color: AppColors.error, width: 1.4),
         ),
       ),
-      dividerTheme: const DividerThemeData(color: AppColors.outline, thickness: 1, space: 1),
+      dividerTheme: const DividerThemeData(
+          color: AppColors.outline, thickness: 1, space: 1),
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: AppColors.surface,
         selectedItemColor: palette.primary,
         unselectedItemColor: AppColors.ink300,
         type: BottomNavigationBarType.fixed,
         showUnselectedLabels: true,
-        selectedLabelStyle: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600),
-        unselectedLabelStyle: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w500),
+        selectedLabelStyle:
+            const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600),
+        unselectedLabelStyle:
+            const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w500),
         elevation: 0,
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        height: 72,
+        backgroundColor: AppColors.surface,
+        indicatorColor: palette.primary.withValues(alpha: .14),
+        elevation: 0,
+        labelTextStyle: WidgetStateProperty.resolveWith((states) => TextStyle(
+              color: states.contains(WidgetState.selected)
+                  ? palette.primary
+                  : AppColors.ink500,
+              fontSize: 12,
+              fontWeight: states.contains(WidgetState.selected)
+                  ? FontWeight.w700
+                  : FontWeight.w500,
+            )),
+        iconTheme: WidgetStateProperty.resolveWith((states) => IconThemeData(
+              color: states.contains(WidgetState.selected)
+                  ? palette.primary
+                  : AppColors.ink500,
+              size: 24,
+            )),
       ),
       textTheme: const TextTheme(
         displayLarge: AppTextStyles.display,
@@ -133,16 +167,37 @@ class AppTheme {
       appBarTheme: base.appBarTheme.copyWith(
         backgroundColor: AppColors.darkBg,
         foregroundColor: AppColors.darkTextPrimary,
-        titleTextStyle: AppTextStyles.h2.copyWith(color: AppColors.darkTextPrimary),
+        titleTextStyle:
+            AppTextStyles.h2.copyWith(color: AppColors.darkTextPrimary),
         iconTheme: const IconThemeData(color: AppColors.darkTextPrimary),
       ),
       cardTheme: base.cardTheme.copyWith(color: AppColors.darkSurface),
-      inputDecorationTheme: base.inputDecorationTheme.copyWith(fillColor: AppColors.darkSurface2),
+      inputDecorationTheme:
+          base.inputDecorationTheme.copyWith(fillColor: AppColors.darkSurface2),
       dividerTheme: const DividerThemeData(color: AppColors.darkOutline),
       bottomNavigationBarTheme: base.bottomNavigationBarTheme.copyWith(
         backgroundColor: AppColors.darkSurface2,
         selectedItemColor: AppColors.darkAccent,
         unselectedItemColor: AppColors.darkTextSecondary,
+      ),
+      navigationBarTheme: base.navigationBarTheme.copyWith(
+        backgroundColor: AppColors.darkSurface,
+        indicatorColor: palette.primary.withValues(alpha: .28),
+        labelTextStyle: WidgetStateProperty.resolveWith((states) => TextStyle(
+              color: states.contains(WidgetState.selected)
+                  ? AppColors.darkTextPrimary
+                  : AppColors.darkTextSecondary,
+              fontSize: 12,
+              fontWeight: states.contains(WidgetState.selected)
+                  ? FontWeight.w700
+                  : FontWeight.w500,
+            )),
+        iconTheme: WidgetStateProperty.resolveWith((states) => IconThemeData(
+              color: states.contains(WidgetState.selected)
+                  ? AppColors.darkTextPrimary
+                  : AppColors.darkTextSecondary,
+              size: 24,
+            )),
       ),
       textTheme: base.textTheme.apply(
         bodyColor: AppColors.darkTextPrimary,
@@ -159,25 +214,34 @@ class AppPaletteExtension extends ThemeExtension<AppPaletteExtension> {
   const AppPaletteExtension(this.palette);
 
   static AppPalette of(BuildContext context) =>
-      Theme.of(context).extension<AppPaletteExtension>()?.palette ?? AppPalette.healthcareTeal;
+      Theme.of(context).extension<AppPaletteExtension>()?.palette ??
+      AppPalette.healthcareTeal;
 
   @override
-  AppPaletteExtension copyWith({AppPalette? palette}) => AppPaletteExtension(palette ?? this.palette);
+  AppPaletteExtension copyWith({AppPalette? palette}) =>
+      AppPaletteExtension(palette ?? this.palette);
 
   @override
-  ThemeExtension<AppPaletteExtension> lerp(covariant ThemeExtension<AppPaletteExtension>? other, double t) => this;
+  ThemeExtension<AppPaletteExtension> lerp(
+          covariant ThemeExtension<AppPaletteExtension>? other, double t) =>
+      this;
 }
 
 class _FadeThroughTransitionsBuilder extends PageTransitionsBuilder {
   const _FadeThroughTransitionsBuilder();
 
   @override
-  Widget buildTransitions<T>(PageRoute<T> route, BuildContext context, Animation<double> animation,
-      Animation<double> secondaryAnimation, Widget child) {
+  Widget buildTransitions<T>(
+      PageRoute<T> route,
+      BuildContext context,
+      Animation<double> animation,
+      Animation<double> secondaryAnimation,
+      Widget child) {
     return FadeTransition(
       opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
       child: ScaleTransition(
-        scale: Tween(begin: 0.98, end: 1.0).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
+        scale: Tween(begin: 0.98, end: 1.0).animate(
+            CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
         child: child,
       ),
     );

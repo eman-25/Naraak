@@ -5,9 +5,9 @@ import '../../providers/clinical_data_provider.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../theme/app_theme.dart';
-import '../../widgets/app_card.dart';
-import '../../widgets/app_top_bar.dart';
-import '../../widgets/empty_state.dart';
+import '../../widgets/naraak_card.dart';
+import '../../widgets/naraak_app_bar.dart';
+import '../../widgets/state_views.dart';
 
 class MedicalReportsListScreen extends StatefulWidget {
   const MedicalReportsListScreen({super.key});
@@ -28,19 +28,20 @@ class _MedicalReportsListScreenState extends State<MedicalReportsListScreen> {
   Widget build(BuildContext context) {
     final provider = context.watch<ClinicalDataProvider>();
     return Scaffold(
-        appBar: const AppTopBar(title: 'All PHC Reports'),
-        body: switch (provider.reportsState) {
+        appBar: const NaraakAppBar(title: 'All PHC Reports'),
+        body: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 980),
+            child: switch (provider.reportsState) {
           LoadState.idle ||
           LoadState.loading =>
             const Center(child: CircularProgressIndicator()),
-          LoadState.error => EmptyStateView(
-              isError: true,
+          LoadState.error => ErrorState(
               title: 'Could not load reports',
               message: provider.errorMessage ?? 'Please try again.',
               actionLabel: 'Retry',
               onAction: provider.loadReports),
-          LoadState.empty => const EmptyStateView(
-              icon: Icons.description_outlined,
+          LoadState.empty => const EmptyState(
               title: 'No medical reports',
               message: 'Available reports will appear here.'),
           LoadState.success => ListView.separated(
@@ -51,7 +52,7 @@ class _MedicalReportsListScreenState extends State<MedicalReportsListScreen> {
                 final report = provider.reports[i];
                 final date = MaterialLocalizations.of(context)
                     .formatMediumDate(report.date);
-                return AppCard(
+                return NaraakCard(
                     onTap: report.documentReference == null
                         ? null
                         : () => ScaffoldMessenger.of(context).showSnackBar(
@@ -82,6 +83,9 @@ class _MedicalReportsListScreenState extends State<MedicalReportsListScreen> {
                         const Icon(Icons.download_outlined)
                     ]));
               }),
-        });
+            },
+          ),
+        ),
+      );
   }
 }

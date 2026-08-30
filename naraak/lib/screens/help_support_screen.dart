@@ -1,11 +1,11 @@
 // lib/screens/help_support_screen.dart
 import 'package:flutter/material.dart';
-import '../services_mock/repository/request_repository.dart';
+import 'package:provider/provider.dart';
+import '../data/naraak_repository.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/app_button.dart';
 import '../widgets/app_card.dart';
-import '../widgets/app_top_bar.dart';
 
 class HelpSupportScreen extends StatefulWidget {
   const HelpSupportScreen({super.key});
@@ -34,24 +34,39 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
     super.dispose();
   }
 
-  void _submit() {
-    if (_formKey.currentState?.validate() ?? false) {
-      RequestRepository.instance.addRequest(
-        serviceName: _category,
-        status: 'submitted',
-        note: _subjectController.text.trim(),
+  bool _submitting = false;
+
+  Future<void> _submit() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    setState(() => _submitting = true);
+    final repository = context.read<NaraakRepository>();
+    try {
+      await repository.api.submitSupportMessage(
+        patientId: repository.requirePatientId,
+        category: _category,
+        subject: _subjectController.text.trim(),
+        message: _messageController.text.trim(),
       );
-      setState(() => _isSubmitted = true);
+      if (mounted) setState(() => _isSubmitted = true);
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(repository.friendlyError(error, arabic: false))),
+        );
+      }
     }
+    if (mounted) setState(() => _submitting = false);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const AppTopBar(title: 'Help & Support'),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
+          _InlinePageHeading(title: 'Help & Support'),
+          const SizedBox(height: 28),
           const Text('FREQUENTLY ASKED QUESTIONS',
               style: AppTextStyles.overline),
           const SizedBox(height: 10),
@@ -59,6 +74,8 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
             padding: EdgeInsets.zero,
             child: Column(
               children: [
+                _InlinePageHeading(title: 'Help & Support'),
+                const SizedBox(height: 28),
                 _FaqTile(
                   question: 'How do I book an appointment?',
                   answer:
@@ -90,6 +107,8 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
             padding: EdgeInsets.zero,
             child: Column(
               children: [
+                _InlinePageHeading(title: 'Help & Support'),
+                const SizedBox(height: 28),
                 ListTile(
                   leading:
                       Icon(Icons.phone_outlined, color: AppColors.primaryTeal),
@@ -125,6 +144,8 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          _InlinePageHeading(title: 'Help & Support'),
+          const SizedBox(height: 28),
           const Text('Category', style: AppTextStyles.label),
           const SizedBox(height: 6),
           DropdownButtonFormField<String>(
@@ -157,7 +178,10 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
           const SizedBox(height: 20),
           SizedBox(
             width: double.infinity,
-            child: AppButton(label: 'Submit', onPressed: _submit),
+            child: AppButton(
+                label: 'Submit',
+                isLoading: _submitting,
+                onPressed: _submitting ? null : _submit),
           ),
         ],
       ),
@@ -193,6 +217,27 @@ class _FaqTile extends StatelessWidget {
       childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       expandedCrossAxisAlignment: CrossAxisAlignment.start,
       children: [Text(answer, style: AppTextStyles.bodySecondary)],
+    );
+  }
+}
+
+class _InlinePageHeading extends StatelessWidget {
+  const _InlinePageHeading({required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        IconButton(
+          tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+          onPressed: () => Navigator.maybePop(context),
+          icon: const Icon(Icons.arrow_back_rounded),
+        ),
+        const SizedBox(width: 4),
+        Text(title, style: AppTextStyles.h2),
+      ],
     );
   }
 }

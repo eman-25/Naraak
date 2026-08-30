@@ -1,12 +1,14 @@
 // lib/screens/appointments_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../localization/app_localizations.dart';
 import '../models/appointment.dart';
 import '../providers/appointment_provider.dart';
 import '../providers/app_settings_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/status_badge.dart';
+import '../widgets/responsive_page_frame.dart';
 import 'services/join_appointment_screen.dart';
 
 enum _ApptFilter { upcoming, past, tele, inCenter }
@@ -59,6 +61,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context);
     final palette = context.watch<AppSettingsProvider>().palette;
     final allAppointments = context.watch<AppointmentProvider>().myAppointments;
     final upcomingCount = allAppointments
@@ -67,78 +70,289 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
         .length;
     final filtered = _applyFilter(allAppointments);
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 920),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Wrap(
-              alignment: WrapAlignment.spaceBetween,
-              crossAxisAlignment: WrapCrossAlignment.end,
-              spacing: 16,
-              runSpacing: 14,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text('YOUR CARE',
-                        style: AppTextStyles.overline
-                            .copyWith(color: palette.primary)),
-                    const SizedBox(height: 6),
-                    Text('Appointments',
-                        style: AppTextStyles.h1.copyWith(fontSize: 26)),
-                    const SizedBox(height: 6),
-                    ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 480),
-                      child: Text(
-                        'Manage upcoming visits and review your appointment history.',
-                        style: AppTextStyles.bodySecondary,
-                      ),
-                    ),
-                  ],
-                ),
-                ElevatedButton.icon(
-                  onPressed: () =>
-                      Navigator.pushNamed(context, '/services/booking'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: palette.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 18, vertical: 14),
-                    minimumSize: const Size(64, 44),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
-                    elevation: 0,
-                  ),
-                  icon: const Icon(Icons.calendar_month_rounded, size: 17),
-                  label: const Text('Book appointment'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 22),
-            _FilterTabs(
-              filter: _filter,
-              upcomingCount: upcomingCount,
-              onChanged: (f) => setState(() => _filter = f),
-            ),
-            const SizedBox(height: 18),
-            if (filtered.isEmpty)
-              _EmptyState(filter: _filter)
-            else
+    return ResponsivePageFrame(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.end,
+            spacing: 16,
+            runSpacing: 14,
+            children: [
               Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(strings.raw('YOUR CARE'),
+                      style: AppTextStyles.overline
+                          .copyWith(color: palette.primary)),
+                  const SizedBox(height: 6),
+                  Text(strings.raw('Appointments'),
+                      style: AppTextStyles.h1.copyWith(fontSize: 26)),
+                  const SizedBox(height: 6),
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 480),
+                    child: Text(
+                      strings.raw(
+                          'Manage upcoming visits and review your appointment history.'),
+                      style: AppTextStyles.bodySecondary,
+                    ),
+                  ),
+                ],
+              ),
+              ElevatedButton.icon(
+                onPressed: () =>
+                    Navigator.pushNamed(context, '/services/booking'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: palette.primary,
+                  foregroundColor: Colors.white,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                  minimumSize: const Size(64, 44),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                  elevation: 0,
+                ),
+                icon: const Icon(Icons.calendar_month_rounded, size: 17),
+                label: Text(strings.raw('Book Appointment')),
+              ),
+            ],
+          ),
+          const SizedBox(height: 22),
+          _FilterTabs(
+            filter: _filter,
+            upcomingCount: upcomingCount,
+            onChanged: (f) => setState(() => _filter = f),
+          ),
+          const SizedBox(height: 18),
+          if (filtered.isEmpty)
+            _EmptyState(filter: _filter)
+          else
+            LayoutBuilder(builder: (context, constraints) {
+              if (constraints.maxWidth > 860) {
+                return _AppointmentTable(appointments: filtered);
+              }
+              return Column(
                 children: filtered
                     .map((a) => Padding(
                           padding: const EdgeInsets.only(bottom: 12),
                           child: _AppointmentCard(appointment: a),
                         ))
                     .toList(),
-              ),
-          ],
-        ),
+              );
+            }),
+        ],
       ),
+    );
+  }
+}
+
+class _AppointmentTable extends StatelessWidget {
+  final List<Appointment> appointments;
+  const _AppointmentTable({required this.appointments});
+
+  AppStatus _statusFor(String status) => switch (status) {
+        'completed' => AppStatus.completed,
+        'cancelled' => AppStatus.cancelled,
+        _ => AppStatus.confirmed,
+      };
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final localizations = MaterialLocalizations.of(context);
+
+    final headerRow = Container(
+      color: isDark ? AppColors.darkSurface2 : AppColors.ink050,
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+      child: Row(
+        children: const [
+          _HeaderCell('Doctor', flex: 3),
+          _HeaderCell('Clinic', flex: 2),
+          _HeaderCell('Health Center', flex: 3),
+          _HeaderCell('Date & Time', flex: 3),
+          _HeaderCell('Type', flex: 2),
+          _HeaderCell('Status', flex: 2),
+          _HeaderCell('Actions', flex: 2),
+        ],
+      ),
+    );
+
+    final dataRows = <Widget>[
+      for (var i = 0; i < appointments.length; i++)
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+          decoration: BoxDecoration(
+            border: i == appointments.length - 1
+                ? null
+                : Border(
+                    bottom: BorderSide(
+                      color: isDark ? AppColors.darkOutline : AppColors.outline,
+                    ),
+                  ),
+          ),
+          child: _AppointmentRow(
+            appointment: appointments[i],
+            status: _statusFor(appointments[i].status),
+            localizations: localizations,
+          ),
+        ),
+    ];
+
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkSurface : Colors.white,
+        border: Border.all(
+            color: isDark ? AppColors.darkOutline : AppColors.outline),
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.22 : 0.05),
+            blurRadius: 14,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: LayoutBuilder(
+        builder: (context, outer) {
+          // A horizontal SingleChildScrollView hands its child unbounded
+          // width, so `ConstrainedBox(minWidth: 860)` alone leaves maxWidth
+          // at infinity — and `Column(crossAxisAlignment: stretch)` then
+          // tries to stretch to that infinite width. Pin an explicit,
+          // finite width instead (at least 860, or the available width if
+          // wider) so the column always has something concrete to stretch
+          // to.
+          final tableWidth = outer.maxWidth > 860 ? outer.maxWidth : 860.0;
+          return SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: SizedBox(
+              width: tableWidth,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [headerRow, ...dataRows],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _HeaderCell extends StatelessWidget {
+  final String label;
+  final int flex;
+  const _HeaderCell(this.label, {required this.flex});
+
+  @override
+  Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context);
+    return Expanded(
+      flex: flex,
+      child: Padding(
+        padding: const EdgeInsets.only(right: 12),
+        child: Text(strings.raw(label),
+            style: AppTextStyles.overline.copyWith(fontSize: 10.5)),
+      ),
+    );
+  }
+}
+
+class _AppointmentRow extends StatelessWidget {
+  final Appointment appointment;
+  final AppStatus status;
+  final MaterialLocalizations localizations;
+  const _AppointmentRow({
+    required this.appointment,
+    required this.status,
+    required this.localizations,
+  });
+
+  Widget _cell({required int flex, required Widget child}) => Expanded(
+        flex: flex,
+        child: Padding(
+          padding: const EdgeInsets.only(right: 12),
+          child: child,
+        ),
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context);
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        _cell(
+          flex: 3,
+          child: Text(appointment.doctorName,
+              style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w700),
+              overflow: TextOverflow.ellipsis),
+        ),
+        _cell(
+          flex: 2,
+          child: Text(appointment.clinic ?? 'General Clinic',
+              style: AppTextStyles.bodySecondary,
+              overflow: TextOverflow.ellipsis),
+        ),
+        _cell(
+          flex: 3,
+          child: Text(appointment.centerName,
+              style: AppTextStyles.bodySecondary,
+              overflow: TextOverflow.ellipsis),
+        ),
+        _cell(
+          flex: 3,
+          child: Text(
+            '${localizations.formatMediumDate(appointment.slotDateTime)} · '
+            '${localizations.formatTimeOfDay(TimeOfDay.fromDateTime(appointment.slotDateTime))}',
+            style: AppTextStyles.bodySecondary,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        _cell(
+          flex: 2,
+          child: Text(strings.raw(appointment.isTele ? 'Tele' : 'In-center'),
+              style: AppTextStyles.bodySecondary),
+        ),
+        _cell(flex: 2, child: StatusBadge(status: status)),
+        _cell(
+          flex: 2,
+          child: appointment.status != 'confirmed'
+              ? const SizedBox.shrink()
+              : Wrap(
+                  spacing: 4,
+                  children: [
+                    if (appointment.isTele)
+                      TextButton(
+                        style: TextButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            minimumSize: const Size(44, 32)),
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => JoinAppointmentScreen(
+                                doctorName: appointment.doctorName,
+                                appointmentId: appointment.id),
+                          ),
+                        ),
+                        child: Text(strings.raw('Join')),
+                      ),
+                    TextButton(
+                      style: TextButton.styleFrom(
+                          padding: EdgeInsets.zero,
+                          minimumSize: const Size(44, 32),
+                          foregroundColor: AppColors.error),
+                      onPressed: () => context
+                          .read<AppointmentProvider>()
+                          .cancelAppointment(appointment.id),
+                      child: Text(strings.raw('Cancel')),
+                    ),
+                  ],
+                ),
+        ),
+      ],
     );
   }
 }
@@ -154,6 +368,7 @@ class _FilterTabs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context);
     final palette = context.watch<AppSettingsProvider>().palette;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final tabs = [
@@ -187,7 +402,7 @@ class _FilterTabs extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(label,
+                    Text(strings.raw(label),
                         style: AppTextStyles.body.copyWith(
                           fontSize: 12,
                           fontWeight:
@@ -270,6 +485,7 @@ class _AppointmentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context);
     final palette = context.watch<AppSettingsProvider>().palette;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final localizations = MaterialLocalizations.of(context);
@@ -343,7 +559,7 @@ class _AppointmentCard extends StatelessWidget {
                             color: AppColors.secondarySurface,
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          child: Text('Tele',
+                          child: Text(strings.raw('Tele'),
                               style: AppTextStyles.caption.copyWith(
                                   color: AppColors.secondary,
                                   fontWeight: FontWeight.w700,
@@ -404,7 +620,7 @@ class _AppointmentCard extends StatelessWidget {
                                     appointmentId: appointment.id),
                               ),
                             ),
-                            child: const Text('Join'),
+                            child: Text(strings.raw('Join')),
                           ),
                           const SizedBox(width: 4),
                         ],
@@ -414,7 +630,7 @@ class _AppointmentCard extends StatelessWidget {
                               .cancelAppointment(appointment.id),
                           style: TextButton.styleFrom(
                               foregroundColor: AppColors.error),
-                          child: const Text('Cancel'),
+                          child: Text(strings.raw('Cancel')),
                         ),
                       ],
                     ),

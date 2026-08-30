@@ -1,22 +1,27 @@
 // This is a basic Flutter widget test for the Naraak app.
 //
-// It verifies that the app launches and shows the login screen first,
-// since NaraakApp starts at initialRoute: '/login'.
+// It verifies the required Splash -> Logo Animation -> Welcome -> eKey path.
 
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:naraak/main.dart';
 
 void main() {
-  testWidgets('App launches and shows login screen',
+  testWidgets('App launches through welcome and opens eKey login',
       (WidgetTester tester) async {
     await tester.pumpWidget(const NaraakApp());
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 2600));
-    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 1600));
+    await tester.pumpAndSettle();
 
-    // The login screen should show the app name and a CPR field.
-    expect(find.text('Naraak'), findsWidgets);
-    expect(find.text('Log in with eKey (Demo)'), findsOneWidget);
+    expect(find.text('Primary Healthcare, Closer to You'), findsOneWidget);
+    expect(find.text('Login with eKey'), findsOneWidget);
+
+    await tester.ensureVisible(find.text('Login with eKey'));
+    await tester.tap(find.text('Login with eKey'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('eKey Authentication'), findsOneWidget);
+    expect(find.text('Password'), findsNothing);
+    expect(find.text('CPR Number'), findsOneWidget);
   });
 }

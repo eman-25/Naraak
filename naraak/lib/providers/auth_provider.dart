@@ -29,22 +29,31 @@ class AuthProvider extends ChangeNotifier {
   final List<UserProfile> _availableUsers = [];
   UserProfile get currentUser => _currentUser;
   List<UserProfile> get availableUsers => List.unmodifiable(_availableUsers);
+  String? errorMessage;
 
-  Future<void> loadUsers() async {
-    final profile = await repository.profile();
-    final family = await repository.familyMembers();
-    _availableUsers
-      ..clear()
-      ..add(UserProfile(
-          id: profile['patientId'] as String,
-          name: profile['fullName'] as String,
-          roleLabel: 'Patient'))
-      ..addAll(family.map((item) => UserProfile(
-          id: item['patientId'] as String,
-          name: item['fullName'] as String,
-          roleLabel: 'Dependent (${item['relationship']})')));
-    _currentUser = _availableUsers.first;
-    notifyListeners();
+  Future<bool> loadUsers() async {
+    try {
+      final profile = await repository.profile();
+      final family = await repository.familyMembers();
+      _availableUsers
+        ..clear()
+        ..add(UserProfile(
+            id: profile['patientId'] as String,
+            name: profile['fullName'] as String,
+            roleLabel: 'Patient'))
+        ..addAll(family.map((item) => UserProfile(
+            id: item['patientId'] as String,
+            name: item['fullName'] as String,
+            roleLabel: 'Dependent (${item['relationship']})')));
+      _currentUser = _availableUsers.first;
+      errorMessage = null;
+      notifyListeners();
+      return true;
+    } catch (error) {
+      errorMessage = repository.friendlyError(error, arabic: false);
+      notifyListeners();
+      return false;
+    }
   }
 
   void switchUser(String userId) {

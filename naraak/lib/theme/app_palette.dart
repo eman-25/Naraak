@@ -1,7 +1,13 @@
 // lib/theme/app_palette.dart
 import 'package:flutter/material.dart';
 
-enum AppPaletteId { healthcareTeal, ministryBlue, royalIndigo, freshEmerald, warmPlum }
+enum AppPaletteId {
+  healthcareTeal,
+  ministryBlue,
+  royalIndigo,
+  freshEmerald,
+  warmPlum
+}
 
 /// One selectable brand palette. `preview` feeds the 3-stop swatch pill
 /// shown in the Appearance screen; `primary`/`secondary` feed the actual
@@ -32,10 +38,10 @@ class AppPalette {
   static const healthcareTeal = AppPalette(
     id: AppPaletteId.healthcareTeal,
     label: 'Healthcare Teal',
-    primary: Color(0xFF0E7C7B),
-    primaryDark: Color(0xFF0A5C5C),
+    primary: Color(0xFF0F6B72),
+    primaryDark: Color(0xFF0B4F54),
     secondary: Color(0xFF2D6CDF),
-    preview: [Color(0xFF0A5C5C), Color(0xFF0E7C7B), Color(0xFF7FCFC9)],
+    preview: [Color(0xFF0B4F54), Color(0xFF0F6B72), Color(0xFFEAF3F3)],
   );
 
   static const ministryBlue = AppPalette(
@@ -74,7 +80,13 @@ class AppPalette {
     preview: [Color(0xFF5C1F45), Color(0xFF8C3A6E), Color(0xFFE3A9CE)],
   );
 
-  static const all = [healthcareTeal, ministryBlue, royalIndigo, freshEmerald, warmPlum];
+  static const all = [
+    healthcareTeal,
+    ministryBlue,
+    royalIndigo,
+    freshEmerald,
+    warmPlum
+  ];
 
   static AppPalette fromId(AppPaletteId id) =>
       all.firstWhere((p) => p.id == id, orElse: () => healthcareTeal);

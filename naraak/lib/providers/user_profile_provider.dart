@@ -8,10 +8,12 @@ class UserProfileProvider extends ChangeNotifier {
   UserProfile? _profile;
   String? _loggedInCpr;
   String? _errorMessage;
+  String? _preferredLanguage;
   bool _loading = false;
   UserProfile? get profile => _profile;
   String? get loggedInCpr => _loggedInCpr;
   String? get errorMessage => _errorMessage;
+  String? get preferredLanguage => _preferredLanguage;
   bool get isLoading => _loading;
   bool get isLoggedIn => _loggedInCpr != null;
   bool get isProfileComplete => _profile != null;
@@ -23,7 +25,8 @@ class UserProfileProvider extends ChangeNotifier {
     try {
       final auth = await repository.login();
       final user = Map<String, dynamic>.from(auth['user'] as Map);
-      _loggedInCpr = user['cpr'] as String;
+      _loggedInCpr = cpr;
+      _preferredLanguage = user['language'] as String?;
       _profile = _fromApi(user);
       _loading = false;
       notifyListeners();
@@ -57,6 +60,7 @@ class UserProfileProvider extends ChangeNotifier {
         mobileNumber: value['phone'] as String,
         assignedHealthCenter: center['name'] as String,
         bloodType: value['bloodType'] as String?,
+        nationality: value['nationality'] as String?,
         familyDoctorName: doctor['doctorName'] as String?,
         familyDoctorSpecialty: doctor['specialty'] as String?);
   }
@@ -75,6 +79,7 @@ class UserProfileProvider extends ChangeNotifier {
 
   void logout() {
     _loggedInCpr = null;
+    _preferredLanguage = null;
     _profile = null;
     repository.patientId = null;
     notifyListeners();

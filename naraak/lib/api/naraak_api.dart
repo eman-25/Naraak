@@ -59,6 +59,7 @@ class NaraakDummyApi {
     'email': 'mariam.abdulla@example.com',
     'language': 'ar',
     'bloodType': 'O+',
+    'nationality': 'Bahraini',
     'cprExpiryDate': '2028-01-15',
     'healthCenter': {
       'id': 'HC-001',
@@ -261,8 +262,11 @@ class NaraakDummyApi {
       'vaccineName': 'Influenza Vaccine',
       'vaccinationDate': '2025-03-10',
       'healthCenter': 'Naim Health Center',
-      'certificateReference': 'assets/documents/vaccination_certificate_2025.pdf',
+      'certificateReference':
+          'assets/documents/vaccination_certificate_2025.pdf',
       'missing': false,
+      'dose': 'Annual dose',
+      'category': 'Adult',
     },
     {
       'recordId': 'VAC-002',
@@ -270,8 +274,58 @@ class NaraakDummyApi {
       'vaccineName': 'COVID-19 Booster',
       'vaccinationDate': '2024-11-21',
       'healthCenter': 'Naim Health Center',
-      'certificateReference': 'assets/documents/vaccination_certificate_2024.pdf',
+      'certificateReference':
+          'assets/documents/vaccination_certificate_2024.pdf',
       'missing': false,
+      'dose': 'Booster dose',
+      'category': 'Adult',
+    },
+    {
+      'recordId': 'VAC-003',
+      'patientId': 'PAT-001',
+      'vaccineName': 'MMR (Measles, Mumps, Rubella)',
+      'vaccinationDate': '2015-05-02',
+      'healthCenter': 'Hoora Health Center',
+      'certificateReference':
+          'assets/documents/vaccination_certificate_2025.pdf',
+      'missing': false,
+      'dose': 'Dose 2 of 2',
+      'category': 'Childhood',
+    },
+    {
+      'recordId': 'VAC-004',
+      'patientId': 'PAT-001',
+      'vaccineName': 'DTaP (Diphtheria, Tetanus, Pertussis)',
+      'vaccinationDate': '2013-09-18',
+      'healthCenter': 'Hoora Health Center',
+      'certificateReference':
+          'assets/documents/vaccination_certificate_2025.pdf',
+      'missing': false,
+      'dose': 'Dose 5 of 5',
+      'category': 'Childhood',
+    },
+    {
+      'recordId': 'VAC-005',
+      'patientId': 'PAT-001',
+      'vaccineName': 'Yellow Fever',
+      'vaccinationDate': '2023-07-04',
+      'healthCenter': 'Naim Health Center',
+      'certificateReference':
+          'assets/documents/vaccination_certificate_2024.pdf',
+      'missing': false,
+      'dose': 'Single dose',
+      'category': 'Travel',
+    },
+    {
+      'recordId': 'VAC-006',
+      'patientId': 'PAT-001',
+      'vaccineName': 'Hepatitis B — 3rd dose',
+      'vaccinationDate': '2024-01-20',
+      'healthCenter': 'Naim Health Center',
+      'certificateReference': null,
+      'missing': true,
+      'dose': 'Dose 3 of 3',
+      'category': 'Adult',
     },
   ];
 
@@ -305,14 +359,65 @@ class NaraakDummyApi {
 
   final Map<String, List<Map<String, dynamic>>> _visitedConsultants = {
     'Laboratory': [
-      {'consultantId': 'DOC-010', 'consultantName': 'Dr. Huda Yousif', 'gender': 'Female'},
+      {
+        'consultantId': 'DOC-010',
+        'consultantName': 'Dr. Huda Yousif',
+        'gender': 'Female'
+      },
     ],
     'Radiology': [
-      {'consultantId': 'DOC-011', 'consultantName': 'Dr. Amal Ibrahim', 'gender': 'Female'},
+      {
+        'consultantId': 'DOC-011',
+        'consultantName': 'Dr. Amal Ibrahim',
+        'gender': 'Female'
+      },
     ],
     'General Clinic': [
-      {'consultantId': 'DOC-001', 'consultantName': 'Dr. Noor Al Khalifa', 'gender': 'Female'},
-      {'consultantId': 'DOC-002', 'consultantName': 'Dr. Layla Hassan', 'gender': 'Female'},
+      {
+        'consultantId': 'DOC-001',
+        'consultantName': 'Dr. Noor Al Khalifa',
+        'gender': 'Female'
+      },
+      {
+        'consultantId': 'DOC-002',
+        'consultantName': 'Dr. Layla Hassan',
+        'gender': 'Female'
+      },
+    ],
+    'Dental': [
+      {
+        'consultantId': 'DOC-020',
+        'consultantName': 'Dr. Yousif Al Ansari',
+        'gender': 'Male'
+      },
+    ],
+    'Cardiology': [
+      {
+        'consultantId': 'DOC-021',
+        'consultantName': 'Dr. Maryam Al Sayed',
+        'gender': 'Female'
+      },
+    ],
+    'Orthopedics': [
+      {
+        'consultantId': 'DOC-022',
+        'consultantName': 'Dr. Khalid Bu Ali',
+        'gender': 'Male'
+      },
+    ],
+    'Dermatology': [
+      {
+        'consultantId': 'DOC-023',
+        'consultantName': 'Dr. Reem Al Doseri',
+        'gender': 'Female'
+      },
+    ],
+    'ENT': [
+      {
+        'consultantId': 'DOC-024',
+        'consultantName': 'Dr. Ahmed Salman',
+        'gender': 'Male'
+      },
     ],
   };
 
@@ -375,7 +480,8 @@ class NaraakDummyApi {
       'patientId': 'PAT-001',
       'type': 'appointment-reminder',
       'title': 'Appointment reminder',
-      'body': 'Your appointment at Naim Health Center is on 1 September 2026 at 09:00.',
+      'body':
+          'Your appointment at Naim Health Center is on 1 September 2026 at 09:00.',
       'read': false,
       'createdAt': '2026-08-29T08:00:00Z',
       'routeTarget': '/appointments',
@@ -409,7 +515,8 @@ class NaraakDummyApi {
       throw const NaraakApiException(
         statusCode: 401,
         code: 'CPR_EXPIRED',
-        message: 'Your CPR has expired. Please renew your CPR before signing in.',
+        message:
+            'Your CPR has expired. Please renew your CPR before signing in.',
       );
     }
 
@@ -434,12 +541,15 @@ class NaraakDummyApi {
 
   Future<Map<String, dynamic>> getHomeDashboard() async {
     await _wait();
-    final upcoming = _appointments.where((a) => a['status'] != 'cancelled').toList();
+    final upcoming =
+        _appointments.where((a) => a['status'] != 'cancelled').toList();
     return _success({
       'patient': _patient,
       'nextAppointment': upcoming.isEmpty ? null : upcoming.first,
-      'pendingRequests': _requests.where((r) => r['status'] != 'completed').toList(),
-      'unreadNotifications': _notifications.where((n) => n['read'] == false).length,
+      'pendingRequests':
+          _requests.where((r) => r['status'] != 'completed').toList(),
+      'unreadNotifications':
+          _notifications.where((n) => n['read'] == false).length,
     });
   }
 
@@ -456,7 +566,8 @@ class NaraakDummyApi {
   // 2) Choose clinic: General Clinic or Dental
   // 3) Filter by doctor/gender/date/time if needed
   // 4) Choose an available slot and confirm booking
-  Future<Map<String, dynamic>> getAppointmentClinics({required String appointmentType}) async {
+  Future<Map<String, dynamic>> getAppointmentClinics(
+      {required String appointmentType}) async {
     await _wait();
     const allowedTypes = {'in-center', 'tele'};
     if (!allowedTypes.contains(appointmentType)) {
@@ -512,9 +623,11 @@ class NaraakDummyApi {
       if (s['available'] != true) return false;
       if (s['appointmentType'] != appointmentType) return false;
       if (s['clinic'] != clinic) return false;
-      if (healthCenterId != null && s['healthCenterId'] != healthCenterId) return false;
+      if (healthCenterId != null && s['healthCenterId'] != healthCenterId)
+        return false;
       if (doctorId != null && s['doctorId'] != doctorId) return false;
-      if (doctorGender != null && s['doctorGender'] != doctorGender) return false;
+      if (doctorGender != null && s['doctorGender'] != doctorGender)
+        return false;
       if (date != null && s['date'] != date) return false;
       return true;
     }).toList();
@@ -531,10 +644,16 @@ class NaraakDummyApi {
     await _wait();
     final index = _slots.indexWhere((s) => s['slotId'] == slotId);
     if (index < 0) {
-      throw const NaraakApiException(statusCode: 404, code: 'NOT_FOUND', message: 'Appointment slot was not found.');
+      throw const NaraakApiException(
+          statusCode: 404,
+          code: 'NOT_FOUND',
+          message: 'Appointment slot was not found.');
     }
     if (_slots[index]['available'] != true) {
-      throw const NaraakApiException(statusCode: 409, code: 'RESOURCE_CONFLICT', message: 'This slot is no longer available.');
+      throw const NaraakApiException(
+          statusCode: 409,
+          code: 'RESOURCE_CONFLICT',
+          message: 'This slot is no longer available.');
     }
     _slots[index]['available'] = false;
     final a = {
@@ -550,7 +669,8 @@ class NaraakDummyApi {
       'patientId': patientId,
       'type': 'appointment-confirmation',
       'title': 'Appointment confirmed',
-      'body': 'Your appointment has been confirmed. You can view the details in My Appointments.',
+      'body':
+          'Your appointment has been confirmed. You can view the details in My Appointments.',
       'read': false,
       'createdAt': DateTime.now().toUtc().toIso8601String(),
       'routeTarget': '/appointments',
@@ -558,12 +678,15 @@ class NaraakDummyApi {
     return _success(a);
   }
 
-  Future<Map<String, dynamic>> getMyAppointments({required String patientId}) async {
+  Future<Map<String, dynamic>> getMyAppointments(
+      {required String patientId}) async {
     await _wait();
-    return _success(_appointments.where((a) => a['patientId'] == patientId).toList());
+    return _success(
+        _appointments.where((a) => a['patientId'] == patientId).toList());
   }
 
-  Future<Map<String, dynamic>> getTeleAppointmentDetails({required String appointmentId}) async {
+  Future<Map<String, dynamic>> getTeleAppointmentDetails(
+      {required String appointmentId}) async {
     await _wait();
     return _success({
       'appointmentId': appointmentId,
@@ -574,11 +697,13 @@ class NaraakDummyApi {
         'Use a quiet private place.',
         'Tap Join when your appointment time starts.',
       ],
-      'privacyMessage': 'Use a private place and do not share the consultation link.',
+      'privacyMessage':
+          'Use a private place and do not share the consultation link.',
     });
   }
 
-  Future<Map<String, dynamic>> resendTeleLink({required String appointmentId}) async {
+  Future<Map<String, dynamic>> resendTeleLink(
+      {required String appointmentId}) async {
     await _wait();
     return _success({'appointmentId': appointmentId, 'resendStatus': 'sent'});
   }
@@ -586,9 +711,11 @@ class NaraakDummyApi {
   // -----------------------------
   // Vaccinations
   // -----------------------------
-  Future<Map<String, dynamic>> getVaccinations({required String patientId}) async {
+  Future<Map<String, dynamic>> getVaccinations(
+      {required String patientId}) async {
     await _wait();
-    return _success(_vaccinations.where((v) => v['patientId'] == patientId).toList());
+    return _success(
+        _vaccinations.where((v) => v['patientId'] == patientId).toList());
   }
 
   Future<Map<String, dynamic>> reportMissingVaccination({
@@ -599,7 +726,10 @@ class NaraakDummyApi {
   }) async {
     await _wait();
     if (uploadedDocument.trim().isEmpty) {
-      throw const NaraakApiException(statusCode: 400, code: 'VALIDATION_ERROR', message: 'Supporting document is required.');
+      throw const NaraakApiException(
+          statusCode: 400,
+          code: 'VALIDATION_ERROR',
+          message: 'Supporting document is required.');
     }
     return _createRequest(patientId, 'missing-vaccination', {
       'uploadedDocument': uploadedDocument,
@@ -611,14 +741,16 @@ class NaraakDummyApi {
   // -----------------------------
   // Medical Reports
   // -----------------------------
-  Future<Map<String, dynamic>> getMedicalReports({required String patientId, String? type}) async {
+  Future<Map<String, dynamic>> getMedicalReports(
+      {required String patientId, String? type}) async {
     await _wait();
     var list = _reports.where((r) => r['patientId'] == patientId).toList();
     if (type != null) list = list.where((r) => r['category'] == type).toList();
     return _success(list);
   }
 
-  Future<Map<String, dynamic>> getVisitedConsultants({required String category}) async {
+  Future<Map<String, dynamic>> getVisitedConsultants(
+      {required String category}) async {
     await _wait();
     return _success(_visitedConsultants[category] ?? <Map<String, dynamic>>[]);
   }
@@ -642,7 +774,8 @@ class NaraakDummyApi {
   // -----------------------------
   // Newborn Sehati Card
   // -----------------------------
-  Future<Map<String, dynamic>> getDummyNewbornRegistryData({required String guardianPatientId}) async {
+  Future<Map<String, dynamic>> getDummyNewbornRegistryData(
+      {required String guardianPatientId}) async {
     await _wait();
     return _success({
       'newbornCpr': '260815214',
@@ -678,7 +811,8 @@ class NaraakDummyApi {
   // -----------------------------
   // Hajj Certificate
   // -----------------------------
-  Future<Map<String, dynamic>> getHajjCertificateStatus({required String patientId}) async {
+  Future<Map<String, dynamic>> getHajjCertificateStatus(
+      {required String patientId}) async {
     await _wait();
     return _success({
       'patientId': patientId,
@@ -690,9 +824,11 @@ class NaraakDummyApi {
     });
   }
 
-  Future<Map<String, dynamic>> requestHajjCertificate({required String patientId}) async {
+  Future<Map<String, dynamic>> requestHajjCertificate(
+      {required String patientId}) async {
     await _wait();
-    return _createRequest(patientId, 'hajj-certificate', {'doctorVisitVerified': true});
+    return _createRequest(
+        patientId, 'hajj-certificate', {'doctorVisitVerified': true});
   }
 
   // -----------------------------
@@ -707,7 +843,10 @@ class NaraakDummyApi {
   }) async {
     await _wait();
     if (!consent) {
-      throw const NaraakApiException(statusCode: 400, code: 'VALIDATION_ERROR', message: 'Consent is required.');
+      throw const NaraakApiException(
+          statusCode: 400,
+          code: 'VALIDATION_ERROR',
+          message: 'Consent is required.');
     }
     _patient['healthCenter'] = {
       'id': 'HC-002',
@@ -731,7 +870,10 @@ class NaraakDummyApi {
     return _success([
       {'name': 'CPR / Identity copy', 'required': true},
       {'name': 'Recent supporting medical report', 'required': false},
-      {'name': 'Residency / supporting document if applicable', 'required': false},
+      {
+        'name': 'Residency / supporting document if applicable',
+        'required': false
+      },
     ]);
   }
 
@@ -743,7 +885,11 @@ class NaraakDummyApi {
     required bool consent,
   }) async {
     await _wait();
-    if (!consent) throw const NaraakApiException(statusCode: 400, code: 'VALIDATION_ERROR', message: 'Consent is required.');
+    if (!consent)
+      throw const NaraakApiException(
+          statusCode: 400,
+          code: 'VALIDATION_ERROR',
+          message: 'Consent is required.');
     return _createRequest(patientId, 'fee-exemption', {
       'requestType': requestType,
       'personalDetails': personalDetails,
@@ -776,7 +922,8 @@ class NaraakDummyApi {
   // -----------------------------
   // Mammogram
   // -----------------------------
-  Future<Map<String, dynamic>> checkMammogramEligibility({required String patientId}) async {
+  Future<Map<String, dynamic>> checkMammogramEligibility(
+      {required String patientId}) async {
     await _wait();
     return _success({
       'eligible': true,
@@ -801,9 +948,12 @@ class NaraakDummyApi {
   // -----------------------------
   // Family Doctor
   // -----------------------------
-  Future<Map<String, dynamic>> getAvailableFamilyDoctors({required String healthCenterId}) async {
+  Future<Map<String, dynamic>> getAvailableFamilyDoctors(
+      {required String healthCenterId}) async {
     await _wait();
-    return _success(_familyDoctors.where((d) => d['healthCenterId'] == healthCenterId).toList());
+    return _success(_familyDoctors
+        .where((d) => d['healthCenterId'] == healthCenterId)
+        .toList());
   }
 
   Future<Map<String, dynamic>> requestFamilyDoctorChange({
@@ -813,12 +963,23 @@ class NaraakDummyApi {
     required bool consent,
   }) async {
     await _wait();
-    final doctor = _familyDoctors.where((d) => d['doctorId'] == requestedDoctorId).firstOrNull;
-    if (doctor == null) throw const NaraakApiException(statusCode: 404, code: 'NOT_FOUND', message: 'Doctor not found.');
+    final doctor = _familyDoctors
+        .where((d) => d['doctorId'] == requestedDoctorId)
+        .firstOrNull;
+    if (doctor == null)
+      throw const NaraakApiException(
+          statusCode: 404, code: 'NOT_FOUND', message: 'Doctor not found.');
     if (doctor['capacityAvailable'] != true) {
-      throw const NaraakApiException(statusCode: 409, code: 'NO_CAPACITY', message: 'The selected doctor has no available quota.');
+      throw const NaraakApiException(
+          statusCode: 409,
+          code: 'NO_CAPACITY',
+          message: 'The selected doctor has no available quota.');
     }
-    if (!consent) throw const NaraakApiException(statusCode: 400, code: 'VALIDATION_ERROR', message: 'Consent is required.');
+    if (!consent)
+      throw const NaraakApiException(
+          statusCode: 400,
+          code: 'VALIDATION_ERROR',
+          message: 'Consent is required.');
     return _createRequest(patientId, 'family-doctor-change', {
       'requestedDoctorId': requestedDoctorId,
       'reason': reason,
@@ -840,7 +1001,10 @@ class NaraakDummyApi {
     await _wait();
     const allowedTypes = {'Student', 'Employee', 'Delegate'};
     if (!allowedTypes.contains(applicantType)) {
-      throw const NaraakApiException(statusCode: 400, code: 'VALIDATION_ERROR', message: 'Invalid applicant type.');
+      throw const NaraakApiException(
+          statusCode: 400,
+          code: 'VALIDATION_ERROR',
+          message: 'Invalid applicant type.');
     }
     return _createRequest(patientId, 'research-application', {
       'applicantType': applicantType,
@@ -854,36 +1018,63 @@ class NaraakDummyApi {
   // -----------------------------
   // Pending Requests / Notifications
   // -----------------------------
-  Future<Map<String, dynamic>> getPendingRequests({required String patientId, String? status}) async {
+  Future<Map<String, dynamic>> getPendingRequests(
+      {required String patientId, String? status}) async {
     await _wait();
     var list = _requests.where((r) => r['patientId'] == patientId).toList();
-    if (status != null) list = list.where((r) => r['status'] == status).toList();
+    if (status != null)
+      list = list.where((r) => r['status'] == status).toList();
     return _success(list);
   }
 
-  Future<Map<String, dynamic>> getRequestById({required String requestId}) async {
+  Future<Map<String, dynamic>> getRequestById(
+      {required String requestId}) async {
     await _wait();
     final list = _requests.where((r) => r['requestId'] == requestId).toList();
-    if (list.isEmpty) throw const NaraakApiException(statusCode: 404, code: 'NOT_FOUND', message: 'Request not found.');
+    if (list.isEmpty)
+      throw const NaraakApiException(
+          statusCode: 404, code: 'NOT_FOUND', message: 'Request not found.');
     return _success(list.first);
   }
 
-  Future<Map<String, dynamic>> getNotifications({required String patientId, bool unreadOnly = false}) async {
+  Future<Map<String, dynamic>> getNotifications(
+      {required String patientId, bool unreadOnly = false}) async {
     await _wait();
-    var list = _notifications.where((n) => n['patientId'] == patientId).toList();
+    var list =
+        _notifications.where((n) => n['patientId'] == patientId).toList();
     if (unreadOnly) list = list.where((n) => n['read'] == false).toList();
     return _success(list);
   }
 
-  Future<Map<String, dynamic>> markNotificationRead({required String notificationId}) async {
+  Future<Map<String, dynamic>> markNotificationRead(
+      {required String notificationId}) async {
     await _wait();
-    final index = _notifications.indexWhere((n) => n['notificationId'] == notificationId);
-    if (index < 0) throw const NaraakApiException(statusCode: 404, code: 'NOT_FOUND', message: 'Notification not found.');
+    final index =
+        _notifications.indexWhere((n) => n['notificationId'] == notificationId);
+    if (index < 0)
+      throw const NaraakApiException(
+          statusCode: 404,
+          code: 'NOT_FOUND',
+          message: 'Notification not found.');
     _notifications[index]['read'] = true;
     return _success(_notifications[index]);
   }
 
-  Map<String, dynamic> _createRequest(String patientId, String serviceType, Map<String, dynamic> payload) {
+  Future<Map<String, dynamic>> submitSupportMessage({
+    required String patientId,
+    required String category,
+    required String subject,
+    required String message,
+  }) async {
+    await _wait();
+    return _createRequest(patientId, category, {
+      'subject': subject,
+      'message': message,
+    });
+  }
+
+  Map<String, dynamic> _createRequest(
+      String patientId, String serviceType, Map<String, dynamic> payload) {
     final request = {
       'requestId': _nextId('REQ'),
       'patientId': patientId,

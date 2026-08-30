@@ -31,9 +31,11 @@ class ChangeDoctorProvider extends ChangeNotifier {
           .any((r) => (r as Map)['serviceType'] == 'family-doctor-change');
       final response = await repository.api
           .getAvailableFamilyDoctors(healthCenterId: center['id'] as String);
+      // Every doctor at the center is shown — including ones with no
+      // capacity — so the UI can surface the "no available capacity" state
+      // per Phase 3 §29, instead of silently hiding them.
       final doctors = (repository.data(response) as List)
           .map((v) => Map<String, dynamic>.from(v as Map))
-          .where((v) => v['capacityAvailable'] == true)
           .toList();
       _doctorIds
         ..clear()
@@ -41,8 +43,18 @@ class ChangeDoctorProvider extends ChangeNotifier {
             MapEntry(v['doctorName'] as String, v['doctorId'] as String)));
       _centers = [
         HealthCenterOption(
-            name: center['name'] as String,
-            doctors: doctors.map((v) => v['doctorName'] as String).toList())
+          name: center['name'] as String,
+          doctors: doctors
+              .map((v) => FamilyDoctorOption(
+                    doctorId: v['doctorId'] as String,
+                    name: v['doctorName'] as String,
+                    gender: v['gender'] as String? ?? '',
+                    specialty: v['specialty'] as String? ?? 'Family Medicine',
+                    capacityAvailable: v['capacityAvailable'] as bool? ?? false,
+                    availableQuota: v['availableQuota'] as int? ?? 0,
+                  ))
+              .toList(),
+        )
       ];
       _initState = LoadState.success;
     } catch (e) {

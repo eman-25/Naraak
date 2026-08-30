@@ -1,5 +1,6 @@
 // lib/main.dart — only the changed parts shown
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'theme/app_theme.dart';
 import 'data/naraak_repository.dart';
@@ -23,7 +24,7 @@ import 'screens/services_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/appointments_screen.dart';
 import 'screens/pending_requests_screen.dart';
-import 'screens/login_screen.dart';
+import 'screens/ekey_login_screen.dart';
 import 'screens/profile_setup_screen.dart';
 import 'screens/family_members_screen.dart';
 import 'screens/personal_info_screen.dart';
@@ -31,12 +32,14 @@ import 'screens/notifications_screen.dart';
 import 'screens/app_settings_screen.dart';
 import 'screens/privacy_security_screen.dart';
 import 'screens/help_support_screen.dart';
-import 'screens/splash_screen.dart';
+import 'screens/naraak_splash_screen.dart';
+import 'screens/logo_animation_screen.dart';
+import 'screens/welcome_screen.dart';
 import 'responsive/breakpoints.dart';
-import 'web/web_sidebar.dart';
-import 'web/web_mini_topbar.dart';
-import 'web/web_home_screen.dart';
+import 'web/web_dashboard_header.dart';
+import 'web/reference_web_home_screen.dart';
 import 'widgets/mobile_top_bar.dart';
+import 'widgets/naraak_bottom_navigation.dart';
 
 void main() => runApp(const NaraakApp());
 
@@ -93,13 +96,18 @@ class NaraakApp extends StatelessWidget {
           themeMode: settings.themeMode,
           locale: settings.locale,
           supportedLocales: AppLocalizations.supportedLocales,
-          localizationsDelegates: const [AppLocalizationsDelegate()],
+          localizationsDelegates: const [
+            AppLocalizationsDelegate(),
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
           builder: (context, child) => MediaQuery(
             data: MediaQuery.of(context)
                 .copyWith(textScaler: TextScaler.linear(settings.textScale)),
             child: child!,
           ),
-          home: const SplashScreen(),
+          home: const NaraakSplashScreen(),
           // Only pre-shell routes live here. Everything reachable once
           // inside the app (services, pending requests, notifications,
           // profile sub-pages) is registered on RootShell's own nested
@@ -107,7 +115,9 @@ class NaraakApp extends StatelessWidget {
           // button — stay visible on every one of those screens, per the
           // Phase 3 wireframes (every mockup screen keeps the 4-tab bar).
           routes: {
-            '/login': (_) => const LoginScreen(),
+            '/logo-animation': (_) => const LogoAnimationScreen(),
+            '/welcome': (_) => const WelcomeScreen(),
+            '/login': (_) => const EkeyLoginScreen(),
             '/profile-setup': (_) => const ProfileSetupScreen(),
             '/home': (_) => const RootShell(),
           },
@@ -179,7 +189,7 @@ class _RootShellState extends State<RootShell> {
   // screens for now (centered by RootShell below) until each gets its own
   // desktop layout pass.
   static const _webScreens = [
-    WebHomeScreen(),
+    ReferenceWebHomeScreen(),
     AppointmentsScreen(),
     ServicesScreen(),
     ProfileScreen(),
@@ -209,8 +219,6 @@ class _RootShellState extends State<RootShell> {
     _tabIndex.dispose();
     super.dispose();
   }
-
-  static const _pageLabels = ['Home', 'Appointments', 'Services', 'Profile'];
 
   Widget _buildNavigator(bool web, List<Widget> screens) {
     return Navigator(
@@ -253,18 +261,11 @@ class _RootShellState extends State<RootShell> {
         selectTab: _selectTab,
         navigatorKey: _navigatorKey,
         child: Scaffold(
-          body: Row(
+          body: Column(
             children: [
-              WebSidebar(
-                  currentIndex: _tabIndex.value, onSelectTab: _selectTab),
-              Expanded(
-                child: Column(
-                  children: [
-                    WebMiniTopBar(pageLabel: _pageLabels[_tabIndex.value]),
-                    Expanded(child: _buildNavigator(true, screens)),
-                  ],
-                ),
-              ),
+              WebDashboardHeader(
+                  selected: _tabIndex.value, onSelect: _selectTab),
+              Expanded(child: _buildNavigator(true, screens)),
             ],
           ),
         ),
@@ -279,27 +280,9 @@ class _RootShellState extends State<RootShell> {
         body: _buildNavigator(false, screens),
         bottomNavigationBar: ValueListenableBuilder<int>(
           valueListenable: _tabIndex,
-          builder: (_, index, __) => BottomNavigationBar(
+          builder: (_, index, __) => NaraakBottomNavigation(
             currentIndex: index,
-            onTap: _selectTab,
-            items: const [
-              BottomNavigationBarItem(
-                  icon: Icon(Icons.home_outlined),
-                  activeIcon: Icon(Icons.home),
-                  label: 'Home'),
-              BottomNavigationBarItem(
-                  icon: Icon(Icons.event_note_outlined),
-                  activeIcon: Icon(Icons.event_note),
-                  label: 'Appointments'),
-              BottomNavigationBarItem(
-                  icon: Icon(Icons.grid_view_outlined),
-                  activeIcon: Icon(Icons.grid_view),
-                  label: 'Services'),
-              BottomNavigationBarItem(
-                  icon: Icon(Icons.person_outline),
-                  activeIcon: Icon(Icons.person),
-                  label: 'Profile'),
-            ],
+            onDestinationSelected: _selectTab,
           ),
         ),
       ),

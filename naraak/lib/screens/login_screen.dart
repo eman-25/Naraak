@@ -4,6 +4,7 @@ import 'package:flutter/services.dart' show FilteringTextInputFormatter;
 import 'package:provider/provider.dart';
 import '../localization/app_localizations.dart';
 import '../providers/user_profile_provider.dart';
+import '../providers/app_settings_provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/family_provider.dart';
 import '../providers/clinical_data_provider.dart';
@@ -44,6 +45,11 @@ class _LoginScreenState extends State<LoginScreen> {
     final success = await profileProvider.login(_cprController.text.trim());
     if (!mounted) return;
     setState(() => _isLoading = false);
+    if (success) {
+      context
+          .read<AppSettingsProvider>()
+          .setLocaleFromApiLanguage(profileProvider.preferredLanguage);
+    }
     if (!success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -56,7 +62,7 @@ class _LoginScreenState extends State<LoginScreen> {
       context.read<FamilyProvider>().loadMembers(),
       context.read<ClinicalDataProvider>().loadNotifications(),
     ]);
-    if (mounted) Navigator.pushReplacementNamed(context, '/home');
+    if (mounted) Navigator.pushReplacementNamed(context, '/profile-setup');
   }
 
   @override
@@ -111,11 +117,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(strings.text('signIn'),
+                            Text('eKey National Authentication',
                                 style: AppTextStyles.h2),
                             const SizedBox(height: 4),
                             Text(
-                              strings.text('enterCprNumber'),
+                              'Login securely with your eKey to access Naraak services.',
                               style: AppTextStyles.bodySecondary,
                             ),
                             const SizedBox(height: 22),
@@ -193,6 +199,10 @@ class _LoginScreenState extends State<LoginScreen> {
                               isLoading: _isLoading,
                               onPressed: _handleLogin,
                             ),
+                            const SizedBox(height: 24),
+                            const Divider(height: 1),
+                            const SizedBox(height: 20),
+                            const _AccessibilitySection(),
                           ],
                         ),
                       ),
@@ -203,6 +213,126 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _AccessibilitySection extends StatelessWidget {
+  const _AccessibilitySection();
+
+  @override
+  Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context);
+    final settings = context.watch<AppSettingsProvider>();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(children: [
+          const Icon(Icons.accessibility_new_rounded,
+              color: AppColors.primary, size: 22),
+          const SizedBox(width: 8),
+          Text(strings.text('accessibility'), style: AppTextStyles.h3),
+        ]),
+        const SizedBox(height: 16),
+        Text(strings.text('language'), style: AppTextStyles.overline),
+        const SizedBox(height: 8),
+        Row(children: [
+          Expanded(
+              child: _LanguageButton(
+            label: strings.text('english'),
+            selected: !settings.isArabic,
+            onPressed: () => settings.setLocale(const Locale('en')),
+          )),
+          const SizedBox(width: 8),
+          Expanded(
+              child: _LanguageButton(
+            label: strings.text('arabic'),
+            selected: settings.isArabic,
+            onPressed: () => settings.setLocale(const Locale('ar')),
+          )),
+        ]),
+        const SizedBox(height: 16),
+        Row(children: [
+          Expanded(
+              child: Text(strings.text('textSize'),
+                  style: AppTextStyles.overline)),
+          _FontSizeButton(
+            label: 'A−',
+            tooltip: strings.text('decreaseTextSize'),
+            onPressed: settings.textScale > AppSettingsProvider.minScale
+                ? settings.decreaseTextSize
+                : null,
+          ),
+          SizedBox(
+            width: 58,
+            child: Text('${settings.textScalePercent}%',
+                textAlign: TextAlign.center,
+                style: AppTextStyles.caption.copyWith(
+                    color: AppColors.ink700, fontWeight: FontWeight.w700)),
+          ),
+          _FontSizeButton(
+            label: 'A+',
+            tooltip: strings.text('increaseTextSize'),
+            onPressed: settings.textScale < AppSettingsProvider.maxScale
+                ? settings.increaseTextSize
+                : null,
+          ),
+        ]),
+      ],
+    );
+  }
+}
+
+class _LanguageButton extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onPressed;
+  const _LanguageButton({
+    required this.label,
+    required this.selected,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      selected: selected,
+      button: true,
+      child: OutlinedButton(
+        onPressed: onPressed,
+        style: OutlinedButton.styleFrom(
+          foregroundColor: selected ? Colors.white : AppColors.primary,
+          backgroundColor: selected ? AppColors.primary : Colors.transparent,
+          side: const BorderSide(color: AppColors.primary),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppTheme.radiusSm)),
+        ),
+        child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
+      ),
+    );
+  }
+}
+
+class _FontSizeButton extends StatelessWidget {
+  final String label;
+  final String tooltip;
+  final VoidCallback? onPressed;
+  const _FontSizeButton({
+    required this.label,
+    required this.tooltip,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: IconButton.outlined(
+        onPressed: onPressed,
+        icon: Text(label,
+            style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w800)),
       ),
     );
   }

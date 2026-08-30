@@ -1,20 +1,25 @@
 // lib/screens/services/hajj_certificate_screen.dart
 import 'package:flutter/material.dart';
+import '../../localization/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../providers/hajj_certificate_provider.dart';
 import '../../providers/appointment_provider.dart' show LoadState;
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../theme/app_theme.dart';
-import '../../widgets/app_button.dart';
-import '../../widgets/empty_state.dart';
-import '../../widgets/app_top_bar.dart';
+import '../../widgets/app_button.dart' show AppButtonVariant;
+import '../../widgets/naraak_button.dart';
+import '../../widgets/naraak_app_bar.dart';
+import '../../widgets/progress_stepper.dart';
+import '../../widgets/responsive_page_frame.dart';
+import '../../widgets/service_hero.dart';
+import '../../widgets/state_views.dart';
 
-/// Electronic Hajj Certificate — Phase 3 §3.6/§4.5: a read-only check
+/// Electronic Hajj Certificate â€” Phase 3 Â§3.6/Â§4.5: a read-only check
 /// against a doctor visit logged in the MOH DB, not a form the user fills
 /// in. "I've requested it from my doctor" self-reports that in-person visit
 /// so the request can be tracked through the same Pending Requests
-/// lifecycle as every other service (Requested → Processing → Ready →
+/// lifecycle as every other service (Requested â†’ Processing â†’ Ready â†’
 /// Downloaded).
 class HajjCertificateScreen extends StatefulWidget {
   const HajjCertificateScreen({super.key});
@@ -37,7 +42,7 @@ class _HajjCertificateScreenState extends State<HajjCertificateScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const AppTopBar(title: 'Electronic Hajj Certificate'),
+      appBar: const NaraakAppBar(title: 'Electronic Hajj Certificate'),
       body: Consumer<HajjCertificateProvider>(
         builder: (context, provider, _) {
           if (provider.initState == LoadState.loading ||
@@ -47,8 +52,7 @@ class _HajjCertificateScreenState extends State<HajjCertificateScreen> {
           }
 
           if (provider.initState == LoadState.error) {
-            return EmptyStateView(
-              isError: true,
+            return ErrorState(
               title: 'Error Loading Service',
               message: provider.errorMessage ??
                   'An error occurred while checking existing requests.',
@@ -59,30 +63,41 @@ class _HajjCertificateScreenState extends State<HajjCertificateScreen> {
 
           final request = provider.existingRequest;
 
-          return ListView(
-            padding: const EdgeInsets.all(20),
-            children: [
-              const _PrerequisiteBanner(),
-              const SizedBox(height: 20),
-              if (request == null)
-                _NoRequestSection(
-                  isSubmitting: provider.isSubmitting,
-                  onRequest: () => provider.requestCertificate(),
-                )
-              else
-                _StatusSection(
-                  status: request.status,
-                  downloaded: _downloaded,
-                  onDownload: () {
-                    setState(() => _downloaded = true);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text(
-                              'Certificate download requires backend connectivity.')),
-                    );
-                  },
+          return ResponsivePageFrame(
+            maxWidth: 820,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const ServiceHero(
+                  icon: Icons.mosque_rounded,
+                  accent: Color(0xFF0B4F54),
+                  title: 'Electronic Hajj Certificate',
+                  description:
+                      'Download your Hajj health certificate once your pre-travel visit is on file.',
                 ),
-            ],
+                const SizedBox(height: 20),
+                const _PrerequisiteBanner(),
+                const SizedBox(height: 20),
+                if (request == null)
+                  _NoRequestSection(
+                    isSubmitting: provider.isSubmitting,
+                    onRequest: () => provider.requestCertificate(),
+                  )
+                else
+                  _StatusSection(
+                    status: request.status,
+                    downloaded: _downloaded,
+                    onDownload: () {
+                      setState(() => _downloaded = true);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                            content: Text(
+                                'Certificate download requires backend connectivity.')),
+                      );
+                    },
+                  ),
+              ],
+            ),
           );
         },
       ),
@@ -131,8 +146,7 @@ class _NoRequestSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const EmptyStateView(
-          icon: Icons.workspace_premium_outlined,
+        const EmptyState(
           title: 'No download available yet',
           message:
               'You haven\'t requested your certificate from your doctor yet. '
@@ -141,10 +155,23 @@ class _NoRequestSection extends StatelessWidget {
         const SizedBox(height: 12),
         SizedBox(
           width: double.infinity,
-          child: AppButton(
+          child: NaraakButton(
             label: 'I\'ve Requested It From My Doctor',
             isLoading: isSubmitting,
             onPressed: isSubmitting ? null : onRequest,
+          ),
+        ),
+        const SizedBox(height: 10),
+        SizedBox(
+          width: double.infinity,
+          child: NaraakButton(
+            label: 'Find Nearest Health Center',
+            variant: AppButtonVariant.secondary,
+            onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                  content: Text(AppLocalizations.of(context)
+                      .raw('Not available in this demo.'))),
+            ),
           ),
         ),
       ],
@@ -177,7 +204,8 @@ class _StatusSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('CURRENT REQUEST STATUS', style: AppTextStyles.overline),
+        Text(AppLocalizations.of(context).raw('CURRENT REQUEST STATUS'),
+            style: AppTextStyles.overline),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -216,24 +244,30 @@ class _StatusSection extends StatelessWidget {
           style: AppTextStyles.bodySecondary,
         ),
         const SizedBox(height: 24),
-        Text('APPLICATION PROGRESS', style: AppTextStyles.overline),
+        Text(AppLocalizations.of(context).raw('APPLICATION PROGRESS'),
+            style: AppTextStyles.overline),
         const SizedBox(height: 14),
-        _ProgressTracker(currentStep: _currentStep),
+        ProgressStepper(
+          steps: const ['Requested', 'Processing', 'Ready', 'Downloaded'],
+          currentStep: _currentStep,
+        ),
         const SizedBox(height: 28),
         SizedBox(
           width: double.infinity,
-          child: AppButton(
+          child: NaraakButton(
             label: 'Find my health centre',
             variant: AppButtonVariant.secondary,
             onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Not available in this demo.')),
+              SnackBar(
+                  content: Text(AppLocalizations.of(context)
+                      .raw('Not available in this demo.'))),
             ),
           ),
         ),
         const SizedBox(height: 12),
         SizedBox(
           width: double.infinity,
-          child: AppButton(
+          child: NaraakButton(
             label: 'Download certificate',
             icon: Icons.download_outlined,
             onPressed: _isReady ? onDownload : null,
@@ -248,78 +282,6 @@ class _StatusSection extends StatelessWidget {
           ),
         ],
       ],
-    );
-  }
-}
-
-class _ProgressTracker extends StatelessWidget {
-  final int currentStep;
-  const _ProgressTracker({required this.currentStep});
-
-  static const _labels = ['Requested', 'Processing', 'Ready', 'Downloaded'];
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: List.generate(_labels.length * 2 - 1, (i) {
-        if (i.isOdd) {
-          final segmentDone = (i - 1) ~/ 2 < currentStep;
-          return Expanded(
-            child: Container(
-              margin: const EdgeInsets.only(bottom: 22),
-              height: 2,
-              color: segmentDone ? AppColors.primary : AppColors.ink100,
-            ),
-          );
-        }
-        final stepIndex = i ~/ 2;
-        final done = stepIndex < currentStep;
-        final active = stepIndex == currentStep;
-        return SizedBox(
-          width: 76,
-          child: Column(
-            children: [
-              Container(
-                width: 28,
-                height: 28,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: done ? AppColors.primary : AppColors.surface,
-                  border: Border.all(
-                    color:
-                        done || active ? AppColors.primary : AppColors.ink100,
-                    width: active ? 2 : 1,
-                  ),
-                ),
-                child: Center(
-                  child: done
-                      ? const Icon(Icons.check, size: 15, color: Colors.white)
-                      : Text(
-                          '${stepIndex + 1}',
-                          style: AppTextStyles.caption.copyWith(
-                            color:
-                                active ? AppColors.primary : AppColors.ink300,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                _labels[stepIndex],
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                style: AppTextStyles.caption.copyWith(
-                  fontSize: 11,
-                  color: done || active ? AppColors.ink900 : AppColors.ink500,
-                  fontWeight: active ? FontWeight.w700 : FontWeight.normal,
-                ),
-              ),
-            ],
-          ),
-        );
-      }),
     );
   }
 }

@@ -122,7 +122,7 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
                         itemBuilder: (context) {
                           final auth = context.watch<AuthProvider>();
                           final users = auth.availableUsers;
-                          final currentId = auth.currentUser?.id;
+                          final currentId = auth.currentUser.id;
 
                           return [
                             ...users.map((user) {
@@ -195,7 +195,7 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
                                 .profile
                                 ?.fullName;
                             final initials = _initials(
-                                profileName ?? auth.currentUser?.name);
+                                profileName ?? auth.currentUser.name);
                             return Container(
                               width: iconContainerSize,
                               height: iconContainerSize,

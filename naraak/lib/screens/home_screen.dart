@@ -7,6 +7,7 @@ import '../providers/service_request_provider.dart';
 import '../providers/appointment_provider.dart';
 import '../providers/dashboard_provider.dart';
 import '../widgets/dashboard/dashboard_widgets.dart';
+import '../widgets/state_views.dart';
 
 /// Mobile Home tab content. The top bar is rendered once by RootShell (see
 /// [MobileTopBar]) and shared across all four tabs, matching the reference
@@ -33,13 +34,28 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context);
     final profile = context.watch<UserProfileProvider>().profile;
+    final dashboard = context.watch<DashboardProvider>();
     final firstName = (profile?.fullName ?? 'there').split(' ').first;
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+    if (dashboard.state == LoadState.error) {
+      return ErrorState(
+        title: 'We could not load your dashboard',
+        message: dashboard.errorMessage ??
+            'Please check your connection and try again.',
+        actionLabel: 'Try Again',
+        onAction: dashboard.load,
+      );
+    }
+
+    return Align(
+      alignment: Alignment.topCenter,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 980),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
           _AnimatedEntry(index: 0, child: WelcomeHeader(firstName: firstName)),
           const SizedBox(height: 14),
           _AnimatedEntry(index: 0, child: const FamilySwitchButton()),
@@ -47,40 +63,42 @@ class _HomeScreenState extends State<HomeScreen> {
           _AnimatedEntry(
             index: 1,
             child: DashboardSectionHeading(
+              title: 'Upcoming Appointment',
+              subtitle: strings.text('yourUpcomingVisit'),
+            ),
+          ),
+          const SizedBox(height: 10),
+          _AnimatedEntry(index: 1, child: const DashboardNextAppointment()),
+          const SizedBox(height: 24),
+          _AnimatedEntry(index: 2, child: const DashboardQuickAccessCard()),
+          const SizedBox(height: 28),
+          _AnimatedEntry(
+            index: 3,
+            child: DashboardSectionHeading(
+              title: 'Top Services',
+              subtitle: strings.text('startWithWhatYouNeedToday'),
+            ),
+          ),
+          const SizedBox(height: 12),
+          _AnimatedEntry(index: 3, child: const DashboardPopularServicesGrid()),
+          const SizedBox(height: 28),
+          _AnimatedEntry(
+            index: 4,
+            child: DashboardSectionHeading(
               title: strings.text('yourCareTeam'),
               subtitle: strings.text('yourAssignedFamilyDoctor'),
             ),
           ),
           const SizedBox(height: 10),
           _AnimatedEntry(
-              index: 1, child: const DoctorFeatureCard(compact: true)),
+              index: 4, child: const DoctorFeatureCard(compact: true)),
           const SizedBox(height: 24),
-          _AnimatedEntry(
-            index: 2,
-            child: DashboardSectionHeading(
-              title: strings.text('nextAppointment'),
-              subtitle: strings.text('yourUpcomingVisit'),
-            ),
-          ),
-          const SizedBox(height: 10),
-          _AnimatedEntry(index: 2, child: const DashboardNextAppointment()),
-          const SizedBox(height: 24),
-          _AnimatedEntry(index: 3, child: const DashboardPendingRequestsCard()),
-          const SizedBox(height: 24),
-          _AnimatedEntry(index: 3, child: const DashboardQuickAccessCard()),
-          const SizedBox(height: 28),
-          _AnimatedEntry(
-            index: 4,
-            child: DashboardSectionHeading(
-              title: strings.text('popularServices'),
-              subtitle: strings.text('startWithWhatYouNeedToday'),
-            ),
-          ),
-          const SizedBox(height: 12),
-          _AnimatedEntry(index: 4, child: const DashboardPopularServicesGrid()),
+          _AnimatedEntry(index: 5, child: const DashboardPendingRequestsCard()),
           const SizedBox(height: 20),
-          _AnimatedEntry(index: 5, child: const DashboardPrivacyBanner()),
-        ],
+          _AnimatedEntry(index: 6, child: const DashboardPrivacyBanner()),
+            ],
+          ),
+        ),
       ),
     );
   }
