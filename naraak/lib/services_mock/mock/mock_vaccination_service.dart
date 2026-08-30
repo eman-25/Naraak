@@ -13,7 +13,6 @@ class MockVaccinationService {
       id: 'vac_002',
       vaccineName: 'DTaP Booster',
       dateAdministered: DateTime(2022, 6, 4),
-      certificateUrl: 'mock://certificates/vac_002.pdf',
     ),
     VaccinationRecord(
       id: 'vac_003',
