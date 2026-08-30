@@ -197,19 +197,76 @@ class _IdentityCard extends StatelessWidget {
               ),
             ],
           ),
-          Padding(
-            padding: const EdgeInsets.only(left: 80),
-            child: OutlinedButton(
-              onPressed: () =>
-                  Navigator.pushNamed(context, '/profile/personal-info'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.white,
-                side: const BorderSide(color: Color(0xFFB9DFDD)),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              ),
-              child: const Text('Edit personal information',
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
+          const SizedBox(height: 24),
+
+          AppCard(
+            padding: EdgeInsets.zero,
+            child: Column(
+              children: [
+                _PlainMenuRow(
+                  label: 'Personal Info & Blood Type',
+                  onTap: () =>
+                      Navigator.pushNamed(context, '/profile/personal-info'),
+                ),
+                const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: Divider(height: 1)),
+                _PlainMenuRow(
+                  label: 'Privacy & Security',
+                  onTap: () =>
+                      Navigator.pushNamed(context, '/profile/privacy-security'),
+                ),
+                const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: Divider(height: 1)),
+                _PlainMenuRow(
+                  label: 'Family Members & Dependents',
+                  onTap: () => Navigator.pushNamed(context, '/profile/family'),
+                ),
+                const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: Divider(height: 1)),
+                _PlainMenuRow(
+                  label: 'App Settings',
+                  onTap: () =>
+                      Navigator.pushNamed(context, '/profile/app-settings'),
+                _MenuRow(
+                  icon: Icons.support_agent_rounded,
+                  color: AppColors.warning,
+                  label: 'Help & User Inquiries',
+                  subtitle: 'FAQs, contact support, general questions',
+                  onTap: () => _showHelp(context),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // Service Feedback & Complaints (Separated from support inquiries)
+          Text('FEEDBACK & EVALUATION', style: AppTextStyles.overline),
+          const SizedBox(height: 10),
+          AppCard(
+            padding: EdgeInsets.zero,
+            child: Column(
+              children: [
+                _MenuRow(
+                  icon: Icons.rate_review_rounded,
+                  color: const Color(0xFF00897B),
+                  label: 'Service Evaluation',
+                  subtitle: 'Rate your healthcare experience',
+                  onTap: () => _showFeedbackForm(context, isComplaint: false),
+                ),
+                const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: Divider(height: 1)),
+                _MenuRow(
+                  icon: Icons.report_problem_rounded,
+                  color: const Color(0xFFE53935),
+                  label: 'Submit a Complaint',
+                  subtitle: 'Report issues or suggestions for improvement',
+                  onTap: () => _showFeedbackForm(context, isComplaint: true),
+                ),
+              ],
             ),
           ),
         ],
@@ -286,6 +343,52 @@ class _PersonalHealthIdentityCard extends StatelessWidget {
                 .toList(),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showHelp(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Help & User Inquiries'),
+        content: const Text('For appointments, choose Book Appointment from Services. For account or record questions, contact the PHC support team through your registered health center.'),
+        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close'))],
+      ),
+    );
+  }
+
+  void _showFeedbackForm(BuildContext context, {required bool isComplaint}) {
+    final controller = TextEditingController();
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (sheetContext) => Padding(
+        padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(sheetContext).viewInsets.bottom + 20),
+        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(isComplaint ? 'Submit a Complaint' : 'Service Evaluation', style: AppTextStyles.h2),
+          const SizedBox(height: 12),
+          TextField(
+            controller: controller,
+            maxLines: 4,
+            decoration: InputDecoration(hintText: isComplaint ? 'Describe the issue and the service involved.' : 'Tell us about the service you received.'),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton(
+              onPressed: () {
+                if (controller.text.trim().isEmpty) {
+                  ScaffoldMessenger.of(sheetContext).showSnackBar(const SnackBar(content: Text('Please enter your feedback before submitting.')));
+                  return;
+                }
+                Navigator.pop(sheetContext);
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(isComplaint ? 'Your complaint has been submitted for review.' : 'Thank you. Your evaluation has been submitted.')));
+              },
+              child: const Text('Submit'),
+            ),
+          ),
+        ]),
       ),
     );
   }

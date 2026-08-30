@@ -34,6 +34,7 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
   String? _selectedDoctor;
   DateTime _selectedDate = DateTime.now();
   String? _selectedTimeSlot;
+  String? _selectedSlotId;
 
   // Search & Filter state for Available Today / Closest Slot
   final TextEditingController _searchController = TextEditingController();
@@ -354,6 +355,13 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
               onDateChanged: (date) => setState(() => _selectedDate = date),
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.only(top: 10),
+            child: Text(
+              'Selected date: ${MaterialLocalizations.of(context).formatFullDate(_selectedDate)}',
+              style: AppTextStyles.body.copyWith(color: themeColor, fontWeight: FontWeight.w700),
+            ),
+          ),
           const SizedBox(height: 24),
 
           // Available Time Slots Section
@@ -426,6 +434,14 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
   // SCREEN 3: AVAILABLE TODAY
   // ==========================================
   Widget _buildScreen3AvailableToday(Color themeColor) {
+    final slots = context.watch<AppointmentProvider>().availableSlots.where((slot) {
+      final matchesGender = _selectedGenderFilter == 'All' ||
+          slot.doctorGender?.toLowerCase() == _selectedGenderFilter.toLowerCase();
+      return matchesGender && slot.doctorName.toLowerCase().contains(_searchController.text.toLowerCase());
+    }).toList()
+      ..sort((a, b) => _selectedSortTime == 'Ascending'
+          ? a.slotDateTime.compareTo(b.slotDateTime)
+          : b.slotDateTime.compareTo(a.slotDateTime));
     return Column(
       children: [
         // Search & Filter Header Section
@@ -451,11 +467,11 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
               const SizedBox(height: 12),
               Row(
                 children: [
-                  _buildFilterChip('Gender', themeColor, () {
+                  _buildFilterChip('Gender: $_selectedGenderFilter', themeColor, () {
                     _showGenderFilterModal(themeColor);
                   }),
                   const SizedBox(width: 8),
-                  _buildFilterChip('Time', themeColor, () {
+                  _buildFilterChip('Time: $_selectedSortTime', themeColor, () {
                     _showTimeSortModal(themeColor);
                   }),
                 ],
@@ -466,34 +482,26 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
 
         // Doctors Cards List
         Expanded(
-          child: Builder(builder: (context) {
-            final query = _searchController.text.trim().toLowerCase();
-            final doctors = _todayDoctors.where((d) {
-              final matchesGender = _selectedGenderFilter == 'All' ||
-                  d.gender == _selectedGenderFilter;
-              final matchesSearch =
-                  query.isEmpty || d.name.toLowerCase().contains(query);
-              return matchesGender && matchesSearch;
-            }).toList();
-
-            if (doctors.isEmpty) {
-              return Center(
-                child: Text('No doctors match your filters',
-                    style: AppTextStyles.bodySecondary),
-              );
-            }
-
-            return ListView.separated(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              itemCount: doctors.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 16),
-              itemBuilder: (context, i) => _buildDoctorTodayCard(
-                doctorName: doctors[i].name,
+          child: slots.isEmpty
+              ? const Center(child: Text('No available doctors match these filters.'))
+              : ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            children: slots.map((slot) => Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: _buildDoctorTodayCard(
+                doctorName: '${slot.doctorName} (${slot.doctorGender ?? 'Not specified'})',
                 themeColor: themeColor,
-                slots: doctors[i].slots,
+                slots: [MaterialLocalizations.of(context).formatTimeOfDay(TimeOfDay.fromDateTime(slot.slotDateTime))],
+                onSelected: () => setState(() {
+                  _selectedDoctor = slot.doctorName;
+                  _selectedTimeSlot = MaterialLocalizations.of(context).formatTimeOfDay(TimeOfDay.fromDateTime(slot.slotDateTime));
+                  _selectedDate = slot.slotDateTime;
+                  _selectedSlotId = slot.id;
+                  _currentView = BookingView.reviewDetails;
+                }),
               ),
-            );
-          }),
+            )).toList(),
+          ),
         ),
       ],
     );
@@ -509,6 +517,7 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
     required String doctorName,
     required Color themeColor,
     required List<String> slots,
+    VoidCallback? onSelected,
   }) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -536,7 +545,7 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
               final isSelected =
                   _selectedDoctor == doctorName && _selectedTimeSlot == slot;
               return InkWell(
-                onTap: () {
+                onTap: onSelected ?? () {
                   setState(() {
                     _selectedDoctor = doctorName;
                     _selectedTimeSlot = slot;
@@ -583,20 +592,14 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
   ];
 
   Widget _buildScreen4ClosestSlot(Color themeColor) {
-    var closestSlots = _closestDoctors.where((d) {
-      return _selectedGenderFilter == 'All' || d.gender == _selectedGenderFilter;
-    }).toList();
-
-    // The list is declared in ascending time order, so once the user picks
-    // a name sort it takes over; otherwise Time controls the order.
-    if (_selectedSortName == 'Z-A') {
-      closestSlots.sort((a, b) => b.name.compareTo(a.name));
-    } else if (_selectedSortName == 'A-Z') {
-      closestSlots.sort((a, b) => a.name.compareTo(b.name));
-    } else if (_selectedSortTime == 'Descending') {
-      closestSlots = closestSlots.reversed.toList();
-    }
-
+    final closestSlots = context.watch<AppointmentProvider>().availableSlots
+        .where((slot) => _selectedGenderFilter == 'All' || slot.doctorGender == _selectedGenderFilter)
+        .map((slot) => <String, String>{
+              'doctor': slot.doctorName,
+              'time': '${MaterialLocalizations.of(context).formatMediumDate(slot.slotDateTime)} · ${MaterialLocalizations.of(context).formatTimeOfDay(TimeOfDay.fromDateTime(slot.slotDateTime))}',
+              'id': slot.id,
+            })
+        .toList();
     return Column(
       children: [
         // Sorting Header Options
@@ -608,13 +611,9 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
                 _showNameSortModal(themeColor);
               }),
               const SizedBox(width: 8),
-              _buildFilterChip('Gender', themeColor, () {
-                _showGenderFilterModal(themeColor);
-              }),
+              _buildFilterChip('Gender: $_selectedGenderFilter', themeColor, () => _showGenderFilterModal(themeColor)),
               const SizedBox(width: 8),
-              _buildFilterChip('Time', themeColor, () {
-                _showTimeSortModal(themeColor);
-              }),
+              _buildFilterChip('Time', themeColor, () => _showTimeSortModal(themeColor)),
             ],
           ),
         ),
@@ -668,27 +667,20 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
                         ],
                       ),
                     ),
-                    SizedBox(
-                      // An unconstrained OutlinedButton next to Expanded in
-                      // a Row collapses the Expanded sibling to near-zero
-                      // width (each character wraps to its own line) --
-                      // giving it an explicit width fixes it.
-                      width: 84,
-                      child: OutlinedButton(
-                        onPressed: () {
-                          setState(() {
-                            _selectedDoctor = item.name;
-                            _selectedTimeSlot = item.time.split(' ')[0];
-                            _selectedDate = DateTime.now();
-                            _currentView = BookingView.reviewDetails;
-                          });
-                        },
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: themeColor, width: 1.5),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(24),
-                          ),
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                    OutlinedButton(
+                      onPressed: () {
+                        setState(() {
+                          _selectedDoctor = item['doctor'];
+                          _selectedTimeSlot = item['time']!.split(' ')[0];
+                          _selectedDate = DateTime.now();
+                          _selectedSlotId = item['id'];
+                          _currentView = BookingView.reviewDetails;
+                        });
+                      },
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: themeColor, width: 1.5),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24),
                         ),
                         child: Text(
                           'Select',
@@ -758,10 +750,13 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
             onPressed: () async {
               setState(() => _isBooking = true);
               final provider = context.read<AppointmentProvider>();
-              final success = await provider.bookSlot(
-                  provider.availableSlots.isNotEmpty
-                      ? provider.availableSlots.first.id
-                      : 'slot_today');
+              final slotId = _selectedSlotId ??
+                  (provider.availableSlots.isNotEmpty ? provider.availableSlots.first.id : null);
+              if (slotId == null) {
+                setState(() => _isBooking = false);
+                return;
+              }
+              final success = await provider.bookSlot(slotId);
               setState(() => _isBooking = false);
               if (success) {
                 setState(() {
@@ -1004,18 +999,4 @@ class _BookingAppointmentScreenState extends State<BookingAppointmentScreen> {
       },
     );
   }
-}
-
-class _ClosestDoctor {
-  final String name;
-  final String gender;
-  final String time;
-  const _ClosestDoctor(this.name, this.gender, this.time);
-}
-
-class _TodayDoctor {
-  final String name;
-  final String gender;
-  final List<String> slots;
-  const _TodayDoctor(this.name, this.gender, this.slots);
 }

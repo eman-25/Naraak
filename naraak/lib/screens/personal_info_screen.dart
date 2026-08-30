@@ -24,7 +24,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
     super.initState();
     final profile = context.read<UserProfileProvider>().profile;
     _nationalityController =
-        TextEditingController(text: profile?.nationality ?? 'Bahraini');
+        TextEditingController(text: profile?.nationality ?? '');
     _emergencyNameController =
         TextEditingController(text: profile?.emergencyContactName ?? '');
     _emergencyPhoneController =
@@ -45,8 +45,15 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
     if (current == null) return;
 
     // Preserves existing bloodType set by the health center
+    final nationality = _nationalityController.text.trim();
+    if (nationality.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter your nationality.')),
+      );
+      return;
+    }
     provider.completeProfile(current.copyWith(
-      nationality: _nationalityController.text.trim(),
+      nationality: nationality,
       emergencyContactName: _emergencyNameController.text.trim(),
       emergencyContactPhone: _emergencyPhoneController.text.trim(),
     ));
