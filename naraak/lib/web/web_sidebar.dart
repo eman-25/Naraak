@@ -1,6 +1,7 @@
 // lib/web/web_sidebar.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../main.dart' show ShellNavigation;
 import '../providers/app_settings_provider.dart';
 import '../providers/user_profile_provider.dart';
 import '../theme/app_colors.dart';
@@ -80,7 +81,7 @@ class WebSidebar extends StatelessWidget {
 
           // Active profile card
           InkWell(
-            onTap: () => Navigator.pushNamed(context, '/profile/family'),
+            onTap: () => ShellNavigation.of(context)?.pushNamed('/profile/family'),
             borderRadius: BorderRadius.circular(14),
             child: Container(
               padding: const EdgeInsets.all(12),
@@ -188,7 +189,7 @@ class WebSidebar extends StatelessWidget {
 
           // Help + footer
           InkWell(
-            onTap: () => Navigator.pushNamed(context, '/profile/help-support'),
+            onTap: () => ShellNavigation.of(context)?.pushNamed('/profile/help-support'),
             borderRadius: BorderRadius.circular(10),
             child: Padding(
               padding: const EdgeInsets.all(12),

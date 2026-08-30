@@ -1,6 +1,7 @@
 // lib/widgets/mobile_top_bar.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../main.dart' show ShellNavigation;
 import '../models/notification_item.dart';
 import '../providers/app_settings_provider.dart';
 import '../providers/appointment_provider.dart';
@@ -68,7 +69,7 @@ class MobileTopBar extends StatelessWidget implements PreferredSizeWidget {
           clipBehavior: Clip.none,
           children: [
             IconButton(
-              onPressed: () => Navigator.pushNamed(context, '/notifications'),
+              onPressed: () => ShellNavigation.of(context)?.pushNamed('/notifications'),
               icon: const Icon(Icons.notifications_none_rounded),
             ),
             if (hasUnread)
@@ -95,7 +96,7 @@ class MobileTopBar extends StatelessWidget implements PreferredSizeWidget {
           offset: const Offset(0, 48),
           onSelected: (value) {
             if (value == 'organize-family') {
-              Navigator.pushNamed(context, '/profile/family');
+              ShellNavigation.of(context)?.pushNamed('/profile/family');
             } else {
               final auth = context.read<AuthProvider>();
               auth.switchUser(value);

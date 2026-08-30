@@ -1,6 +1,7 @@
 // lib/web/web_mini_topbar.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../main.dart' show ShellNavigation;
 import '../models/notification_item.dart';
 import '../providers/app_settings_provider.dart';
 import '../providers/appointment_provider.dart';
@@ -65,7 +66,7 @@ class WebMiniTopBar extends StatelessWidget implements PreferredSizeWidget {
         _IconAction(
           icon: Icons.accessibility_new_rounded,
           tooltip: 'Accessibility',
-          onTap: () => Navigator.pushNamed(context, '/profile/app-settings'),
+          onTap: () => ShellNavigation.of(context)?.pushNamed('/profile/app-settings'),
         ),
         const SizedBox(width: 12),
         Stack(
@@ -74,7 +75,7 @@ class WebMiniTopBar extends StatelessWidget implements PreferredSizeWidget {
             _IconAction(
               icon: Icons.notifications_none_rounded,
               tooltip: 'Notifications',
-              onTap: () => Navigator.pushNamed(context, '/notifications'),
+              onTap: () => ShellNavigation.of(context)?.pushNamed('/notifications'),
             ),
             if (hasUnread)
               Positioned(
@@ -97,7 +98,7 @@ class WebMiniTopBar extends StatelessWidget implements PreferredSizeWidget {
         ),
         const SizedBox(width: 12),
         InkWell(
-          onTap: () => Navigator.pushNamed(context, '/profile/personal-info'),
+          onTap: () => ShellNavigation.of(context)?.pushNamed('/profile/personal-info'),
           borderRadius: BorderRadius.circular(10),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
