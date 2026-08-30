@@ -36,11 +36,27 @@ class WelcomeHeader extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final now = DateTime.now();
     const weekdays = [
-      'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday'
     ];
     const months = [
-      'January', 'February', 'March', 'April', 'May', 'June', 'July',
-      'August', 'September', 'October', 'November', 'December'
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December'
     ];
     final dateLabel =
         '${weekdays[now.weekday - 1]}, ${now.day} ${months[now.month - 1]} ${now.year}';
@@ -128,10 +144,11 @@ class FamilySwitchButton extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('Viewing as', style: AppTextStyles.caption.copyWith(fontSize: 10)),
+                Text('Viewing as',
+                    style: AppTextStyles.caption.copyWith(fontSize: 10)),
                 Text(profile?.fullName ?? 'Guest',
-                    style: AppTextStyles.caption.copyWith(
-                        fontSize: 12, fontWeight: FontWeight.w700)),
+                    style: AppTextStyles.caption
+                        .copyWith(fontSize: 12, fontWeight: FontWeight.w700)),
               ],
             ),
             const SizedBox(width: 10),
@@ -178,7 +195,8 @@ class DashboardSectionHeading extends StatelessWidget {
                   context.watch<AppSettingsProvider>().palette.primary,
             ),
             icon: Text(actionLabel!,
-                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
+                style:
+                    const TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
             label: const Icon(Icons.arrow_forward_rounded, size: 15),
           ),
       ],
@@ -331,7 +349,7 @@ class _DoctorInfo extends StatelessWidget {
           ],
         ),
         SizedBox(height: wide ? 12 : 10),
-        Text('Dr. Fatima Al-Doseri',
+        Text(profile?.familyDoctorName ?? 'Family Doctor',
             style: AppTextStyles.h2
                 .copyWith(color: Colors.white, fontSize: wide ? 21 : 18)),
         const SizedBox(height: 4),
@@ -545,8 +563,18 @@ class DashboardNextAppointment extends StatelessWidget {
   }
 
   String _monthAbbr(int month) => const [
-        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec'
       ][month - 1];
 }
 
@@ -652,8 +680,8 @@ class DashboardPendingRequestsCard extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text('View requests',
-                        style: TextStyle(
-                            color: Color(0xFFCBE5E3), fontSize: 11)),
+                        style:
+                            TextStyle(color: Color(0xFFCBE5E3), fontSize: 11)),
                     SizedBox(width: 3),
                     Icon(Icons.arrow_forward_rounded,
                         size: 13, color: Color(0xFFCBE5E3)),
@@ -679,7 +707,11 @@ class DashboardQuickAccessCard extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final items = [
       (Icons.calendar_month_rounded, 'Book appointment', '/services/booking'),
-      (Icons.description_rounded, 'Medical reports', '/services/medical-reports'),
+      (
+        Icons.description_rounded,
+        'Medical reports',
+        '/services/medical-reports'
+      ),
       (Icons.vaccines_rounded, 'Vaccinations', '/services/vaccinations'),
       (Icons.grid_view_rounded, 'All services', null),
     ];
@@ -702,7 +734,8 @@ class DashboardQuickAccessCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('Quick access', style: AppTextStyles.h3.copyWith(fontSize: 16)),
+                  Text('Quick access',
+                      style: AppTextStyles.h3.copyWith(fontSize: 16)),
                   const SizedBox(height: 4),
                   Text('Common services', style: AppTextStyles.bodySecondary),
                 ],
@@ -729,9 +762,8 @@ class DashboardQuickAccessCard extends StatelessWidget {
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     border: Border.all(
-                        color: isDark
-                            ? AppColors.darkOutline
-                            : AppColors.outline),
+                        color:
+                            isDark ? AppColors.darkOutline : AppColors.outline),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Column(
@@ -748,8 +780,8 @@ class DashboardQuickAccessCard extends StatelessWidget {
                       ),
                       const Spacer(),
                       Text(label,
-                          style: AppTextStyles.caption
-                              .copyWith(fontSize: 11, fontWeight: FontWeight.w700)),
+                          style: AppTextStyles.caption.copyWith(
+                              fontSize: 11, fontWeight: FontWeight.w700)),
                     ],
                   ),
                 ),
@@ -804,9 +836,8 @@ class DashboardPopularServicesGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return LayoutBuilder(builder: (context, constraints) {
-      final columns = constraints.maxWidth > 900
-          ? 4
-          : (constraints.maxWidth > 560 ? 2 : 2);
+      final columns =
+          constraints.maxWidth > 900 ? 4 : (constraints.maxWidth > 560 ? 2 : 2);
       return GridView.count(
         crossAxisCount: columns,
         shrinkWrap: true,
@@ -864,13 +895,14 @@ class DashboardPopularServicesGrid extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(title,
-                            style: AppTextStyles.body
-                                .copyWith(fontSize: 15, fontWeight: FontWeight.w700),
+                            style: AppTextStyles.body.copyWith(
+                                fontSize: 15, fontWeight: FontWeight.w700),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis),
                         const SizedBox(height: 5),
                         Text(desc,
-                            style: AppTextStyles.bodySecondary.copyWith(fontSize: 12.5),
+                            style: AppTextStyles.bodySecondary
+                                .copyWith(fontSize: 12.5),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis),
                       ],
@@ -917,7 +949,8 @@ class DashboardPrivacyBanner extends StatelessWidget {
                     shape: BoxShape.circle,
                     color: Colors.white,
                   ),
-                  child: Icon(Icons.shield_rounded, color: palette.primary, size: 18),
+                  child: Icon(Icons.shield_rounded,
+                      color: palette.primary, size: 18),
                 ),
                 const SizedBox(width: 12),
                 ConstrainedBox(
@@ -927,8 +960,8 @@ class DashboardPrivacyBanner extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text('Your privacy matters',
-                          style: AppTextStyles.body
-                              .copyWith(fontWeight: FontWeight.w700, fontSize: 13)),
+                          style: AppTextStyles.body.copyWith(
+                              fontWeight: FontWeight.w700, fontSize: 13)),
                       const SizedBox(height: 3),
                       Text(
                         'Naraak keeps your health information safe and only uses it to provide your care.',
@@ -950,7 +983,8 @@ class DashboardPrivacyBanner extends StatelessWidget {
                           fontSize: 12,
                           fontWeight: FontWeight.w700)),
                   const SizedBox(width: 4),
-                  Icon(Icons.arrow_forward_rounded, size: 14, color: palette.primary),
+                  Icon(Icons.arrow_forward_rounded,
+                      size: 14, color: palette.primary),
                 ],
               ),
             ),

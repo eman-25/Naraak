@@ -1,12 +1,9 @@
 // lib/web/web_mini_topbar.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../providers/clinical_data_provider.dart';
 import '../main.dart' show ShellNavigation;
-import '../models/notification_item.dart';
 import '../providers/app_settings_provider.dart';
-import '../providers/appointment_provider.dart';
-import '../providers/notifications_read_provider.dart';
-import '../providers/service_request_provider.dart';
 import '../providers/user_profile_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
@@ -27,15 +24,7 @@ class WebMiniTopBar extends StatelessWidget implements PreferredSizeWidget {
     final palette = context.watch<AppSettingsProvider>().palette;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final profile = context.watch<UserProfileProvider>().profile;
-    final notifications = buildNotifications(
-      context,
-      context.watch<AppointmentProvider>().myAppointments,
-      context.watch<ServiceRequestProvider>().requests,
-    );
-    final hasUnread = context
-            .watch<NotificationsReadProvider>()
-            .unreadCount(notifications.map((n) => n.id)) >
-        0;
+    final hasUnread = context.watch<ClinicalDataProvider>().unreadCount > 0;
 
     return AppBar(
       toolbarHeight: 78,
@@ -50,23 +39,23 @@ class WebMiniTopBar extends StatelessWidget implements PreferredSizeWidget {
         children: [
           Text('Naraak',
               style: AppTextStyles.caption.copyWith(
-                  color: isDark
-                      ? AppColors.darkTextSecondary
-                      : AppColors.ink500)),
+                  color:
+                      isDark ? AppColors.darkTextSecondary : AppColors.ink500)),
           const SizedBox(width: 6),
           Icon(Icons.chevron_right_rounded,
               size: 14,
-              color:
-                  isDark ? AppColors.darkTextSecondary : AppColors.ink500),
+              color: isDark ? AppColors.darkTextSecondary : AppColors.ink500),
           const SizedBox(width: 6),
-          Text(pageLabel, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w700)),
+          Text(pageLabel,
+              style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w700)),
         ],
       ),
       actions: [
         _IconAction(
           icon: Icons.accessibility_new_rounded,
           tooltip: 'Accessibility',
-          onTap: () => ShellNavigation.of(context)?.pushNamed('/profile/app-settings'),
+          onTap: () =>
+              ShellNavigation.of(context)?.pushNamed('/profile/app-settings'),
         ),
         const SizedBox(width: 12),
         Stack(
@@ -75,7 +64,8 @@ class WebMiniTopBar extends StatelessWidget implements PreferredSizeWidget {
             _IconAction(
               icon: Icons.notifications_none_rounded,
               tooltip: 'Notifications',
-              onTap: () => ShellNavigation.of(context)?.pushNamed('/notifications'),
+              onTap: () =>
+                  ShellNavigation.of(context)?.pushNamed('/notifications'),
             ),
             if (hasUnread)
               Positioned(
@@ -98,7 +88,8 @@ class WebMiniTopBar extends StatelessWidget implements PreferredSizeWidget {
         ),
         const SizedBox(width: 12),
         InkWell(
-          onTap: () => ShellNavigation.of(context)?.pushNamed('/profile/personal-info'),
+          onTap: () =>
+              ShellNavigation.of(context)?.pushNamed('/profile/personal-info'),
           borderRadius: BorderRadius.circular(10),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
@@ -165,8 +156,7 @@ class _IconAction extends StatelessWidget {
           ),
           child: Icon(icon,
               size: 19,
-              color:
-                  isDark ? AppColors.darkTextSecondary : AppColors.ink500),
+              color: isDark ? AppColors.darkTextSecondary : AppColors.ink500),
         ),
       ),
     );

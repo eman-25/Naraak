@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/user_profile_provider.dart';
-import '../../services_mock/repository/request_repository.dart';
+import '../../data/naraak_repository.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../widgets/app_card.dart';
@@ -27,6 +27,7 @@ class _MammogramScreeningScreenState extends State<MammogramScreeningScreen> {
   String? _selectedCenter;
   bool? _testedRecently;
   bool _isSubmitted = false;
+  bool? _apiEligible;
 
   final List<String> _healthCenters = [
     'Naim Health Center',
@@ -42,6 +43,18 @@ class _MammogramScreeningScreenState extends State<MammogramScreeningScreen> {
     final profile = context.read<UserProfileProvider>().profile;
     _nameController = TextEditingController(text: profile?.fullName ?? '');
     _phoneController = TextEditingController(text: profile?.mobileNumber ?? '');
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final repository = context.read<NaraakRepository>();
+      try {
+        final response = await repository.api
+            .checkMammogramEligibility(patientId: repository.requirePatientId);
+        final data =
+            Map<String, dynamic>.from(repository.data(response) as Map);
+        if (mounted) setState(() => _apiEligible = data['eligible'] as bool);
+      } catch (_) {
+        if (mounted) setState(() => _apiEligible = false);
+      }
+    });
   }
 
   @override
@@ -55,10 +68,9 @@ class _MammogramScreeningScreenState extends State<MammogramScreeningScreen> {
   Widget build(BuildContext context) {
     final profile = context.watch<UserProfileProvider>().profile;
 
-    // Screening criteria: Female, Age >= 40
     final bool isEligibleGender = profile?.gender.toLowerCase() == 'female';
     final bool isEligibleAge = (profile?.age ?? 0) >= 40;
-    final bool isEligible = isEligibleGender && isEligibleAge;
+    final bool isEligible = _apiEligible ?? false;
 
     return Scaffold(
       appBar: const AppTopBar(title: 'Mammogram Screening'),
@@ -307,14 +319,20 @@ class _MammogramScreeningScreenState extends State<MammogramScreeningScreen> {
     );
   }
 
-  void _submitForm() {
-    if (_formKey.currentState?.validate() ?? false) {
-      RequestRepository.instance.addRequest(
-        serviceName: 'Mammogram Screening',
-        status: 'submitted',
-        note: 'Requested at $_selectedCenter',
-      );
-      setState(() => _isSubmitted = true);
+  Future<void> _submitForm() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    final repository = context.read<NaraakRepository>();
+    try {
+      await repository.api.requestMammogram(
+          patientId: repository.requirePatientId,
+          contactNumber: _phoneController.text);
+      if (mounted) setState(() => _isSubmitted = true);
+    } catch (error) {
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(repository.friendlyError(error,
+                arabic:
+                    Localizations.localeOf(context).languageCode == 'ar'))));
     }
   }
 }

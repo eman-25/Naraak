@@ -30,6 +30,7 @@ flutter:
     - assets/images/service_vaccination.jpg
     - assets/images/service_booking.jpg
     - assets/images/service_medical_reports.jpg
+    - assets/documents/
   # Fonts are no longer bundled as local assets — google_fonts (added above)
   # fetches Noto Sans / Noto Sans Arabic from Google's CDN at runtime and
   # caches them on-device. See lib/theme/app_text_styles.dart.

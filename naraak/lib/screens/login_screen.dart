@@ -4,6 +4,9 @@ import 'package:flutter/services.dart' show FilteringTextInputFormatter;
 import 'package:provider/provider.dart';
 import '../localization/app_localizations.dart';
 import '../providers/user_profile_provider.dart';
+import '../providers/auth_provider.dart';
+import '../providers/family_provider.dart';
+import '../providers/clinical_data_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_theme.dart';
@@ -37,14 +40,23 @@ class _LoginScreenState extends State<LoginScreen> {
     FocusScope.of(context).unfocus();
 
     setState(() => _isLoading = true);
-    await Future.delayed(
-        const Duration(milliseconds: 700)); // simulated eKey call
-
+    final profileProvider = context.read<UserProfileProvider>();
+    final success = await profileProvider.login(_cprController.text.trim());
     if (!mounted) return;
     setState(() => _isLoading = false);
-
-    context.read<UserProfileProvider>().login(_cprController.text.trim());
-    Navigator.pushReplacementNamed(context, '/profile-setup');
+    if (!success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text(profileProvider.errorMessage ?? 'Sign in failed.')),
+      );
+      return;
+    }
+    await Future.wait([
+      context.read<AuthProvider>().loadUsers(),
+      context.read<FamilyProvider>().loadMembers(),
+      context.read<ClinicalDataProvider>().loadNotifications(),
+    ]);
+    if (mounted) Navigator.pushReplacementNamed(context, '/home');
   }
 
   @override

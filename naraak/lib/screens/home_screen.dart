@@ -5,6 +5,7 @@ import '../localization/app_localizations.dart';
 import '../providers/user_profile_provider.dart';
 import '../providers/service_request_provider.dart';
 import '../providers/appointment_provider.dart';
+import '../providers/dashboard_provider.dart';
 import '../widgets/dashboard/dashboard_widgets.dart';
 
 /// Mobile Home tab content. The top bar is rendered once by RootShell (see
@@ -24,6 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ServiceRequestProvider>().loadRequests();
       context.read<AppointmentProvider>().loadMyAppointments();
+      context.read<DashboardProvider>().load();
     });
   }
 

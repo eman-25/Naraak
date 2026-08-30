@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/user_profile_provider.dart';
-import '../../services_mock/repository/request_repository.dart';
+import '../../data/naraak_repository.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../widgets/app_card.dart';
@@ -31,6 +31,22 @@ class _NewbornSehatiCardScreenState extends State<NewbornSehatiCardScreen> {
   bool _isSubmitted = false;
 
   static const _referenceNumber = 'NRK-NSC-2026-092';
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final repository = context.read<NaraakRepository>();
+      final response = await repository.api.getDummyNewbornRegistryData(
+          guardianPatientId: repository.requirePatientId);
+      final data = Map<String, dynamic>.from(repository.data(response) as Map);
+      if (!mounted) return;
+      _newbornCprController.text = data['newbornCpr'] as String;
+      _fatherCprController.text = data['fatherCpr'] as String;
+      _motherCprController.text = data['motherCpr'] as String;
+      _blockController.text = data['residentialBlock'] as String;
+    });
+  }
 
   @override
   void dispose() {
@@ -173,14 +189,25 @@ class _NewbornSehatiCardScreenState extends State<NewbornSehatiCardScreen> {
     );
   }
 
-  void _submitForm() {
-    if (_formKey.currentState?.validate() ?? false) {
-      RequestRepository.instance.addRequest(
-        serviceName: 'Newborn Sehati Card',
-        status: 'submitted',
-        note: 'Block ${_blockController.text}',
-      );
-      setState(() => _isSubmitted = true);
+  Future<void> _submitForm() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    final repository = context.read<NaraakRepository>();
+    final profile = context.read<UserProfileProvider>().profile;
+    try {
+      await repository.api.submitNewbornCard(
+          patientId: repository.requirePatientId,
+          newbornCpr: _newbornCprController.text,
+          fatherCpr: _fatherCprController.text,
+          motherCpr: _motherCprController.text,
+          contactNumber: profile?.mobileNumber ?? '',
+          residentialBlock: _blockController.text);
+      if (mounted) setState(() => _isSubmitted = true);
+    } catch (error) {
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(repository.friendlyError(error,
+                arabic:
+                    Localizations.localeOf(context).languageCode == 'ar'))));
     }
   }
 

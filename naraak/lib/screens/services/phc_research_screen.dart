@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/app_settings_provider.dart';
 import '../../providers/user_profile_provider.dart';
-import '../../services_mock/repository/request_repository.dart';
+import '../../data/naraak_repository.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../widgets/app_card.dart';
@@ -337,12 +337,37 @@ class _PhcResearchScreenState extends State<PhcResearchScreen> {
               child: AppButton(
                 label: 'Submit Application',
                 onPressed: _isConfirmed
-                    ? () {
-                        RequestRepository.instance.addRequest(
-                          serviceName: 'PHC Research Application',
-                          status: 'submitted',
-                          note: '$_selectedRole — ${_titleController.text}',
-                        );
+                    ? () async {
+                        await context
+                            .read<NaraakRepository>()
+                            .api
+                            .submitResearchApplication(
+                              patientId: context
+                                  .read<NaraakRepository>()
+                                  .requirePatientId,
+                              applicantType: _selectedRole == 'Student'
+                                  ? 'Student'
+                                  : 'Employee',
+                              applicantDetails: {
+                                'email': _emailController.text,
+                                'phone': _phoneController.text,
+                                'institution': _institutionController.text
+                              },
+                              supervisorDetails: const {},
+                              researchDetails: {
+                                'title': _titleController.text,
+                                'objective': _objectiveController.text,
+                                'healthCenter': _selectedHealthCenter,
+                                'duration': _durationController.text,
+                                'studyType': _selectedStudyType
+                              },
+                              supportingDocuments: [
+                                _proposalFileName,
+                                _ethicsFileName,
+                                _toolsFileName,
+                                _supportingFileName
+                              ].whereType<String>().toList(),
+                            );
                         setState(() => _isSubmitted = true);
                       }
                     : null,

@@ -2,9 +2,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'theme/app_theme.dart';
+import 'data/naraak_repository.dart';
 import 'localization/app_localizations.dart';
 import 'routes/app_router.dart';
 import 'providers/app_settings_provider.dart';
+import 'providers/clinical_data_provider.dart';
+import 'providers/dashboard_provider.dart';
 import 'providers/appointment_provider.dart';
 import 'providers/vaccination_provider.dart';
 import 'providers/service_request_provider.dart';
@@ -44,16 +47,41 @@ class NaraakApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        Provider(create: (_) => NaraakRepository()),
         ChangeNotifierProvider(create: (_) => AppSettingsProvider()),
-        ChangeNotifierProvider(create: (_) => AppointmentProvider()),
-        ChangeNotifierProvider(create: (_) => VaccinationProvider()),
-        ChangeNotifierProvider(create: (_) => ServiceRequestProvider()),
-        ChangeNotifierProvider(create: (_) => UserProfileProvider()),
-        ChangeNotifierProvider(create: (_) => ChangeDoctorProvider()),
-        ChangeNotifierProvider(create: (_) => FeeExemptionProvider()),
-        ChangeNotifierProvider(create: (_) => HajjCertificateProvider()),
-        ChangeNotifierProvider(create: (_) => FamilyProvider()),
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(
+            create: (context) =>
+                ClinicalDataProvider(context.read<NaraakRepository>())),
+        ChangeNotifierProvider(
+            create: (context) =>
+                DashboardProvider(context.read<NaraakRepository>())),
+        ChangeNotifierProvider(
+            create: (context) =>
+                AppointmentProvider(context.read<NaraakRepository>())),
+        ChangeNotifierProvider(
+            create: (context) =>
+                VaccinationProvider(context.read<NaraakRepository>())),
+        ChangeNotifierProvider(
+            create: (context) =>
+                ServiceRequestProvider(context.read<NaraakRepository>())),
+        ChangeNotifierProvider(
+            create: (context) =>
+                UserProfileProvider(context.read<NaraakRepository>())),
+        ChangeNotifierProvider(
+            create: (context) =>
+                ChangeDoctorProvider(context.read<NaraakRepository>())),
+        ChangeNotifierProvider(
+            create: (context) =>
+                FeeExemptionProvider(context.read<NaraakRepository>())),
+        ChangeNotifierProvider(
+            create: (context) =>
+                HajjCertificateProvider(context.read<NaraakRepository>())),
+        ChangeNotifierProvider(
+            create: (context) =>
+                FamilyProvider(context.read<NaraakRepository>())),
+        ChangeNotifierProvider(
+            create: (context) =>
+                AuthProvider(context.read<NaraakRepository>())),
         ChangeNotifierProvider(create: (_) => NotificationsReadProvider()),
       ],
       child: Consumer<AppSettingsProvider>(

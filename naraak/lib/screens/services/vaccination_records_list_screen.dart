@@ -182,7 +182,7 @@ class VaccinationRecordDetailScreen extends StatelessWidget {
                   const Divider(height: 24),
                   _DetailRow(
                     label: 'Health Facility',
-                    value: 'Naim Health Center',
+                    value: record.healthCenter,
                   ),
                 ],
               ),
