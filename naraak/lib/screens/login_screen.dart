@@ -56,7 +56,7 @@ class _LoginScreenState extends State<LoginScreen> {
       context.read<FamilyProvider>().loadMembers(),
       context.read<ClinicalDataProvider>().loadNotifications(),
     ]);
-    if (mounted) Navigator.pushReplacementNamed(context, '/home');
+    if (mounted) Navigator.pushReplacementNamed(context, '/profile-setup');
   }
 
   @override
@@ -111,11 +111,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(strings.text('signIn'),
+                            Text('eKey National Authentication',
                                 style: AppTextStyles.h2),
                             const SizedBox(height: 4),
                             Text(
-                              strings.text('enterCprNumber'),
+                              'Login securely with your eKey to access Naraak services.',
                               style: AppTextStyles.bodySecondary,
                             ),
                             const SizedBox(height: 22),

@@ -23,7 +23,7 @@ class UserProfileProvider extends ChangeNotifier {
     try {
       final auth = await repository.login();
       final user = Map<String, dynamic>.from(auth['user'] as Map);
-      _loggedInCpr = user['cpr'] as String;
+      _loggedInCpr = cpr;
       _profile = _fromApi(user);
       _loading = false;
       notifyListeners();

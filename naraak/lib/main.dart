@@ -23,7 +23,7 @@ import 'screens/services_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/appointments_screen.dart';
 import 'screens/pending_requests_screen.dart';
-import 'screens/login_screen.dart';
+import 'screens/ekey_login_screen.dart';
 import 'screens/profile_setup_screen.dart';
 import 'screens/family_members_screen.dart';
 import 'screens/personal_info_screen.dart';
@@ -31,12 +31,15 @@ import 'screens/notifications_screen.dart';
 import 'screens/app_settings_screen.dart';
 import 'screens/privacy_security_screen.dart';
 import 'screens/help_support_screen.dart';
-import 'screens/splash_screen.dart';
+import 'screens/naraak_splash_screen.dart';
+import 'screens/logo_animation_screen.dart';
+import 'screens/welcome_screen.dart';
 import 'responsive/breakpoints.dart';
 import 'web/web_sidebar.dart';
 import 'web/web_mini_topbar.dart';
 import 'web/web_home_screen.dart';
 import 'widgets/mobile_top_bar.dart';
+import 'widgets/naraak_bottom_navigation.dart';
 
 void main() => runApp(const NaraakApp());
 
@@ -99,7 +102,7 @@ class NaraakApp extends StatelessWidget {
                 .copyWith(textScaler: TextScaler.linear(settings.textScale)),
             child: child!,
           ),
-          home: const SplashScreen(),
+          home: const NaraakSplashScreen(),
           // Only pre-shell routes live here. Everything reachable once
           // inside the app (services, pending requests, notifications,
           // profile sub-pages) is registered on RootShell's own nested
@@ -107,7 +110,9 @@ class NaraakApp extends StatelessWidget {
           // button — stay visible on every one of those screens, per the
           // Phase 3 wireframes (every mockup screen keeps the 4-tab bar).
           routes: {
-            '/login': (_) => const LoginScreen(),
+            '/logo-animation': (_) => const LogoAnimationScreen(),
+            '/welcome': (_) => const WelcomeScreen(),
+            '/login': (_) => const EkeyLoginScreen(),
             '/profile-setup': (_) => const ProfileSetupScreen(),
             '/home': (_) => const RootShell(),
           },
@@ -279,27 +284,9 @@ class _RootShellState extends State<RootShell> {
         body: _buildNavigator(false, screens),
         bottomNavigationBar: ValueListenableBuilder<int>(
           valueListenable: _tabIndex,
-          builder: (_, index, __) => BottomNavigationBar(
+          builder: (_, index, __) => NaraakBottomNavigation(
             currentIndex: index,
-            onTap: _selectTab,
-            items: const [
-              BottomNavigationBarItem(
-                  icon: Icon(Icons.home_outlined),
-                  activeIcon: Icon(Icons.home),
-                  label: 'Home'),
-              BottomNavigationBarItem(
-                  icon: Icon(Icons.event_note_outlined),
-                  activeIcon: Icon(Icons.event_note),
-                  label: 'Appointments'),
-              BottomNavigationBarItem(
-                  icon: Icon(Icons.grid_view_outlined),
-                  activeIcon: Icon(Icons.grid_view),
-                  label: 'Services'),
-              BottomNavigationBarItem(
-                  icon: Icon(Icons.person_outline),
-                  activeIcon: Icon(Icons.person),
-                  label: 'Profile'),
-            ],
+            onDestinationSelected: _selectTab,
           ),
         ),
       ),

@@ -4,6 +4,7 @@ import '../providers/user_profile_provider.dart';
 import '../models/user_profile.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/app_button.dart';
+import '../widgets/naraak_logo.dart';
 
 /// Shown once after login — collects the fields the rest of the app
 /// displays (Home dashboard, Profile tab). Kept separate from login so
@@ -67,12 +68,21 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.fromLTRB(24, 24, 24, 48),
           children: [
+            const Center(child: NaraakLogo(size: 88)),
+            const SizedBox(height: 18),
+            Text(
+              'Tell us about yourself',
+              style: AppTextStyles.h1,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
             Text(
               'A few details to personalize your dashboard. This data stays on '
               'your device for this demo session only.',
               style: AppTextStyles.bodySecondary,
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
 
@@ -80,14 +90,19 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             TextFormField(
               initialValue: cpr,
               enabled: false,
-              decoration:
-                  const InputDecoration(labelText: 'CPR Number (from login)'),
+              decoration: const InputDecoration(
+                labelText: 'CPR Number (from login)',
+                prefixIcon: Icon(Icons.badge_outlined),
+              ),
             ),
             const SizedBox(height: 16),
 
             TextFormField(
               controller: _nameController,
-              decoration: const InputDecoration(labelText: 'Full Name'),
+              decoration: const InputDecoration(
+                labelText: 'Full Name',
+                prefixIcon: Icon(Icons.person_outline),
+              ),
               validator: (v) => (v == null || v.trim().isEmpty)
                   ? 'Enter your full name'
                   : null,
@@ -102,6 +117,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(
                       labelText: 'Age',
+                      prefixIcon: Icon(Icons.cake_outlined),
                       errorMaxLines: 2,
                     ),
                     validator: (v) {
@@ -116,7 +132,10 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                 Expanded(
                   child: DropdownButtonFormField<String>(
                     initialValue: _gender,
-                    decoration: const InputDecoration(labelText: 'Gender'),
+                    decoration: const InputDecoration(
+                      labelText: 'Gender',
+                      prefixIcon: Icon(Icons.people_outline),
+                    ),
                     items: const [
                       DropdownMenuItem(value: 'Female', child: Text('Female')),
                       DropdownMenuItem(value: 'Male', child: Text('Male')),
@@ -134,6 +153,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
               decoration: const InputDecoration(
                 labelText: 'Mobile Number',
                 hintText: '+973 3XXX XXXX',
+                prefixIcon: Icon(Icons.phone_outlined),
               ),
               validator: (v) => (v == null || v.trim().isEmpty)
                   ? 'Enter your mobile number'
@@ -143,8 +163,10 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
 
             DropdownButtonFormField<String>(
               initialValue: _healthCenter,
-              decoration:
-                  const InputDecoration(labelText: 'Assigned Health Center'),
+              decoration: const InputDecoration(
+                labelText: 'Assigned Health Center',
+                prefixIcon: Icon(Icons.local_hospital_outlined),
+              ),
               items: _healthCenters
                   .map((c) => DropdownMenuItem(value: c, child: Text(c)))
                   .toList(),
@@ -153,7 +175,11 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             ),
             const SizedBox(height: 32),
 
-            AppButton(label: 'Save & Continue', onPressed: _handleSave),
+            AppButton(
+              label: 'Save & Continue',
+              icon: Icons.arrow_forward_rounded,
+              onPressed: _handleSave,
+            ),
           ],
         ),
       ),
