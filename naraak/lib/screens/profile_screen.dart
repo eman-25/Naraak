@@ -7,6 +7,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_palette.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/app_card.dart';
+import '../widgets/responsive_page_frame.dart';
 
 /// Profile tab — pure content (no Scaffold/AppBar; the shell renders the
 /// top bar). Matches the reference: page title, teal identity card, a
@@ -33,11 +34,8 @@ class ProfileScreen extends StatelessWidget {
     final settings = context.watch<AppSettingsProvider>();
     final palette = settings.palette;
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 920),
-        child: Column(
+    return ResponsivePageFrame(
+      child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('YOUR NARAAK PROFILE',
@@ -113,7 +111,6 @@ class ProfileScreen extends StatelessWidget {
               ),
             ),
           ],
-        ),
       ),
     );
   }

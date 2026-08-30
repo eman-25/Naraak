@@ -35,9 +35,8 @@ import 'screens/naraak_splash_screen.dart';
 import 'screens/logo_animation_screen.dart';
 import 'screens/welcome_screen.dart';
 import 'responsive/breakpoints.dart';
-import 'web/web_sidebar.dart';
-import 'web/web_mini_topbar.dart';
-import 'web/web_home_screen.dart';
+import 'web/web_dashboard_header.dart';
+import 'web/reference_web_home_screen.dart';
 import 'widgets/mobile_top_bar.dart';
 import 'widgets/naraak_bottom_navigation.dart';
 
@@ -184,7 +183,7 @@ class _RootShellState extends State<RootShell> {
   // screens for now (centered by RootShell below) until each gets its own
   // desktop layout pass.
   static const _webScreens = [
-    WebHomeScreen(),
+    ReferenceWebHomeScreen(),
     AppointmentsScreen(),
     ServicesScreen(),
     ProfileScreen(),
@@ -214,8 +213,6 @@ class _RootShellState extends State<RootShell> {
     _tabIndex.dispose();
     super.dispose();
   }
-
-  static const _pageLabels = ['Home', 'Appointments', 'Services', 'Profile'];
 
   Widget _buildNavigator(bool web, List<Widget> screens) {
     return Navigator(
@@ -258,18 +255,10 @@ class _RootShellState extends State<RootShell> {
         selectTab: _selectTab,
         navigatorKey: _navigatorKey,
         child: Scaffold(
-          body: Row(
+          body: Column(
             children: [
-              WebSidebar(
-                  currentIndex: _tabIndex.value, onSelectTab: _selectTab),
-              Expanded(
-                child: Column(
-                  children: [
-                    WebMiniTopBar(pageLabel: _pageLabels[_tabIndex.value]),
-                    Expanded(child: _buildNavigator(true, screens)),
-                  ],
-                ),
-              ),
+              WebDashboardHeader(selected: _tabIndex.value, onSelect: _selectTab),
+              Expanded(child: _buildNavigator(true, screens)),
             ],
           ),
         ),

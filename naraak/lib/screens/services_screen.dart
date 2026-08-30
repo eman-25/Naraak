@@ -5,6 +5,7 @@ import '../providers/app_settings_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../localization/app_localizations.dart';
+import '../widgets/responsive_page_frame.dart';
 
 class _ServiceEntry {
   final String titleKey;
@@ -70,11 +71,8 @@ class ServicesScreen extends StatelessWidget {
     final strings = AppLocalizations.of(context);
     final palette = context.watch<AppSettingsProvider>().palette;
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 920),
-        child: Column(
+    return ResponsivePageFrame(
+      child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('NARAAK SERVICES',
@@ -97,7 +95,6 @@ class ServicesScreen extends StatelessWidget {
               const SizedBox(height: 26),
             ],
           ],
-        ),
       ),
     );
   }
@@ -177,7 +174,11 @@ class _ServiceGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
-      final columns = constraints.maxWidth > 560 ? 2 : 1;
+      final columns = constraints.maxWidth > 960
+          ? 3
+          : constraints.maxWidth > 560
+              ? 2
+              : 1;
       return GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
@@ -186,7 +187,11 @@ class _ServiceGrid extends StatelessWidget {
           crossAxisCount: columns,
           mainAxisSpacing: 11,
           crossAxisSpacing: 11,
-          childAspectRatio: columns == 2 ? 3.6 : 4.2,
+          childAspectRatio: columns == 3
+              ? 3.15
+              : columns == 2
+                  ? 3.6
+                  : 4.2,
         ),
         itemBuilder: (context, i) =>
             _ServiceRow(entry: entries[i], palette: palette),

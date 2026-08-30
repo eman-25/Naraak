@@ -7,6 +7,7 @@ import '../providers/app_settings_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/status_badge.dart';
+import '../widgets/responsive_page_frame.dart';
 import 'services/join_appointment_screen.dart';
 
 enum _ApptFilter { upcoming, past, tele, inCenter }
@@ -67,11 +68,8 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
         .length;
     final filtered = _applyFilter(allAppointments);
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 920),
-        child: Column(
+    return ResponsivePageFrame(
+      child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Wrap(
@@ -137,7 +135,6 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                     .toList(),
               ),
           ],
-        ),
       ),
     );
   }

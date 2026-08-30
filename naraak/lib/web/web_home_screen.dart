@@ -41,6 +41,45 @@ class _WebHomeScreenState extends State<WebHomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(22),
+              child: SizedBox(
+                height: 310,
+                child: Stack(fit: StackFit.expand, children: [
+                  Image.asset('assets/images/dashboard_phc_hero.png', fit: BoxFit.cover),
+                  Padding(
+                    padding: const EdgeInsets.all(38),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: SizedBox(
+                        width: 460,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Primary Healthcare,\nCloser to You', style: TextStyle(color: Colors.white, fontSize: 38, fontWeight: FontWeight.w800, height: 1.08)),
+                            const SizedBox(height: 14),
+                            const Text('All your primary healthcare services in one place. Fast. Easy. Secure.', style: TextStyle(color: Colors.white, fontSize: 15)),
+                            const SizedBox(height: 22),
+                            TextField(
+                              readOnly: true,
+                              onTap: () => ShellNavigation.of(context)?.selectTab(2),
+                              decoration: const InputDecoration(
+                                filled: true,
+                                fillColor: Colors.white,
+                                hintText: 'Search for services, health centers and more...',
+                                prefixIcon: Icon(Icons.search_rounded),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ]),
+              ),
+            ),
+            const SizedBox(height: 28),
             WelcomeHeader(
                 firstName: firstName, trailing: const FamilySwitchButton()),
             const SizedBox(height: 26),
