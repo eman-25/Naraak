@@ -1,6 +1,7 @@
 // lib/screens/help_support_screen.dart
 import 'package:flutter/material.dart';
-import '../services_mock/repository/request_repository.dart';
+import 'package:provider/provider.dart';
+import '../data/naraak_repository.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/app_button.dart';
@@ -34,15 +35,29 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
     super.dispose();
   }
 
-  void _submit() {
-    if (_formKey.currentState?.validate() ?? false) {
-      RequestRepository.instance.addRequest(
-        serviceName: _category,
-        status: 'submitted',
-        note: _subjectController.text.trim(),
+  bool _submitting = false;
+
+  Future<void> _submit() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    setState(() => _submitting = true);
+    final repository = context.read<NaraakRepository>();
+    try {
+      await repository.api.submitSupportMessage(
+        patientId: repository.requirePatientId,
+        category: _category,
+        subject: _subjectController.text.trim(),
+        message: _messageController.text.trim(),
       );
-      setState(() => _isSubmitted = true);
+      if (mounted) setState(() => _isSubmitted = true);
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(repository.friendlyError(error, arabic: false))),
+        );
+      }
     }
+    if (mounted) setState(() => _submitting = false);
   }
 
   @override
@@ -157,7 +172,10 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
           const SizedBox(height: 20),
           SizedBox(
             width: double.infinity,
-            child: AppButton(label: 'Submit', onPressed: _submit),
+            child: AppButton(
+                label: 'Submit',
+                isLoading: _submitting,
+                onPressed: _submitting ? null : _submit),
           ),
         ],
       ),

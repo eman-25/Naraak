@@ -27,6 +27,10 @@ class FeeExemptionScreen extends StatefulWidget {
 class _FeeExemptionScreenState extends State<FeeExemptionScreen> {
   final _formKey = GlobalKey<FormState>();
 
+  /// Phase 3 §26: "Before you begin, please prepare" checklist gates the
+  /// form — the user taps Start Application to proceed.
+  bool _started = false;
+
   /// Phase 3 §4.7 / Figure 41: details and uploads are two separate
   /// screens, not one long scroll.
   int _step = 0;
@@ -170,7 +174,7 @@ class _FeeExemptionScreenState extends State<FeeExemptionScreen> {
     );
   }
 
-  bool get _hasUnsavedChanges => _step > 0;
+  bool get _hasUnsavedChanges => _started;
 
   @override
   Widget build(BuildContext context) {
@@ -184,7 +188,9 @@ class _FeeExemptionScreenState extends State<FeeExemptionScreen> {
       child: Scaffold(
       appBar: NaraakAppBar(
         title: 'Fee Exemption Card',
-        onBack: _step == 1 ? () => setState(() => _step = 0) : null,
+        onBack: _step == 1
+            ? () => setState(() => _step = 0)
+            : (_started ? () => setState(() => _started = false) : null),
       ),
       body: Consumer<FeeExemptionProvider>(
         builder: (context, provider, _) {
@@ -215,34 +221,85 @@ class _FeeExemptionScreenState extends State<FeeExemptionScreen> {
             );
           }
 
-          return Form(
-            key: _formKey,
-            child: ResponsivePageFrame(
-              maxWidth: 820,
-              child: Column(
-                children: [
-                  const ServiceHero(
-                    icon: Icons.shield_rounded,
-                    accent: Color(0xFFB45309),
-                    title: 'Health Fee Exemption Card',
-                    description:
-                        'Apply for health fee exemption based on your entitlement.',
+          return ResponsivePageFrame(
+            maxWidth: 820,
+            child: Column(
+              children: [
+                const ServiceHero(
+                  icon: Icons.shield_rounded,
+                  accent: Color(0xFFB45309),
+                  title: 'Health Fee Exemption Card',
+                  description:
+                      'Apply for health fee exemption based on your entitlement.',
+                ),
+                const SizedBox(height: 20),
+                if (!_started)
+                  _buildChecklist()
+                else
+                  Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        ProgressStepper(
+                          steps: const ['Eligibility', 'Documents'],
+                          currentStep: _step,
+                        ),
+                        const SizedBox(height: 24),
+                        ...(_step == 0
+                            ? _buildDetailsStep()
+                            : _buildUploadsStep(provider)),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 20),
-                  ProgressStepper(
-                    steps: const ['Eligibility', 'Documents'],
-                    currentStep: _step,
-                  ),
-                  const SizedBox(height: 24),
-                  ...(_step == 0
-                      ? _buildDetailsStep()
-                      : _buildUploadsStep(provider)),
-                ],
-              ),
+              ],
             ),
           );
         },
       ),
+      ),
+    );
+  }
+
+  Widget _buildChecklist() {
+    const items = [
+      ('CPR / ID', Icons.badge_outlined),
+      ('Income Certificate', Icons.description_outlined),
+      ('Family Book (if applicable)', Icons.family_restroom_rounded),
+      ('Supporting Documents', Icons.attach_file_rounded),
+    ];
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Before you begin, please prepare:', style: AppTextStyles.h3),
+          const SizedBox(height: 16),
+          for (final (label, icon) in items)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Row(
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: AppColors.warning.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(9),
+                    ),
+                    child: Icon(icon, size: 16, color: AppColors.warning),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                      child:
+                          Text(label, style: AppTextStyles.body)),
+                ],
+              ),
+            ),
+          const SizedBox(height: 8),
+          AppButton(
+            label: 'Start Application',
+            onPressed: () => setState(() => _started = true),
+          ),
+        ],
       ),
     );
   }

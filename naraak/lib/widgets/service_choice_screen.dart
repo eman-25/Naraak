@@ -18,9 +18,13 @@ class ServiceChoice {
 }
 
 class ServiceChoiceScreen extends StatelessWidget {
-  const ServiceChoiceScreen({super.key, required this.title, required this.heroImage, required this.heroTitle, required this.heroDescription, required this.prompt, required this.choices});
+  const ServiceChoiceScreen({super.key, required this.title, this.heroImage, this.heroIcon, this.heroAccent, required this.heroTitle, required this.heroDescription, required this.prompt, required this.choices})
+      : assert(heroImage != null || heroIcon != null,
+            'ServiceChoiceScreen needs either heroImage or heroIcon');
   final String title;
-  final String heroImage;
+  final String? heroImage;
+  final IconData? heroIcon;
+  final Color? heroAccent;
   final String heroTitle;
   final String heroDescription;
   final String prompt;
@@ -32,7 +36,7 @@ class ServiceChoiceScreen extends StatelessWidget {
         body: ResponsivePageFrame(
           maxWidth: 980,
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            ServiceHero(imageAsset: heroImage, title: heroTitle, description: heroDescription),
+            ServiceHero(imageAsset: heroImage, icon: heroIcon, accent: heroAccent, title: heroTitle, description: heroDescription),
             const SizedBox(height: 24),
             Text(prompt, style: AppTextStyles.h2),
             const SizedBox(height: 14),

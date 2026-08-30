@@ -946,6 +946,19 @@ class NaraakDummyApi {
     return _success(_notifications[index]);
   }
 
+  Future<Map<String, dynamic>> submitSupportMessage({
+    required String patientId,
+    required String category,
+    required String subject,
+    required String message,
+  }) async {
+    await _wait();
+    return _createRequest(patientId, category, {
+      'subject': subject,
+      'message': message,
+    });
+  }
+
   Map<String, dynamic> _createRequest(String patientId, String serviceType, Map<String, dynamic> payload) {
     final request = {
       'requestId': _nextId('REQ'),
