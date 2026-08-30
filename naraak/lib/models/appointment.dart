@@ -7,6 +7,9 @@ class Appointment {
   final DateTime slotDateTime;
   final String status; // 'available' | 'confirmed' | 'cancelled' | 'completed'
   final bool isTele;
+  final String? clinic;
+  final String? slotId;
+  final String? endTime;
 
   const Appointment({
     required this.id,
@@ -16,6 +19,9 @@ class Appointment {
     required this.slotDateTime,
     required this.status,
     this.isTele = false,
+    this.clinic,
+    this.slotId,
+    this.endTime,
   });
 
   Appointment copyWith({
@@ -34,18 +40,29 @@ class Appointment {
       slotDateTime: slotDateTime ?? this.slotDateTime,
       status: status ?? this.status,
       isTele: isTele,
+      clinic: clinic,
+      slotId: slotId,
+      endTime: endTime,
     );
   }
 
   factory Appointment.fromJson(Map<String, dynamic> json) {
     return Appointment(
-      id: json['id'] as String,
-      centerName: json['centerName'] as String,
+      id: (json['appointmentId'] ?? json['slotId'] ?? json['id']) as String,
+      centerName: (json['healthCenter'] ?? json['centerName']) as String,
       doctorName: json['doctorName'] as String,
       doctorGender: json['doctorGender'] as String?,
-      slotDateTime: DateTime.parse(json['slotDateTime'] as String),
-      status: json['status'] as String,
-      isTele: json['isTele'] as bool? ?? false,
+      slotDateTime: json['date'] != null
+          ? DateTime.parse("${json['date']}T${json['startTime']}:00")
+          : DateTime.parse(json['slotDateTime'] as String),
+      status: (json['status'] ??
+          (json['available'] == true ? 'available' : 'confirmed')) as String,
+      isTele: json['appointmentType'] != null
+          ? json['appointmentType'] == 'tele'
+          : json['isTele'] as bool? ?? false,
+      clinic: json['clinic'] as String?,
+      slotId: json['slotId'] as String?,
+      endTime: json['endTime'] as String?,
     );
   }
 
@@ -57,5 +74,8 @@ class Appointment {
         'slotDateTime': slotDateTime.toIso8601String(),
         'status': status,
         'isTele': isTele,
+        'clinic': clinic,
+        'slotId': slotId,
+        'endTime': endTime,
       };
 }

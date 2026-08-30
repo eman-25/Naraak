@@ -1,13 +1,11 @@
 // lib/widgets/mobile_top_bar.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../providers/clinical_data_provider.dart';
 import '../main.dart' show ShellNavigation;
-import '../models/notification_item.dart';
 import '../providers/app_settings_provider.dart';
-import '../providers/appointment_provider.dart';
 import '../providers/auth_provider.dart';
-import '../providers/notifications_read_provider.dart';
-import '../providers/service_request_provider.dart';
+import '../localization/app_localizations.dart';
 import '../providers/user_profile_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
@@ -25,17 +23,10 @@ class MobileTopBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context);
     final palette = context.watch<AppSettingsProvider>().palette;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final notifications = buildNotifications(
-      context,
-      context.watch<AppointmentProvider>().myAppointments,
-      context.watch<ServiceRequestProvider>().requests,
-    );
-    final hasUnread = context
-            .watch<NotificationsReadProvider>()
-            .unreadCount(notifications.map((n) => n.id)) >
-        0;
+    final hasUnread = context.watch<ClinicalDataProvider>().unreadCount > 0;
 
     return AppBar(
       toolbarHeight: 64,
@@ -69,7 +60,8 @@ class MobileTopBar extends StatelessWidget implements PreferredSizeWidget {
           clipBehavior: Clip.none,
           children: [
             IconButton(
-              onPressed: () => ShellNavigation.of(context)?.pushNamed('/notifications'),
+              onPressed: () =>
+                  ShellNavigation.of(context)?.pushNamed('/notifications'),
               icon: const Icon(Icons.notifications_none_rounded),
             ),
             if (hasUnread)
@@ -92,7 +84,7 @@ class MobileTopBar extends StatelessWidget implements PreferredSizeWidget {
           ],
         ),
         PopupMenuButton<String>(
-          tooltip: 'Switch Account',
+          tooltip: strings.text('switchAccount'),
           offset: const Offset(0, 48),
           onSelected: (value) {
             if (value == 'organize-family') {
@@ -115,13 +107,13 @@ class MobileTopBar extends StatelessWidget implements PreferredSizeWidget {
                 ),
               ),
               const PopupMenuDivider(),
-              const PopupMenuItem<String>(
+              PopupMenuItem<String>(
                 value: 'organize-family',
                 child: Row(
                   children: [
-                    Icon(Icons.family_restroom_rounded, size: 20),
-                    SizedBox(width: 10),
-                    Text('Organize Family Members'),
+                    const Icon(Icons.family_restroom_rounded, size: 20),
+                    const SizedBox(width: 10),
+                    Text(strings.text('organizeFamilyMembers')),
                   ],
                 ),
               ),

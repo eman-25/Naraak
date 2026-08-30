@@ -12,7 +12,8 @@ void main() {
       (WidgetTester tester) async {
     await tester.pumpWidget(const NaraakApp());
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 1));
+    await tester.pump(const Duration(milliseconds: 2600));
+    await tester.pump();
 
     // The login screen should show the app name and a CPR field.
     expect(find.text('Naraak'), findsWidgets);

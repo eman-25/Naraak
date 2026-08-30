@@ -1,62 +1,58 @@
-// lib/providers/auth_provider.dart
 import 'package:flutter/material.dart';
+import '../data/naraak_repository.dart';
 
 class UserProfile {
   final String id;
   final String name;
   final String roleLabel;
-
-  const UserProfile({
-    required this.id,
-    required this.name,
-    required this.roleLabel,
-  });
-
-  /// Keep avatar text derived from the account name so it never becomes
-  /// stale when an account name is updated.
+  const UserProfile(
+      {required this.id, required this.name, required this.roleLabel});
   String get initials {
-    final parts = name.trim().split(RegExp(r'\s+')).where((part) => part.isNotEmpty);
-    final words = parts.toList();
+    final words = name
+        .trim()
+        .split(RegExp(r'\s+'))
+        .where((part) => part.isNotEmpty)
+        .toList();
     if (words.isEmpty) return '?';
-    return (words.length == 1 ? words.first[0] : '${words.first[0]}${words.last[0]}')
+    return (words.length == 1
+            ? words.first[0]
+            : '${words.first[0]}${words.last[0]}')
         .toUpperCase();
   }
 }
 
 class AuthProvider extends ChangeNotifier {
-  UserProfile _currentUser = const UserProfile(
-    id: '1',
-    name: 'Ebrahim Khalil',
-    roleLabel: 'Patient',
-  );
-
-  final List<UserProfile> _availableUsers = const [
-    UserProfile(
-      id: '1',
-      name: 'Ebrahim Khalil',
-      roleLabel: 'Patient',
-    ),
-    UserProfile(
-      id: '2',
-      name: 'Sara Ahmed',
-      roleLabel: 'Dependent (Daughter)',
-    ),
-    UserProfile(
-      id: '3',
-      name: 'Ali Khalil',
-      roleLabel: 'Dependent (Son)',
-    ),
-  ];
-
+  AuthProvider(this.repository);
+  final NaraakRepository repository;
+  UserProfile _currentUser =
+      const UserProfile(id: '', name: '', roleLabel: 'Patient');
+  final List<UserProfile> _availableUsers = [];
   UserProfile get currentUser => _currentUser;
-  List<UserProfile> get availableUsers => _availableUsers;
+  List<UserProfile> get availableUsers => List.unmodifiable(_availableUsers);
+
+  Future<void> loadUsers() async {
+    final profile = await repository.profile();
+    final family = await repository.familyMembers();
+    _availableUsers
+      ..clear()
+      ..add(UserProfile(
+          id: profile['patientId'] as String,
+          name: profile['fullName'] as String,
+          roleLabel: 'Patient'))
+      ..addAll(family.map((item) => UserProfile(
+          id: item['patientId'] as String,
+          name: item['fullName'] as String,
+          roleLabel: 'Dependent (${item['relationship']})')));
+    _currentUser = _availableUsers.first;
+    notifyListeners();
+  }
 
   void switchUser(String userId) {
-    final selected = _availableUsers.firstWhere(
-      (u) => u.id == userId,
-      orElse: () => _currentUser,
-    );
-    _currentUser = selected;
-    notifyListeners();
+    final matches = _availableUsers.where((u) => u.id == userId);
+    if (matches.isNotEmpty) {
+      _currentUser = matches.first;
+      repository.patientId = userId;
+      notifyListeners();
+    }
   }
 }

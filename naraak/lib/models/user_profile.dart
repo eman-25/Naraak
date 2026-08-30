@@ -6,10 +6,12 @@ class UserProfile {
   final String gender;
   final String mobileNumber;
   final String assignedHealthCenter;
-  final String? bloodType;       // NEW — Phase 3 §2.1: "Profile: ... blood type"
-  final String? nationality;     // NEW — "other details"
+  final String? bloodType; // NEW — Phase 3 §2.1: "Profile: ... blood type"
+  final String? nationality; // NEW — "other details"
   final String? emergencyContactName;
   final String? emergencyContactPhone;
+  final String? familyDoctorName;
+  final String? familyDoctorSpecialty;
 
   const UserProfile({
     required this.fullName,
@@ -22,6 +24,8 @@ class UserProfile {
     this.nationality,
     this.emergencyContactName,
     this.emergencyContactPhone,
+    this.familyDoctorName,
+    this.familyDoctorSpecialty,
   });
 
   UserProfile copyWith({
@@ -35,6 +39,8 @@ class UserProfile {
     String? nationality,
     String? emergencyContactName,
     String? emergencyContactPhone,
+    String? familyDoctorName,
+    String? familyDoctorSpecialty,
   }) {
     return UserProfile(
       fullName: fullName ?? this.fullName,
@@ -46,7 +52,11 @@ class UserProfile {
       bloodType: bloodType ?? this.bloodType,
       nationality: nationality ?? this.nationality,
       emergencyContactName: emergencyContactName ?? this.emergencyContactName,
-      emergencyContactPhone: emergencyContactPhone ?? this.emergencyContactPhone,
+      emergencyContactPhone:
+          emergencyContactPhone ?? this.emergencyContactPhone,
+      familyDoctorName: familyDoctorName ?? this.familyDoctorName,
+      familyDoctorSpecialty:
+          familyDoctorSpecialty ?? this.familyDoctorSpecialty,
     );
   }
 }

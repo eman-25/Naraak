@@ -6,6 +6,7 @@ import '../providers/app_settings_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_palette.dart';
 import '../theme/app_text_styles.dart';
+import '../widgets/app_card.dart';
 
 /// Profile tab — pure content (no Scaffold/AppBar; the shell renders the
 /// top bar). Matches the reference: page title, teal identity card, a
@@ -42,7 +43,8 @@ class ProfileScreen extends StatelessWidget {
             Text('YOUR NARAAK PROFILE',
                 style: AppTextStyles.overline.copyWith(color: palette.primary)),
             const SizedBox(height: 6),
-            Text('Profile & settings', style: AppTextStyles.h1.copyWith(fontSize: 26)),
+            Text('Profile & settings',
+                style: AppTextStyles.h1.copyWith(fontSize: 26)),
             const SizedBox(height: 6),
             Text('Manage your identity, preferences and family access.',
                 style: AppTextStyles.bodySecondary),
@@ -72,9 +74,11 @@ class ProfileScreen extends StatelessWidget {
             LayoutBuilder(builder: (context, constraints) {
               final wide = constraints.maxWidth > 720;
               final identity = _PersonalHealthIdentityCard(profile: profile);
-              final prefs = _PreferencesCard(settings: settings, palette: palette);
+              final prefs =
+                  _PreferencesCard(settings: settings, palette: palette);
               if (!wide) {
-                return Column(children: [identity, const SizedBox(height: 16), prefs]);
+                return Column(
+                    children: [identity, const SizedBox(height: 16), prefs]);
               }
               return Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -94,15 +98,18 @@ class ProfileScreen extends StatelessWidget {
                   foregroundColor: AppColors.error,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14)),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                 ),
                 onPressed: () {
                   context.read<UserProfileProvider>().logout();
                   Navigator.of(context, rootNavigator: true)
                       .pushNamedAndRemoveUntil('/login', (_) => false);
                 },
-                child: const Text('Sign Out',
-                    style: TextStyle(fontWeight: FontWeight.w700)),
+                child: const Text(
+                  'Sign Out',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
               ),
             ),
           ],
@@ -117,6 +124,7 @@ class _IdentityCard extends StatelessWidget {
   final dynamic palette;
   final String initials;
   final String maskedCpr;
+
   const _IdentityCard({
     required this.profile,
     required this.palette,
@@ -142,11 +150,14 @@ class _IdentityCard extends StatelessWidget {
               CircleAvatar(
                 radius: 26,
                 backgroundColor: Colors.white24,
-                child: Text(initials,
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 18)),
+                child: Text(
+                  initials,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 18,
+                  ),
+                ),
               ),
               const SizedBox(width: 14),
               ConstrainedBox(
@@ -155,16 +166,22 @@ class _IdentityCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(profile?.fullName ?? 'Guest',
-                        style: AppTextStyles.h2
-                            .copyWith(color: Colors.white, fontSize: 19)),
+                    Text(
+                      profile?.fullName ?? 'Guest',
+                      style: AppTextStyles.h2.copyWith(
+                        color: Colors.white,
+                        fontSize: 19,
+                      ),
+                    ),
                     const SizedBox(height: 5),
                     Wrap(
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        Text('CPR: $maskedCpr  ',
-                            style: AppTextStyles.caption
-                                .copyWith(color: const Color(0xFFC8E2E1))),
+                        Text(
+                          'CPR: $maskedCpr  ',
+                          style: AppTextStyles.caption
+                              .copyWith(color: const Color(0xFFC8E2E1)),
+                        ),
                         Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 7, vertical: 3),
@@ -178,98 +195,128 @@ class _IdentityCard extends StatelessWidget {
                               Icon(Icons.check_rounded,
                                   size: 11, color: Color(0xFF1E9E6B)),
                               SizedBox(width: 2),
-                              Text('Verified',
-                                  style: TextStyle(
-                                      color: Color(0xFF1E9E6B),
-                                      fontSize: 9,
-                                      fontWeight: FontWeight.w800)),
+                              Text(
+                                'Verified',
+                                style: TextStyle(
+                                  color: Color(0xFF1E9E6B),
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
                             ],
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 2),
-                    Text(profile?.assignedHealthCenter ?? 'No health center set',
-                        style: AppTextStyles.caption
-                            .copyWith(color: const Color(0xFFC8E2E1))),
+                    Text(
+                      profile?.assignedHealthCenter ?? 'No health center set',
+                      style: AppTextStyles.caption
+                          .copyWith(color: const Color(0xFFC8E2E1)),
+                    ),
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 24),
-
-          AppCard(
-            padding: EdgeInsets.zero,
-            child: Column(
-              children: [
-                _PlainMenuRow(
-                  label: 'Personal Info & Blood Type',
-                  onTap: () =>
-                      Navigator.pushNamed(context, '/profile/personal-info'),
-                ),
-                const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: Divider(height: 1)),
-                _PlainMenuRow(
-                  label: 'Privacy & Security',
-                  onTap: () =>
-                      Navigator.pushNamed(context, '/profile/privacy-security'),
-                ),
-                const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: Divider(height: 1)),
-                _PlainMenuRow(
-                  label: 'Family Members & Dependents',
-                  onTap: () => Navigator.pushNamed(context, '/profile/family'),
-                ),
-                const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: Divider(height: 1)),
-                _PlainMenuRow(
-                  label: 'App Settings',
-                  onTap: () =>
-                      Navigator.pushNamed(context, '/profile/app-settings'),
-                _MenuRow(
-                  icon: Icons.support_agent_rounded,
-                  color: AppColors.warning,
-                  label: 'Help & User Inquiries',
-                  subtitle: 'FAQs, contact support, general questions',
-                  onTap: () => _showHelp(context),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          // Service Feedback & Complaints (Separated from support inquiries)
-          Text('FEEDBACK & EVALUATION', style: AppTextStyles.overline),
-          const SizedBox(height: 10),
-          AppCard(
-            padding: EdgeInsets.zero,
-            child: Column(
-              children: [
-                _MenuRow(
-                  icon: Icons.rate_review_rounded,
-                  color: const Color(0xFF00897B),
-                  label: 'Service Evaluation',
-                  subtitle: 'Rate your healthcare experience',
-                  onTap: () => _showFeedbackForm(context, isComplaint: false),
-                ),
-                const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: Divider(height: 1)),
-                _MenuRow(
-                  icon: Icons.report_problem_rounded,
-                  color: const Color(0xFFE53935),
-                  label: 'Submit a Complaint',
-                  subtitle: 'Report issues or suggestions for improvement',
-                  onTap: () => _showFeedbackForm(context, isComplaint: true),
-                ),
-              ],
+          Padding(
+            padding: const EdgeInsets.only(left: 80),
+            child: OutlinedButton(
+              onPressed: () =>
+                  Navigator.pushNamed(context, '/profile/personal-info'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.white,
+                side: const BorderSide(color: Color(0xFFB9DFDD)),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              ),
+              child: const Text('Edit personal information',
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showHelp(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Help & User Inquiries'),
+        content: const Text(
+          'For appointments, choose Book Appointment from Services. For account or record questions, contact the PHC support team through your registered health center.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showFeedbackForm(BuildContext context, {required bool isComplaint}) {
+    final controller = TextEditingController();
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (sheetContext) => Padding(
+        padding: EdgeInsets.fromLTRB(
+          20,
+          20,
+          20,
+          MediaQuery.of(sheetContext).viewInsets.bottom + 20,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              isComplaint ? 'Submit a Complaint' : 'Service Evaluation',
+              style: AppTextStyles.h2,
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: controller,
+              maxLines: 4,
+              decoration: InputDecoration(
+                hintText: isComplaint
+                    ? 'Describe the issue and the service involved.'
+                    : 'Tell us about the service you received.',
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: () {
+                  if (controller.text.trim().isEmpty) {
+                    ScaffoldMessenger.of(sheetContext).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                            'Please enter your feedback before submitting.'),
+                      ),
+                    );
+                    return;
+                  }
+                  Navigator.pop(sheetContext);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        isComplaint
+                            ? 'Your complaint has been submitted for review.'
+                            : 'Thank you. Your evaluation has been submitted.',
+                      ),
+                    ),
+                  );
+                },
+                child: const Text('Submit'),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -277,6 +324,7 @@ class _IdentityCard extends StatelessWidget {
 
 class _PersonalHealthIdentityCard extends StatelessWidget {
   final dynamic profile;
+
   const _PersonalHealthIdentityCard({required this.profile});
 
   @override
@@ -294,7 +342,8 @@ class _PersonalHealthIdentityCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkSurface : Colors.white,
         border: Border.all(
-            color: isDark ? AppColors.darkOutline : AppColors.outline),
+          color: isDark ? AppColors.darkOutline : AppColors.outline,
+        ),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -308,11 +357,15 @@ class _PersonalHealthIdentityCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('Personal health identity',
-                        style: AppTextStyles.h3.copyWith(fontSize: 15)),
+                    Text(
+                      'Personal health identity',
+                      style: AppTextStyles.h3.copyWith(fontSize: 15),
+                    ),
                     const SizedBox(height: 4),
-                    Text('Information used for your care',
-                        style: AppTextStyles.bodySecondary),
+                    Text(
+                      'Information used for your care',
+                      style: AppTextStyles.bodySecondary,
+                    ),
                   ],
                 ),
               ),
@@ -333,11 +386,15 @@ class _PersonalHealthIdentityCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(f.$1, style: AppTextStyles.caption.copyWith(fontSize: 10)),
+                        Text(f.$1,
+                            style:
+                                AppTextStyles.caption.copyWith(fontSize: 10)),
                         const SizedBox(height: 4),
-                        Text(f.$2,
-                            style: AppTextStyles.body
-                                .copyWith(fontWeight: FontWeight.w700, fontSize: 13)),
+                        Text(
+                          f.$2,
+                          style: AppTextStyles.body.copyWith(
+                              fontWeight: FontWeight.w700, fontSize: 13),
+                        ),
                       ],
                     ))
                 .toList(),
@@ -346,57 +403,12 @@ class _PersonalHealthIdentityCard extends StatelessWidget {
       ),
     );
   }
-
-  void _showHelp(BuildContext context) {
-    showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Help & User Inquiries'),
-        content: const Text('For appointments, choose Book Appointment from Services. For account or record questions, contact the PHC support team through your registered health center.'),
-        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close'))],
-      ),
-    );
-  }
-
-  void _showFeedbackForm(BuildContext context, {required bool isComplaint}) {
-    final controller = TextEditingController();
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      builder: (sheetContext) => Padding(
-        padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(sheetContext).viewInsets.bottom + 20),
-        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(isComplaint ? 'Submit a Complaint' : 'Service Evaluation', style: AppTextStyles.h2),
-          const SizedBox(height: 12),
-          TextField(
-            controller: controller,
-            maxLines: 4,
-            decoration: InputDecoration(hintText: isComplaint ? 'Describe the issue and the service involved.' : 'Tell us about the service you received.'),
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton(
-              onPressed: () {
-                if (controller.text.trim().isEmpty) {
-                  ScaffoldMessenger.of(sheetContext).showSnackBar(const SnackBar(content: Text('Please enter your feedback before submitting.')));
-                  return;
-                }
-                Navigator.pop(sheetContext);
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(isComplaint ? 'Your complaint has been submitted for review.' : 'Thank you. Your evaluation has been submitted.')));
-              },
-              child: const Text('Submit'),
-            ),
-          ),
-        ]),
-      ),
-    );
-  }
 }
 
 class _PreferencesCard extends StatelessWidget {
   final AppSettingsProvider settings;
   final dynamic palette;
+
   const _PreferencesCard({required this.settings, required this.palette});
 
   @override
@@ -408,7 +420,8 @@ class _PreferencesCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkSurface : Colors.white,
         border: Border.all(
-            color: isDark ? AppColors.darkOutline : AppColors.outline),
+          color: isDark ? AppColors.darkOutline : AppColors.outline,
+        ),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -422,7 +435,8 @@ class _PreferencesCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('Preferences', style: AppTextStyles.h3.copyWith(fontSize: 15)),
+                    Text('Preferences',
+                        style: AppTextStyles.h3.copyWith(fontSize: 15)),
                     const SizedBox(height: 4),
                     Text('Make Naraak work better for you',
                         style: AppTextStyles.bodySecondary),
@@ -459,7 +473,8 @@ class _PreferencesCard extends StatelessWidget {
             icon: Icons.shield_rounded,
             title: 'Privacy & security',
             detail: 'eKey and data permissions',
-            onTap: () => Navigator.pushNamed(context, '/profile/privacy-security'),
+            onTap: () =>
+                Navigator.pushNamed(context, '/profile/privacy-security'),
           ),
           _SettingRow(
             icon: Icons.chat_bubble_outline_rounded,
@@ -474,6 +489,94 @@ class _PreferencesCard extends StatelessWidget {
   }
 }
 
+class _PlainMenuRow extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+
+  const _PlainMenuRow({required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600),
+              ),
+            ),
+            const Icon(Icons.chevron_right_rounded,
+                color: AppColors.ink300, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MenuRow extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final String label;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  const _MenuRow({
+    required this.icon,
+    required this.color,
+    required this.label,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          children: [
+            Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: color, size: 18),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: AppTextStyles.body
+                        .copyWith(fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: AppTextStyles.caption.copyWith(fontSize: 10.5),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right_rounded,
+                color: AppColors.ink300, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _SettingRow extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -481,6 +584,7 @@ class _SettingRow extends StatelessWidget {
   final VoidCallback? onTap;
   final Widget? trailing;
   final bool isLast;
+
   const _SettingRow({
     required this.icon,
     required this.title,
@@ -494,6 +598,7 @@ class _SettingRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final palette = context.watch<AppSettingsProvider>().palette;
+
     return InkWell(
       onTap: onTap,
       child: Container(
@@ -503,8 +608,7 @@ class _SettingRow extends StatelessWidget {
               ? null
               : Border(
                   bottom: BorderSide(
-                    color:
-                        isDark ? AppColors.darkOutline : AppColors.outline,
+                    color: isDark ? AppColors.darkOutline : AppColors.outline,
                   ),
                 ),
         ),
@@ -525,11 +629,16 @@ class _SettingRow extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(title,
-                      style: AppTextStyles.body
-                          .copyWith(fontWeight: FontWeight.w700, fontSize: 13)),
+                  Text(
+                    title,
+                    style: AppTextStyles.body
+                        .copyWith(fontWeight: FontWeight.w700, fontSize: 13),
+                  ),
                   const SizedBox(height: 2),
-                  Text(detail, style: AppTextStyles.caption.copyWith(fontSize: 10.5)),
+                  Text(
+                    detail,
+                    style: AppTextStyles.caption.copyWith(fontSize: 10.5),
+                  ),
                 ],
               ),
             ),
@@ -547,8 +656,12 @@ class _ThemeSwatch extends StatelessWidget {
   final AppPalette palette;
   final bool isActive;
   final VoidCallback onTap;
-  const _ThemeSwatch(
-      {required this.palette, required this.isActive, required this.onTap});
+
+  const _ThemeSwatch({
+    required this.palette,
+    required this.isActive,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {

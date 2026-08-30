@@ -1,86 +1,87 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../providers/appointment_provider.dart' show LoadState;
+import '../../providers/clinical_data_provider.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/app_top_bar.dart';
+import '../../widgets/empty_state.dart';
 
-class _ReportEntry {
-  final String title;
-  final String category;
-  final String date;
-  const _ReportEntry(this.title, this.category, this.date);
+class MedicalReportsListScreen extends StatefulWidget {
+  const MedicalReportsListScreen({super.key});
+  @override
+  State<MedicalReportsListScreen> createState() =>
+      _MedicalReportsListScreenState();
 }
 
-/// All PHC Reports — Phase 3 §4.3, Figure 39's list screen. Demo data only
-/// (no reports backend exists in this prototype).
-class MedicalReportsListScreen extends StatelessWidget {
-  const MedicalReportsListScreen({super.key});
-
-  static const _reports = [
-    _ReportEntry('Complete Blood Count', 'Laboratory', '9 Oct 2024'),
-    _ReportEntry('Chest X-Ray', 'Radiology', '23 Sep 2024'),
-    _ReportEntry('Annual Health Check', 'General', '1 Aug 2024'),
-    _ReportEntry('Lipid Profile', 'Laboratory', '15 Jul 2024'),
-  ];
+class _MedicalReportsListScreenState extends State<MedicalReportsListScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback(
+        (_) => context.read<ClinicalDataProvider>().loadReports());
+  }
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<ClinicalDataProvider>();
     return Scaffold(
-      appBar: const AppTopBar(title: 'All PHC Reports'),
-      body: ListView.separated(
-        padding: const EdgeInsets.all(20),
-        itemCount: _reports.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 10),
-        itemBuilder: (context, i) {
-          final report = _reports[i];
-          return AppCard(
-            onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                  content: Text('Downloading isn\'t wired up in this demo.')),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: AppColors.secondaryIce,
-                    borderRadius: BorderRadius.circular(AppTheme.radiusSm),
-                  ),
-                  child: const Icon(Icons.description_outlined,
-                      color: AppColors.primaryTeal),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(report.title, style: AppTextStyles.h3),
-                      const SizedBox(height: 2),
-                      Text('${report.category} · ${report.date}',
-                          style: AppTextStyles.caption),
-                    ],
-                  ),
-                ),
-                SizedBox(
-                  width: 64,
-                  child: OutlinedButton(
-                    onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text(
-                              'Downloading isn\'t wired up in this demo.')),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 4)),
-                    child: const Text('PDF'),
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
+        appBar: const AppTopBar(title: 'All PHC Reports'),
+        body: switch (provider.reportsState) {
+          LoadState.idle ||
+          LoadState.loading =>
+            const Center(child: CircularProgressIndicator()),
+          LoadState.error => EmptyStateView(
+              isError: true,
+              title: 'Could not load reports',
+              message: provider.errorMessage ?? 'Please try again.',
+              actionLabel: 'Retry',
+              onAction: provider.loadReports),
+          LoadState.empty => const EmptyStateView(
+              icon: Icons.description_outlined,
+              title: 'No medical reports',
+              message: 'Available reports will appear here.'),
+          LoadState.success => ListView.separated(
+              padding: const EdgeInsets.all(20),
+              itemCount: provider.reports.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 10),
+              itemBuilder: (context, i) {
+                final report = provider.reports[i];
+                final date = MaterialLocalizations.of(context)
+                    .formatMediumDate(report.date);
+                return AppCard(
+                    onTap: report.documentReference == null
+                        ? null
+                        : () => ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                                content: Text(
+                                    'Document: ${report.documentReference}'))),
+                    child: Row(children: [
+                      Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                              color: AppColors.secondaryIce,
+                              borderRadius:
+                                  BorderRadius.circular(AppTheme.radiusSm)),
+                          child: const Icon(Icons.description_outlined,
+                              color: AppColors.primaryTeal)),
+                      const SizedBox(width: 14),
+                      Expanded(
+                          child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                            Text(report.reportType, style: AppTextStyles.h3),
+                            Text(
+                                '${report.category} • $date\n${report.consultantName} • ${report.status}',
+                                style: AppTextStyles.caption)
+                          ])),
+                      if (report.documentReference != null)
+                        const Icon(Icons.download_outlined)
+                    ]));
+              }),
+        });
   }
 }

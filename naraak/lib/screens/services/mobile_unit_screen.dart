@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/user_profile_provider.dart';
-import '../../services_mock/repository/request_repository.dart';
+import '../../data/naraak_repository.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../widgets/app_card.dart';
@@ -209,14 +209,24 @@ class _MobileUnitScreenState extends State<MobileUnitScreen> {
     );
   }
 
-  void _submitForm() {
-    if (_formKey.currentState?.validate() ?? false) {
-      RequestRepository.instance.addRequest(
-        serviceName: 'Mobile Unit Visit',
-        status: 'submitted',
-        note: '$_selectedCondition at $_selectedBlock',
-      );
-      setState(() => _isSubmitted = true);
+  Future<void> _submitForm() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    final repository = context.read<NaraakRepository>();
+    final profile = context.read<UserProfileProvider>().profile;
+    try {
+      await repository.api.requestMobileUnit(
+          patientId: repository.requirePatientId,
+          contactNumber: profile?.mobileNumber ?? '',
+          blockNumber: _selectedBlock!,
+          address: _addressController.text,
+          reason: '${_selectedCondition ?? ''}: ${_reasonController.text}');
+      if (mounted) setState(() => _isSubmitted = true);
+    } catch (error) {
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(repository.friendlyError(error,
+                arabic:
+                    Localizations.localeOf(context).languageCode == 'ar'))));
     }
   }
 

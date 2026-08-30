@@ -45,77 +45,11 @@ class MedicalReportsScreen extends StatelessWidget {
                         Text('See and download your PHC reports',
                             style: AppTextStyles.bodySecondary),
                       ],
-                    );
-                  }).toList(),
-                ),
-              ),
-              const SizedBox(height: 6),
-              const Text(
-                'Only doctors you have visited appear here',
-                style: AppTextStyles.caption,
-              ),
-              const SizedBox(height: 16),
-
-              // Reason Text Area
-              const Text('Reason for Report Request *',
-                  style: AppTextStyles.caption),
-              const SizedBox(height: 4),
-              TextField(
-                controller: _reasonController,
-                onChanged: (_) => setState(() {}),
-                maxLines: 4,
-                decoration: const InputDecoration(
-                  hintText: 'Describe why you need this report...',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 20),
-
-        // Action Button
-        SizedBox(
-          width: double.infinity,
-          child: AppButton(
-            label: 'Next',
-            onPressed: _canProceedStepOne()
-                ? () => setState(() => _currentStep = 2)
-                : null,
-          ),
-        ),
-      ],
-    );
-  }
-
-  // --- STEP 2: Review ---
-  Widget _buildStepTwo(dynamic profile) {
-    return Column(
-      children: [
-        AppCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('Review Request Summary', style: AppTextStyles.h2),
-              const Divider(height: 24),
-              _buildSummaryRow('Applicant CPR', profile?.cpr ?? '990422345'),
-              _buildSummaryRow(
-                  'Applicant Name', profile?.fullName ?? 'Eman Al-Khalifa'),
-              _buildSummaryRow('Request Type', _selectedRequestType ?? '-'),
-              _buildSummaryRow('Category', _selectedCategory),
-              _buildSummaryRow('Attending Doctor', _selectedDoctor ?? '-'),
-              _buildSummaryRow('Reason', _reasonController.text),
-            ],
-          ),
-        ),
-        const SizedBox(height: 20),
-        Row(
-          children: [
-            Expanded(
-              child: AppButton(
-                label: 'Back',
-                isOutlined: true,
-                onPressed: () => setState(() => _currentStep = 1),
+                    ),
+                  ),
+                  const Icon(Icons.chevron_right_rounded,
+                      color: AppColors.ink300),
+                ],
               ),
             ),
             const SizedBox(height: 12),

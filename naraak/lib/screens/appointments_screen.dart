@@ -37,7 +37,8 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
     switch (_filter) {
       case _ApptFilter.upcoming:
         return all
-            .where((a) => a.status != 'cancelled' && a.slotDateTime.isAfter(now))
+            .where(
+                (a) => a.status != 'cancelled' && a.slotDateTime.isAfter(now))
             .toList()
           ..sort((a, b) => a.slotDateTime.compareTo(b.slotDateTime));
       case _ApptFilter.past:
@@ -61,7 +62,8 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
     final palette = context.watch<AppSettingsProvider>().palette;
     final allAppointments = context.watch<AppointmentProvider>().myAppointments;
     final upcomingCount = allAppointments
-        .where((a) => a.status != 'cancelled' && a.slotDateTime.isAfter(DateTime.now()))
+        .where((a) =>
+            a.status != 'cancelled' && a.slotDateTime.isAfter(DateTime.now()))
         .length;
     final filtered = _applyFilter(allAppointments);
 
@@ -86,7 +88,8 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                         style: AppTextStyles.overline
                             .copyWith(color: palette.primary)),
                     const SizedBox(height: 6),
-                    Text('Appointments', style: AppTextStyles.h1.copyWith(fontSize: 26)),
+                    Text('Appointments',
+                        style: AppTextStyles.h1.copyWith(fontSize: 26)),
                     const SizedBox(height: 6),
                     ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 480),
@@ -103,8 +106,8 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: palette.primary,
                     foregroundColor: Colors.white,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 18, vertical: 14),
                     minimumSize: const Size(64, 44),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10)),
@@ -145,7 +148,9 @@ class _FilterTabs extends StatelessWidget {
   final int upcomingCount;
   final ValueChanged<_ApptFilter> onChanged;
   const _FilterTabs(
-      {required this.filter, required this.upcomingCount, required this.onChanged});
+      {required this.filter,
+      required this.upcomingCount,
+      required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -169,7 +174,8 @@ class _FilterTabs extends StatelessWidget {
             child: InkWell(
               onTap: () => onChanged(value),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
                 decoration: BoxDecoration(
                   border: Border(
                     bottom: BorderSide(
@@ -184,7 +190,8 @@ class _FilterTabs extends StatelessWidget {
                     Text(label,
                         style: AppTextStyles.body.copyWith(
                           fontSize: 12,
-                          fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+                          fontWeight:
+                              active ? FontWeight.w700 : FontWeight.w500,
                           color: active
                               ? palette.primaryDark
                               : (isDark
@@ -194,8 +201,8 @@ class _FilterTabs extends StatelessWidget {
                     if (count != null) ...[
                       const SizedBox(width: 6),
                       Container(
-                        padding:
-                            const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
                           color: dashboardIceFor(palette, isDark),
                           borderRadius: BorderRadius.circular(10),
@@ -239,8 +246,8 @@ class _EmptyState extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkSurface : Colors.white,
-        border:
-            Border.all(color: isDark ? AppColors.darkOutline : AppColors.outline),
+        border: Border.all(
+            color: isDark ? AppColors.darkOutline : AppColors.outline),
         borderRadius: BorderRadius.circular(15),
       ),
       child: Center(
@@ -267,15 +274,25 @@ class _AppointmentCard extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final localizations = MaterialLocalizations.of(context);
     const monthAbbr = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
     ];
 
     return Container(
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkSurface : Colors.white,
-        border:
-            Border.all(color: isDark ? AppColors.darkOutline : AppColors.outline),
+        border: Border.all(
+            color: isDark ? AppColors.darkOutline : AppColors.outline),
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
@@ -300,7 +317,9 @@ class _AppointmentCard extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(monthAbbr[appointment.slotDateTime.month - 1].toUpperCase(),
+                  Text(
+                      monthAbbr[appointment.slotDateTime.month - 1]
+                          .toUpperCase(),
                       style: AppTextStyles.overline
                           .copyWith(color: palette.primaryDark, fontSize: 9)),
                   Text('${appointment.slotDateTime.day}',
@@ -349,7 +368,8 @@ class _AppointmentCard extends StatelessWidget {
                           size: 12, color: palette.primaryDark),
                       const SizedBox(width: 5),
                       Text(
-                        localizations.formatMediumDate(appointment.slotDateTime),
+                        localizations
+                            .formatMediumDate(appointment.slotDateTime),
                         style: AppTextStyles.caption.copyWith(
                             color: palette.primaryDark,
                             fontWeight: FontWeight.w700,
@@ -380,7 +400,8 @@ class _AppointmentCard extends StatelessWidget {
                               context,
                               MaterialPageRoute(
                                 builder: (_) => JoinAppointmentScreen(
-                                    doctorName: appointment.doctorName),
+                                    doctorName: appointment.doctorName,
+                                    appointmentId: appointment.id),
                               ),
                             ),
                             child: const Text('Join'),
@@ -391,8 +412,8 @@ class _AppointmentCard extends StatelessWidget {
                           onPressed: () => context
                               .read<AppointmentProvider>()
                               .cancelAppointment(appointment.id),
-                          style:
-                              TextButton.styleFrom(foregroundColor: AppColors.error),
+                          style: TextButton.styleFrom(
+                              foregroundColor: AppColors.error),
                           child: const Text('Cancel'),
                         ),
                       ],

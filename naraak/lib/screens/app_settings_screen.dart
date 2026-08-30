@@ -1,6 +1,7 @@
 // lib/screens/app_settings_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../localization/app_localizations.dart';
 import '../providers/app_settings_provider.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/app_card.dart';
@@ -21,20 +22,21 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<AppSettingsProvider>();
+    final strings = AppLocalizations.of(context);
 
     return Scaffold(
-      appBar: const AppTopBar(title: 'App Settings'),
+      appBar: AppTopBar(title: strings.text('appSettingsTitle')),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          const Text('DISPLAY', style: AppTextStyles.overline),
+          Text(strings.text('display'), style: AppTextStyles.overline),
           const SizedBox(height: 10),
           AppCard(
             padding: EdgeInsets.zero,
             child: Column(
               children: [
                 SwitchListTile(
-                  title: const Text('Dark Mode'),
+                  title: Text(strings.text('darkMode')),
                   value: settings.themeMode == ThemeMode.dark,
                   onChanged: (_) => settings.toggleTheme(),
                 ),
@@ -49,7 +51,8 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text('Text Size', style: AppTextStyles.body),
+                          Text(strings.text('textSize'),
+                              style: AppTextStyles.body),
                           Text('${settings.textScalePercent}%',
                               style: AppTextStyles.bodySecondary),
                         ],
@@ -68,15 +71,16 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
             ),
           ),
           const SizedBox(height: 24),
-          const Text('NOTIFICATIONS', style: AppTextStyles.overline),
+          Text(strings.text('notificationsSection'),
+              style: AppTextStyles.overline),
           const SizedBox(height: 10),
           AppCard(
             padding: EdgeInsets.zero,
             child: Column(
               children: [
                 SwitchListTile(
-                  title: const Text('Appointment Reminders'),
-                  subtitle: const Text('Get notified before upcoming visits'),
+                  title: Text(strings.text('appointmentReminders')),
+                  subtitle: Text(strings.text('beforeUpcomingVisits')),
                   value: _appointmentReminders,
                   onChanged: (v) => setState(() => _appointmentReminders = v),
                 ),
@@ -84,9 +88,8 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                     padding: EdgeInsets.symmetric(horizontal: 16),
                     child: Divider(height: 1)),
                 SwitchListTile(
-                  title: const Text('Request Status Updates'),
-                  subtitle:
-                      const Text('When a submitted request changes status'),
+                  title: Text(strings.text('requestStatusUpdates')),
+                  subtitle: Text(strings.text('submittedRequestStatus')),
                   value: _requestStatusUpdates,
                   onChanged: (v) => setState(() => _requestStatusUpdates = v),
                 ),
@@ -94,8 +97,8 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                     padding: EdgeInsets.symmetric(horizontal: 16),
                     child: Divider(height: 1)),
                 SwitchListTile(
-                  title: const Text('Promotional Messages'),
-                  subtitle: const Text('Health campaigns and PHC news'),
+                  title: Text(strings.text('promotionalMessages')),
+                  subtitle: Text(strings.text('healthCampaigns')),
                   value: _promotionalMessages,
                   onChanged: (v) => setState(() => _promotionalMessages = v),
                 ),

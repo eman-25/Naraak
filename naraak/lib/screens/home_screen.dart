@@ -1,9 +1,11 @@
 // lib/screens/home_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../localization/app_localizations.dart';
 import '../providers/user_profile_provider.dart';
 import '../providers/service_request_provider.dart';
 import '../providers/appointment_provider.dart';
+import '../providers/dashboard_provider.dart';
 import '../widgets/dashboard/dashboard_widgets.dart';
 
 /// Mobile Home tab content. The top bar is rendered once by RootShell (see
@@ -23,11 +25,13 @@ class _HomeScreenState extends State<HomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ServiceRequestProvider>().loadRequests();
       context.read<AppointmentProvider>().loadMyAppointments();
+      context.read<DashboardProvider>().load();
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context);
     final profile = context.watch<UserProfileProvider>().profile;
     final firstName = (profile?.fullName ?? 'there').split(' ').first;
 
@@ -43,18 +47,19 @@ class _HomeScreenState extends State<HomeScreen> {
           _AnimatedEntry(
             index: 1,
             child: DashboardSectionHeading(
-              title: 'Your care team',
-              subtitle: 'Your assigned family doctor',
+              title: strings.text('yourCareTeam'),
+              subtitle: strings.text('yourAssignedFamilyDoctor'),
             ),
           ),
           const SizedBox(height: 10),
-          _AnimatedEntry(index: 1, child: const DoctorFeatureCard(compact: true)),
+          _AnimatedEntry(
+              index: 1, child: const DoctorFeatureCard(compact: true)),
           const SizedBox(height: 24),
           _AnimatedEntry(
             index: 2,
             child: DashboardSectionHeading(
-              title: 'Next appointment',
-              subtitle: 'Your upcoming visit',
+              title: strings.text('nextAppointment'),
+              subtitle: strings.text('yourUpcomingVisit'),
             ),
           ),
           const SizedBox(height: 10),
@@ -67,8 +72,8 @@ class _HomeScreenState extends State<HomeScreen> {
           _AnimatedEntry(
             index: 4,
             child: DashboardSectionHeading(
-              title: 'Popular services',
-              subtitle: 'Start with what you need today',
+              title: strings.text('popularServices'),
+              subtitle: strings.text('startWithWhatYouNeedToday'),
             ),
           ),
           const SizedBox(height: 12),

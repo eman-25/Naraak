@@ -5,6 +5,7 @@ class VaccinationRecord {
   final DateTime dateAdministered;
   final bool isFlaggedMissing; // Phase 3: flags expected-but-missing records
   final String? certificateUrl;
+  final String healthCenter;
 
   const VaccinationRecord({
     required this.id,
@@ -12,15 +13,20 @@ class VaccinationRecord {
     required this.dateAdministered,
     this.isFlaggedMissing = false,
     this.certificateUrl,
+    this.healthCenter = '',
   });
 
   factory VaccinationRecord.fromJson(Map<String, dynamic> json) {
     return VaccinationRecord(
-      id: json['id'] as String,
+      id: (json['recordId'] ?? json['id']) as String,
       vaccineName: json['vaccineName'] as String,
-      dateAdministered: DateTime.parse(json['dateAdministered'] as String),
-      isFlaggedMissing: json['isFlaggedMissing'] as bool? ?? false,
-      certificateUrl: json['certificateUrl'] as String?,
+      dateAdministered: DateTime.parse(
+          (json['vaccinationDate'] ?? json['dateAdministered']) as String),
+      isFlaggedMissing:
+          (json['missing'] ?? json['isFlaggedMissing']) as bool? ?? false,
+      certificateUrl:
+          (json['certificateReference'] ?? json['certificateUrl']) as String?,
+      healthCenter: json['healthCenter'] as String? ?? '',
     );
   }
 
@@ -30,5 +36,6 @@ class VaccinationRecord {
         'dateAdministered': dateAdministered.toIso8601String(),
         'isFlaggedMissing': isFlaggedMissing,
         'certificateUrl': certificateUrl,
+        'healthCenter': healthCenter,
       };
 }

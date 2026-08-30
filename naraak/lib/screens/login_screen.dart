@@ -2,7 +2,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show FilteringTextInputFormatter;
 import 'package:provider/provider.dart';
+import '../localization/app_localizations.dart';
 import '../providers/user_profile_provider.dart';
+import '../providers/auth_provider.dart';
+import '../providers/family_provider.dart';
+import '../providers/clinical_data_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_theme.dart';
@@ -36,18 +40,28 @@ class _LoginScreenState extends State<LoginScreen> {
     FocusScope.of(context).unfocus();
 
     setState(() => _isLoading = true);
-    await Future.delayed(
-        const Duration(milliseconds: 700)); // simulated eKey call
-
+    final profileProvider = context.read<UserProfileProvider>();
+    final success = await profileProvider.login(_cprController.text.trim());
     if (!mounted) return;
     setState(() => _isLoading = false);
-
-    context.read<UserProfileProvider>().login(_cprController.text.trim());
-    Navigator.pushReplacementNamed(context, '/profile-setup');
+    if (!success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text(profileProvider.errorMessage ?? 'Sign in failed.')),
+      );
+      return;
+    }
+    await Future.wait([
+      context.read<AuthProvider>().loadUsers(),
+      context.read<FamilyProvider>().loadMembers(),
+      context.read<ClinicalDataProvider>().loadNotifications(),
+    ]);
+    if (mounted) Navigator.pushReplacementNamed(context, '/home');
   }
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context);
     return Scaffold(
       body: SkylineBackground(
         child: SafeArea(
@@ -64,13 +78,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     _LogoMark(),
                     const SizedBox(height: 24),
                     Text(
-                      'Naraak',
+                      strings.text('appName'),
                       style:
                           AppTextStyles.display.copyWith(color: Colors.white),
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'Primary Healthcare Portal',
+                      strings.text('primaryHealthcarePortal'),
                       style: AppTextStyles.body.copyWith(
                         color: Colors.white.withValues(alpha: 0.82),
                         fontWeight: FontWeight.w500,
@@ -97,14 +111,16 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Sign in', style: AppTextStyles.h2),
+                            Text(strings.text('signIn'),
+                                style: AppTextStyles.h2),
                             const SizedBox(height: 4),
                             Text(
-                              'Enter your CPR number to continue',
+                              strings.text('enterCprNumber'),
                               style: AppTextStyles.bodySecondary,
                             ),
                             const SizedBox(height: 22),
-                            Text('CPR NUMBER', style: AppTextStyles.overline),
+                            Text(strings.text('cprNumber'),
+                                style: AppTextStyles.overline),
                             const SizedBox(height: 8),
                             TextFormField(
                               controller: _cprController,
@@ -158,13 +174,13 @@ class _LoginScreenState extends State<LoginScreen> {
                               validator: (value) {
                                 final trimmed = value?.trim() ?? '';
                                 if (trimmed.isEmpty) {
-                                  return 'Enter your CPR number to continue';
+                                  return strings.text('enterCprNumber');
                                 }
                                 if (!RegExp(r'^\d+$').hasMatch(trimmed)) {
-                                  return 'CPR number must contain digits only';
+                                  return strings.text('cprDigitsOnly');
                                 }
                                 if (trimmed.length < 9) {
-                                  return 'CPR number looks too short';
+                                  return strings.text('cprTooShort');
                                 }
                                 return null;
                               },
@@ -172,7 +188,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             const SizedBox(height: 22),
                             AppButton(
-                              label: 'Log in with eKey (Demo)',
+                              label: strings.text('loginDemo'),
                               icon: Icons.fingerprint_rounded,
                               isLoading: _isLoading,
                               onPressed: _handleLogin,

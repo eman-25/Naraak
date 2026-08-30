@@ -4,7 +4,8 @@
 class ServiceRequest {
   final String id;
   final String serviceName;
-  final String status; // 'submitted' | 'processing' | 'approved' | 'rejected' | 'ready'
+  final String
+      status; // 'submitted' | 'processing' | 'approved' | 'rejected' | 'ready'
   final DateTime submittedAt;
   final String? note;
   final String? attachmentName;
@@ -29,11 +30,12 @@ class ServiceRequest {
 
   factory ServiceRequest.fromJson(Map<String, dynamic> json) {
     return ServiceRequest(
-      id: json['id'] as String,
-      serviceName: json['serviceName'] as String,
+      id: (json['requestId'] ?? json['id']) as String,
+      serviceName: (json['serviceType'] ?? json['serviceName']) as String,
       status: json['status'] as String,
-      submittedAt: DateTime.parse(json['submittedAt'] as String),
-      note: json['note'] as String?,
+      submittedAt:
+          DateTime.parse((json['createdAt'] ?? json['submittedAt']) as String),
+      note: (json['summary'] ?? json['note']) as String?,
       attachmentName: json['attachmentName'] as String?,
     );
   }
