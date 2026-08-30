@@ -62,10 +62,13 @@ class NaraakApp extends StatelessWidget {
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
-          builder: (context, child) => MediaQuery(
-            data: MediaQuery.of(context)
-                .copyWith(textScaler: TextScaler.linear(settings.textScale)),
-            child: child!,
+          builder: (context, child) => Directionality(
+            textDirection: settings.isArabic ? TextDirection.rtl : TextDirection.ltr,
+            child: MediaQuery(
+              data: MediaQuery.of(context)
+                  .copyWith(textScaler: TextScaler.linear(settings.textScale)),
+              child: child!,
+            ),
           ),
           home: const LoginScreen(),
           routes: {
@@ -116,28 +119,29 @@ class _RootShellState extends State<RootShell> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Scaffold(
       body: IndexedStack(index: _index, children: _screens),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _index,
         onTap: (i) => setState(() => _index = i),
-        items: const [
+        items: [
           BottomNavigationBarItem(
               icon: Icon(Icons.home_outlined),
               activeIcon: Icon(Icons.home),
-              label: 'Home'),
+              label: l10n.text('home')),
           BottomNavigationBarItem(
               icon: Icon(Icons.event_note_outlined),
               activeIcon: Icon(Icons.event_note),
-              label: 'Appointments'),
+              label: l10n.text('appointments')),
           BottomNavigationBarItem(
               icon: Icon(Icons.grid_view_outlined),
               activeIcon: Icon(Icons.grid_view),
-              label: 'Services'),
+              label: l10n.text('services')),
           BottomNavigationBarItem(
               icon: Icon(Icons.person_outline),
               activeIcon: Icon(Icons.person),
-              label: 'Profile'),
+              label: l10n.text('profile')),
         ],
       ),
     );

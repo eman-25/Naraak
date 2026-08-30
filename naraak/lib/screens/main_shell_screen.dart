@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../widgets/app_top_bar.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
+import '../localization/app_localizations.dart';
 import 'home_screen.dart';
 import 'appointments_screen.dart';
 import 'services_screen.dart';
@@ -27,22 +28,16 @@ class _MainShellScreenState extends State<MainShellScreen> {
     ProfileScreen(),
   ];
 
-  // Dynamic header titles per active tab
-  final List<String> _titles = const [
-    'Home',
-    'Appointments',
-    'Services',
-    'Profile',
-  ];
-
   @override
   Widget build(BuildContext context) {
     final palette = AppPaletteExtension.of(context);
+    final l10n = context.l10n;
+    final titles = [l10n.text('home'), l10n.text('appointments'), l10n.text('services'), l10n.text('profile')];
 
     return Scaffold(
       // Persistent top header (hides back button for top-level tabs)
       appBar: AppTopBar(
-        title: _titles[_currentIndex],
+        title: titles[_currentIndex],
         showBackButton: false,
       ),
 
@@ -83,26 +78,26 @@ class _MainShellScreenState extends State<MainShellScreen> {
               fontSize: 12,
             ),
             elevation: 0,
-            items: const [
+            items: [
               BottomNavigationBarItem(
                 icon: Icon(Icons.home_outlined),
                 activeIcon: Icon(Icons.home_rounded),
-                label: 'Home',
+                label: l10n.text('home'),
               ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.calendar_today_outlined),
                 activeIcon: Icon(Icons.calendar_month_rounded),
-                label: 'Appointments',
+                label: l10n.text('appointments'),
               ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.grid_view_outlined),
                 activeIcon: Icon(Icons.grid_view_rounded),
-                label: 'Services',
+                label: l10n.text('services'),
               ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.person_outline_rounded),
                 activeIcon: Icon(Icons.person_rounded),
-                label: 'Profile',
+                label: l10n.text('profile'),
               ),
             ],
           ),

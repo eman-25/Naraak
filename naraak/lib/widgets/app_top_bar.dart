@@ -8,6 +8,7 @@ import '../providers/service_request_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import '../theme/app_text_styles.dart';
+import '../localization/app_localizations.dart';
 
 /// Standard top bar used across non-home pages to maintain design consistency.
 /// Includes Naraak logo, notification icon with unread badge, and profile menu switcher.
@@ -29,6 +30,7 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     final palette = AppPaletteExtension.of(context);
+    final l10n = context.l10n;
     final screenSize = MediaQuery.of(context).size;
     final iconContainerSize = (screenSize.width * 0.1).clamp(38.0, 48.0);
     final hasNotifications =
@@ -64,7 +66,7 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
                     children: [
                       // Notifications Button
                       IconButton(
-                        tooltip: 'Notifications',
+                        tooltip: l10n.text('notifications'),
                         onPressed: () {
                           Navigator.pushNamed(context, '/notifications');
                         },
@@ -103,7 +105,7 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
 
                       // Profile Switcher Menu
                       PopupMenuButton<String>(
-                        tooltip: 'Switch Account',
+                        tooltip: l10n.text('switchAccount'),
                         offset: const Offset(0, 48),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
@@ -175,13 +177,13 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
                               );
                             }),
                             const PopupMenuDivider(),
-                            const PopupMenuItem<String>(
+                            PopupMenuItem<String>(
                               value: 'organize-family',
                               child: Row(
                                 children: [
                                   Icon(Icons.family_restroom_rounded, size: 20),
                                   SizedBox(width: 10),
-                                  Text('Organize Family Members'),
+                                  Text(l10n.text('organizeFamilyMembers')),
                                 ],
                               ),
                             ),

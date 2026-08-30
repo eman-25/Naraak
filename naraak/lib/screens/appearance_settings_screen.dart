@@ -7,6 +7,7 @@ import '../theme/app_palette.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_card.dart';
+import '../localization/app_localizations.dart';
 
 class AppearanceSettingsScreen extends StatelessWidget {
   const AppearanceSettingsScreen({super.key});
@@ -14,16 +15,17 @@ class AppearanceSettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<AppSettingsProvider>();
+    final l10n = context.l10n;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Appearance')),
+      appBar: AppBar(title: Text(l10n.text('appearance'))),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
         children: [
-          Text('Pick a colour theme, mode, language and text size.', style: AppTextStyles.bodySecondary),
+          Text(l10n.text('appearanceDescription'), style: AppTextStyles.bodySecondary),
           const SizedBox(height: 22),
 
-          Text('COLOUR THEME', style: AppTextStyles.overline),
+          Text(l10n.text('colourTheme').toUpperCase(), style: AppTextStyles.overline),
           const SizedBox(height: 10),
           ...AppPalette.all.map((p) => Padding(
                 padding: const EdgeInsets.only(bottom: 10),
@@ -43,7 +45,7 @@ class AppearanceSettingsScreen extends StatelessWidget {
                 children: [
                   Icon(Icons.dark_mode_rounded, color: settings.palette.primary, size: 20),
                   const SizedBox(width: 12),
-                  Expanded(child: Text('Dark mode', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600))),
+                  Expanded(child: Text(l10n.text('darkMode'), style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600))),
                   Switch.adaptive(
                     value: settings.themeMode == ThemeMode.dark,
                     activeColor: settings.palette.primary,
@@ -61,10 +63,10 @@ class AppearanceSettingsScreen extends StatelessWidget {
               children: [
                 Icon(Icons.language_rounded, color: settings.palette.primary, size: 20),
                 const SizedBox(width: 12),
-                Expanded(child: Text('Language', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600))),
-                _LangPill(label: 'English', selected: !settings.isArabic, onTap: () => settings.setLocale(const Locale('en'))),
+                Expanded(child: Text(l10n.text('language'), style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600))),
+                _LangPill(label: l10n.text('english'), selected: !settings.isArabic, onTap: () => settings.setLocale(const Locale('en'))),
                 const SizedBox(width: 8),
-                _LangPill(label: 'العربية', selected: settings.isArabic, onTap: () => settings.setLocale(const Locale('ar'))),
+                _LangPill(label: l10n.text('arabic'), selected: settings.isArabic, onTap: () => settings.setLocale(const Locale('ar'))),
               ],
             ),
           ),
@@ -76,7 +78,7 @@ class AppearanceSettingsScreen extends StatelessWidget {
               children: [
                 Icon(Icons.text_fields_rounded, color: settings.palette.primary, size: 20),
                 const SizedBox(width: 12),
-                Expanded(child: Text('Text size', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600))),
+                Expanded(child: Text(l10n.text('textSize'), style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600))),
                 _StepButton(
                   icon: Icons.remove_rounded,
                   onTap: settings.textScale > AppSettingsProvider.minScale ? settings.decreaseTextSize : null,
@@ -107,6 +109,7 @@ class _PaletteRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(AppTheme.radiusMd),
@@ -131,7 +134,7 @@ class _PaletteRow extends StatelessWidget {
             const SizedBox(width: 14),
             Expanded(child: Text(palette.label, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600))),
             if (isActive)
-              Text('Active', style: AppTextStyles.caption.copyWith(color: palette.primary, fontWeight: FontWeight.w700)),
+              Text(l10n.text('active'), style: AppTextStyles.caption.copyWith(color: palette.primary, fontWeight: FontWeight.w700)),
           ],
         ),
       ),

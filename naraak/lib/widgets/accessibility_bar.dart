@@ -4,6 +4,7 @@ import 'package:flutter/semantics.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_settings_provider.dart';
 import '../theme/app_text_styles.dart';
+import '../localization/app_localizations.dart';
 
 /// Quick accessibility controls, per Phase 3 §2.2: text size (A-/A+),
 /// dark/light mode toggle, Arabic/English toggle, page-reader icon.
@@ -14,6 +15,7 @@ class AccessibilityBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<AppSettingsProvider>();
+    final l10n = context.l10n;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -40,18 +42,18 @@ class AccessibilityBar extends StatelessWidget {
           _IconTap(
             icon: settings.themeMode == ThemeMode.dark ? Icons.dark_mode_rounded : Icons.dark_mode_outlined,
             onTap: settings.toggleTheme,
-            tooltip: 'Toggle dark mode',
+            tooltip: l10n.text('toggleDarkMode'),
           ),
           _IconTap(
             icon: Icons.record_voice_over_rounded,
-            tooltip: 'Read screen aloud',
+            tooltip: l10n.text('readScreenAloud'),
             onTap: () {
               SemanticsService.announce(
-                'Good Morning, screen reader activated for this demo.',
+                l10n.text('screenReaderMessage'),
                 Directionality.of(context),
               );
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Screen reader announced (demo).'), duration: Duration(seconds: 2)),
+                SnackBar(content: Text(l10n.text('screenReaderAnnounced')), duration: const Duration(seconds: 2)),
               );
             },
           ),
