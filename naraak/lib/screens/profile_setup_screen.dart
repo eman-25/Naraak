@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../localization/app_localizations.dart';
 import '../providers/user_profile_provider.dart';
+import '../providers/app_settings_provider.dart';
 import '../models/user_profile.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/naraak_button.dart';
@@ -101,7 +102,33 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             child: ListView(
               padding: const EdgeInsets.fromLTRB(24, 24, 24, 48),
               children: [
-                const Center(child: NaraakLogo(size: 88)),
+                Row(
+                  children: [
+                    const Spacer(),
+                    const NaraakLogo(size: 88),
+                    Expanded(
+                      child: Align(
+                        alignment: AlignmentDirectional.centerEnd,
+                        child: SegmentedButton<String>(
+                          showSelectedIcon: false,
+                          segments: const [
+                            ButtonSegment(value: 'en', label: Text('EN')),
+                            ButtonSegment(value: 'ar', label: Text('عربي')),
+                          ],
+                          selected: {
+                            context
+                                .watch<AppSettingsProvider>()
+                                .locale
+                                .languageCode
+                          },
+                          onSelectionChanged: (value) => context
+                              .read<AppSettingsProvider>()
+                              .setLocale(Locale(value.first)),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 18),
                 Text(
                   strings.text('tellUsAboutYourself'),

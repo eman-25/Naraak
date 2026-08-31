@@ -9,6 +9,7 @@ import '../localization/app_localizations.dart';
 import '../providers/user_profile_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
+import 'naraak_logo.dart';
 
 /// Plain (non-gradient) top bar shared by every mobile tab — compact logo,
 /// notification bell, avatar-only profile trigger. Mirrors the reference's
@@ -39,20 +40,16 @@ class MobileTopBar extends StatelessWidget implements PreferredSizeWidget {
       titleSpacing: 16,
       title: Row(
         children: [
-          Container(
-            width: 30,
-            height: 30,
-            decoration: BoxDecoration(
-              color: palette.primary,
-              borderRadius: BorderRadius.circular(9),
-            ),
-            child: const Icon(Icons.favorite_rounded,
-                color: Colors.white, size: 14),
-          ),
+          const NaraakLogo(size: 34),
           const SizedBox(width: 9),
           Text('Naraak',
               style: AppTextStyles.h3
-                  .copyWith(fontSize: 16, color: palette.primaryDark)),
+                  .copyWith(
+                    fontSize: 16,
+                    color: isDark
+                        ? AppColors.darkTextPrimary
+                        : palette.primaryDark,
+                  )),
         ],
       ),
       actions: [

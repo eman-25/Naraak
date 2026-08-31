@@ -10,6 +10,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_theme.dart';
 import '../widgets/naraak_logo.dart';
+import '../widgets/dashboard/dashboard_widgets.dart';
 import '../widgets/state_views.dart';
 
 class ReferenceWebHomeScreen extends StatefulWidget {
@@ -60,7 +61,29 @@ class _ReferenceWebHomeScreenState extends State<ReferenceWebHomeScreen> {
                 ),
                 const _UpcomingAppointmentPanel(),
                 const SizedBox(height: 14),
-                const _FamilyDoctorCard(),
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    if (constraints.maxWidth < 760) {
+                      return const Column(
+                        children: [
+                          _FamilyDoctorCard(),
+                          SizedBox(height: 14),
+                          DashboardPendingRequestsCard(),
+                        ],
+                      );
+                    }
+                    return const IntrinsicHeight(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Expanded(flex: 3, child: _FamilyDoctorCard()),
+                          SizedBox(width: 14),
+                          Expanded(flex: 2, child: DashboardPendingRequestsCard()),
+                        ],
+                      ),
+                    );
+                  },
+                ),
                 const SizedBox(height: 22),
                 _SectionHeader(
                   title: strings.text('topServices'),
@@ -192,14 +215,15 @@ class _Trust extends StatelessWidget {
   final IconData icon;
   final String text;
   @override
-  Widget build(BuildContext context) =>
-      Row(mainAxisSize: MainAxisSize.min, children: [
+  Widget build(BuildContext context) => Center(
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
         Icon(icon, color: Colors.white),
         const SizedBox(width: 7),
-        Text(text,
-            style: const TextStyle(
-                color: Colors.white, fontWeight: FontWeight.w700))
-      ]);
+      Text(text,
+          style: const TextStyle(
+              color: Colors.white, fontWeight: FontWeight.w700))
+    ]),
+  );
 }
 
 class _UpcomingAppointmentPanel extends StatelessWidget {
@@ -378,6 +402,7 @@ class _AppointmentDetailsCard extends StatelessWidget {
         const SizedBox(width: 12),
         Expanded(
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(doctorName,
@@ -449,6 +474,7 @@ class _AppointmentDetailsCard extends StatelessWidget {
               ],
             )
           : Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Expanded(flex: 28, child: patient),
                 const _AppointmentDivider(),
@@ -498,11 +524,17 @@ class _AppointmentActions extends StatelessWidget {
   Widget build(BuildContext context) {
     final detailsButton = FilledButton(
       onPressed: onOpen,
-      child: Text(viewDetails, textAlign: TextAlign.center),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(viewDetails, textAlign: TextAlign.center),
+      ),
     );
     final allButton = OutlinedButton(
       onPressed: onOpen,
-      child: Text(viewAll, textAlign: TextAlign.center),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(viewAll, textAlign: TextAlign.center),
+      ),
     );
 
     if (horizontal) {
@@ -531,16 +563,20 @@ class _AppointmentFact extends StatelessWidget {
   final String title;
   final String? subtitle;
   @override
-  Widget build(BuildContext context) =>
-      Row(mainAxisSize: MainAxisSize.min, children: [
+  Widget build(BuildContext context) => Center(
+    child: Row(mainAxisSize: MainAxisSize.min, children: [
         if (icon != null) ...[Icon(icon, size: 24), const SizedBox(width: 9)],
         Flexible(
             child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
           Text(title, style: AppTextStyles.label),
           if (subtitle != null) Text(subtitle!, style: AppTextStyles.caption)
         ]))
-      ]);
+      ]),
+    );
 }
 
 class _AppointmentDivider extends StatelessWidget {
@@ -560,32 +596,73 @@ class _FamilyDoctorCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context);
     final profile = context.watch<UserProfileProvider>().profile;
+    final colors = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+      height: 210,
       decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.primary.withValues(alpha: .08),
-          borderRadius: BorderRadius.circular(16)),
+        color: colors.primaryContainer,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      clipBehavior: Clip.antiAlias,
       child: Row(children: [
-        CircleAvatar(
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            child: const Icon(Icons.medical_services_outlined,
-                color: Colors.white)),
-        const SizedBox(width: 13),
         Expanded(
-            child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(strings.text('yourFamilyDoctor'), style: AppTextStyles.caption),
-          Text(profile?.familyDoctorName ?? strings.text('notAssigned'),
-              style: AppTextStyles.h3),
-          Text(
-              '${profile?.familyDoctorSpecialty ?? strings.text('familyMedicine')} • ${profile?.assignedHealthCenter ?? ''}',
-              style: AppTextStyles.bodySecondary)
-        ])),
-        TextButton.icon(
-            onPressed: () =>
-                Navigator.pushNamed(context, '/services/change-doctor'),
-            icon: Text(strings.text('viewDoctor')),
-            label: const Icon(Icons.arrow_forward_rounded, size: 16)),
+          flex: 6,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(strings.text('yourFamilyDoctor'),
+                    style: AppTextStyles.caption),
+                const SizedBox(height: 3),
+                Text(profile?.familyDoctorName ?? strings.text('notAssigned'),
+                    style: AppTextStyles.h3),
+                const SizedBox(height: 3),
+                Text(
+                  '${profile?.familyDoctorSpecialty ?? strings.text('familyMedicine')} • ${profile?.assignedHealthCenter ?? ''}',
+                  style: AppTextStyles.bodySecondary,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 8),
+                TextButton.icon(
+                  onPressed: () => Navigator.pushNamed(
+                      context, '/services/change-doctor'),
+                  icon: Text(strings.text('viewDoctor')),
+                  label: const Icon(Icons.arrow_forward_rounded, size: 16),
+                ),
+              ],
+            ),
+          ),
+        ),
+        Expanded(
+          flex: 5,
+          child: Stack(fit: StackFit.expand, children: [
+            Image.asset(
+              'assets/images/yourDoc.jpg',
+              fit: BoxFit.cover,
+              alignment: Alignment.topCenter,
+              errorBuilder: (_, __, ___) => Image.asset(
+                'assets/images/family_doctor_card.jpeg',
+                fit: BoxFit.cover,
+              ),
+            ),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                  colors: [
+                    colors.primaryContainer,
+                    colors.primaryContainer.withValues(alpha: .35),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+            ),
+          ]),
+        ),
       ]),
     );
   }

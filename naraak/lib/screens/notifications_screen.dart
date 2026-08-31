@@ -75,14 +75,21 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         title: 'Notifications',
         actions: [
           if (provider.unreadCount > 0)
-            TextButton(
-              onPressed: () async {
-                for (final item
-                    in provider.notifications.where((n) => !n.read).toList()) {
-                  await provider.markRead(item.id);
-                }
+            Builder(
+              builder: (context) {
+                final compact = MediaQuery.sizeOf(context).width < 390;
+                return compact
+                    ? IconButton(
+                        tooltip: 'Mark all read',
+                        onPressed: provider.markAllRead,
+                        icon: const Icon(Icons.done_all_rounded),
+                      )
+                    : TextButton.icon(
+                        onPressed: provider.markAllRead,
+                        icon: const Icon(Icons.done_all_rounded, size: 18),
+                        label: const Text('Mark all read'),
+                      );
               },
-              child: const Text('Mark all read'),
             ),
         ],
       ),
@@ -106,7 +113,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             LoadState.success => RefreshIndicator(
                 onRefresh: provider.loadNotifications,
                 child: ListView.separated(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: MediaQuery.sizeOf(context).width < 480 ? 12 : 20,
+                    vertical: 16,
+                  ),
                   itemCount: provider.notifications.length,
                   separatorBuilder: (_, __) => const SizedBox(height: 10),
                   itemBuilder: (context, index) {

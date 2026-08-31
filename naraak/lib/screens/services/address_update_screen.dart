@@ -58,7 +58,7 @@ class _AddressUpdateScreenState extends State<AddressUpdateScreen> {
             children: [
               if (!_isSubmitted) ...[
                 const ServiceHero(
-                  imageAsset: 'assets/images/dashboard_phc_hero.png',
+                  imageAsset: 'assets/images/Update residential address.jpg',
                   title: 'Update Residential Address',
                   description:
                       'Update your block and see your newly assigned health center.',

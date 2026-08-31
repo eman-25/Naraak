@@ -69,6 +69,7 @@ class _HajjCertificateScreenState extends State<HajjCertificateScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const ServiceHero(
+                  imageAsset: 'assets/images/Electronic Hajj certificate.jpeg',
                   icon: Icons.mosque_rounded,
                   accent: Color(0xFF0B4F54),
                   title: 'Electronic Hajj Certificate',

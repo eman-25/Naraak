@@ -93,6 +93,7 @@ class _MobileUnitRequestScreenState extends State<MobileUnitRequestScreen> {
           children: [
             if (!_isSubmitted) ...[
               const ServiceHero(
+                imageAsset: 'assets/images/Request mobile unit service.jpg',
                 icon: Icons.airport_shuttle_rounded,
                 accent: Color(0xFF2D6CDF),
                 title: 'Mobile Unit Service',

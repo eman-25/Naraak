@@ -72,4 +72,24 @@ class ClinicalDataProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future<void> markAllRead() async {
+    final unreadIds = notifications
+        .where((item) => !item.read)
+        .map((item) => item.id)
+        .toList();
+    if (unreadIds.isEmpty) return;
+    try {
+      await Future.wait(unreadIds.map(
+        (id) => repository.api.markNotificationRead(notificationId: id),
+      ));
+      notifications = [
+        for (final item in notifications) item.copyWith(read: true),
+      ];
+      notifyListeners();
+    } catch (error) {
+      errorMessage = repository.friendlyError(error, arabic: false);
+      await loadNotifications();
+    }
+  }
 }

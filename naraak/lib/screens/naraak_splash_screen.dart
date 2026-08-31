@@ -41,10 +41,11 @@ class _NaraakSplashScreenState extends State<NaraakSplashScreen>
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkBg : AppColors.surface,
-      body: SafeArea(
-        child: FadeTransition(
-          opacity: _fade,
-          child: Padding(
+      body: SizedBox.expand(
+        child: SafeArea(
+          child: FadeTransition(
+            opacity: _fade,
+            child: Padding(
             padding: const EdgeInsets.fromLTRB(28, 40, 28, 32),
             child: Column(
               children: [
@@ -72,9 +73,10 @@ class _NaraakSplashScreenState extends State<NaraakSplashScreen>
                 ),
               ],
             ),
+              ),
+            ),
           ),
         ),
-      ),
     );
   }
 }

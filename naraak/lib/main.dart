@@ -229,13 +229,16 @@ class _RootShellState extends State<RootShell> {
             builder: (_) => ValueListenableBuilder<int>(
               valueListenable: _tabIndex,
               builder: (_, index, __) {
-                final stack = IndexedStack(index: index, children: screens);
+                final activeScreen = KeyedSubtree(
+                  key: ValueKey(index),
+                  child: screens[index],
+                );
                 // All four root tabs now manage their own width/centering.
-                if (!web || index <= 3) return stack;
+                if (!web || index <= 3) return activeScreen;
                 return Center(
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 640),
-                    child: stack,
+                    child: activeScreen,
                   ),
                 );
               },

@@ -231,6 +231,8 @@ class _FeeExemptionScreenState extends State<FeeExemptionScreen> {
               child: Column(
                 children: [
                   const ServiceHero(
+                    imageAsset:
+                        'assets/images/Health fee exemption card issuance.jpg',
                     icon: Icons.shield_rounded,
                     accent: Color(0xFFB45309),
                     title: 'Health Fee Exemption Card',

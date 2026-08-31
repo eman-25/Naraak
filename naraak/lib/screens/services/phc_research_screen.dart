@@ -13,6 +13,7 @@ class PhcResearchScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ServiceChoiceScreen(
         title: 'Research Application',
+        heroImage: 'assets/images/Primary healthcare research applications.jpg',
         heroIcon: Icons.biotech_rounded,
         heroAccent: const Color(0xFF7C6FE0),
         heroTitle: 'PHC Research Application',

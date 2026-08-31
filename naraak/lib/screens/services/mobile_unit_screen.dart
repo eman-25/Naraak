@@ -13,6 +13,7 @@ class MobileUnitScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ServiceChoiceScreen(
         title: 'Mobile Unit Service',
+        heroImage: 'assets/images/Request mobile unit service.jpg',
         heroIcon: Icons.airport_shuttle_rounded,
         heroAccent: const Color(0xFF2D6CDF),
         heroTitle: 'Healthcare at your doorstep',

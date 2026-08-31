@@ -1,6 +1,5 @@
 // lib/theme/app_text_styles.dart
 import 'package:flutter/material.dart';
-import 'app_colors.dart';
 
 /// Refined type scale — tighter tracking on headlines, generous line-height
 /// on body copy for bilingual (EN/AR) readability.
@@ -43,22 +42,22 @@ class AppTextStyles {
 
   static const bodySecondary = TextStyle(
     fontFamily: _family, fontSize: 14, fontWeight: FontWeight.w400,
-    height: 1.5, color: AppColors.ink500,
+    height: 1.5,
   );
 
   static const label = TextStyle(
     fontFamily: _family, fontSize: 13, fontWeight: FontWeight.w600,
-    letterSpacing: 0.2, color: AppColors.ink700,
+    letterSpacing: 0.2,
   );
 
   static const caption = TextStyle(
     fontFamily: _family, fontSize: 12.5, fontWeight: FontWeight.w400,
-    height: 1.4, color: AppColors.ink500,
+    height: 1.4,
   );
 
   static const overline = TextStyle(
     fontFamily: _family, fontSize: 11, fontWeight: FontWeight.w700,
-    letterSpacing: 1.1, color: AppColors.ink500,
+    letterSpacing: 1.1,
   );
 
   static const buttonLabel = TextStyle(

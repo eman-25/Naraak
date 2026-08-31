@@ -45,11 +45,6 @@ class _LoginScreenState extends State<LoginScreen> {
     final success = await profileProvider.login(_cprController.text.trim());
     if (!mounted) return;
     setState(() => _isLoading = false);
-    if (success) {
-      context
-          .read<AppSettingsProvider>()
-          .setLocaleFromApiLanguage(profileProvider.preferredLanguage);
-    }
     if (!success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

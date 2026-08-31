@@ -92,7 +92,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 10),
           _AnimatedEntry(
               index: 4, child: const DoctorFeatureCard(compact: true)),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
           _AnimatedEntry(index: 5, child: const DashboardPendingRequestsCard()),
           const SizedBox(height: 20),
           _AnimatedEntry(index: 6, child: const DashboardPrivacyBanner()),

@@ -74,8 +74,6 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
             padding: EdgeInsets.zero,
             child: Column(
               children: [
-                _InlinePageHeading(title: 'Help & Support'),
-                const SizedBox(height: 28),
                 _FaqTile(
                   question: 'How do I book an appointment?',
                   answer:
@@ -107,8 +105,6 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
             padding: EdgeInsets.zero,
             child: Column(
               children: [
-                _InlinePageHeading(title: 'Help & Support'),
-                const SizedBox(height: 28),
                 ListTile(
                   leading:
                       Icon(Icons.phone_outlined, color: AppColors.primaryTeal),
@@ -144,8 +140,6 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _InlinePageHeading(title: 'Help & Support'),
-          const SizedBox(height: 28),
           const Text('Category', style: AppTextStyles.label),
           const SizedBox(height: 6),
           DropdownButtonFormField<String>(

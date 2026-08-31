@@ -104,6 +104,8 @@ class _PhcResearchApplicationScreenState extends State<PhcResearchApplicationScr
             : Column(
                 children: [
                   const ServiceHero(
+                    imageAsset:
+                        'assets/images/Primary healthcare research applications.jpg',
                     icon: Icons.biotech_rounded,
                     accent: Color(0xFF7C6FE0),
                     title: 'PHC Research Application',

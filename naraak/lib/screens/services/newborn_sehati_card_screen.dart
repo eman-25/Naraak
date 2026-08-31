@@ -101,6 +101,7 @@ class _NewbornSehatiCardScreenState extends State<NewbornSehatiCardScreen> {
             children: [
               if (!_isSubmitted) ...[
                 const ServiceHero(
+                  imageAsset: 'assets/images/Sehati Card request for newborn.png',
                   icon: Icons.crib_rounded,
                   accent: Color(0xFFC97A93),
                   title: 'Newborn Sehati Card',

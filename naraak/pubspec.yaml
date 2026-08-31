@@ -25,6 +25,7 @@ flutter:
   assets:
     - assets/images/naraak_logo.png
     - assets/images/family_doctor_card.jpeg
+    - assets/images/yourDoc.jpg
     - assets/images/splash.jpg
     - assets/images/service_mammogram.jpg
     - assets/images/service_vaccination.jpg

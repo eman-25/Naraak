@@ -40,11 +40,6 @@ class _EkeyLoginScreenState extends State<EkeyLoginScreen> {
     final profile = context.read<UserProfileProvider>();
     final success = await profile.login(_cprController.text.trim());
     if (!mounted) return;
-    if (success) {
-      context
-          .read<AppSettingsProvider>()
-          .setLocaleFromApiLanguage(profile.preferredLanguage);
-    }
     if (!success) {
       setState(() => _loading = false);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -92,10 +87,16 @@ class _EkeyLoginScreenState extends State<EkeyLoginScreen> {
                     children: [
                       Align(
                         alignment: AlignmentDirectional.centerStart,
-                        child: IconButton(
-                          tooltip: strings.text('back'),
-                          onPressed: () => Navigator.pop(context),
-                          icon: const Icon(Icons.arrow_back_rounded),
+                        child: Row(
+                          children: [
+                            IconButton(
+                              tooltip: strings.text('back'),
+                              onPressed: () => Navigator.pop(context),
+                              icon: const Icon(Icons.arrow_back_rounded),
+                            ),
+                            const Spacer(),
+                            const _LoginLanguageSwitch(),
+                          ],
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -217,6 +218,24 @@ class _EkeyLoginScreenState extends State<EkeyLoginScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _LoginLanguageSwitch extends StatelessWidget {
+  const _LoginLanguageSwitch();
+
+  @override
+  Widget build(BuildContext context) {
+    final settings = context.watch<AppSettingsProvider>();
+    return SegmentedButton<String>(
+      showSelectedIcon: false,
+      segments: const [
+        ButtonSegment(value: 'en', label: Text('EN')),
+        ButtonSegment(value: 'ar', label: Text('عربي')),
+      ],
+      selected: {settings.locale.languageCode},
+      onSelectionChanged: (value) => settings.setLocale(Locale(value.first)),
     );
   }
 }

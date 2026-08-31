@@ -935,12 +935,11 @@ class DashboardPrivacyBanner extends StatelessWidget {
           border: Border.all(color: palette.primary.withValues(alpha: 0.25)),
           borderRadius: BorderRadius.circular(14),
         ),
-        child: Wrap(
-          crossAxisAlignment: WrapCrossAlignment.center,
-          runSpacing: 10,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
                   width: 34,
@@ -953,8 +952,7 @@ class DashboardPrivacyBanner extends StatelessWidget {
                       color: palette.primary, size: 18),
                 ),
                 const SizedBox(width: 12),
-                ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 380),
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
@@ -972,8 +970,9 @@ class DashboardPrivacyBanner extends StatelessWidget {
                 ),
               ],
             ),
+            const SizedBox(height: 10),
             Padding(
-              padding: const EdgeInsets.only(left: 46),
+              padding: const EdgeInsetsDirectional.only(start: 46),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
